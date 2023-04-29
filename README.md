@@ -21,6 +21,11 @@ You need to have docker installed in linux machine. If you don't have already, r
 ```
 sudo apt-get install docker.io
 ```
+If you are using arm64 or aarch64 linux OS, you also need to install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your pc or you may also run the following command.
+```
+sudo apt-get install qemu binfmt-support qemu-user-static
+```
+
 ## What next?
 Download the script name income.sh and edit the script using vi or notepad.
 
