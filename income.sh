@@ -179,8 +179,10 @@ if [ "$USE_PROXIES" = true ]; then
   i=0;
   for proxy in `cat proxies.txt`
   do
-    i=`expr $i + 1`
-    start_containers "$i" "$proxy"
+    if [[ "$line" =~ ^[^#].* ]]; then
+      i=`expr $i + 1`
+      start_containers "$i" "$proxy"
+    fi
   done
 else
   start_containers
