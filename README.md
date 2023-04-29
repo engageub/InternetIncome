@@ -1,4 +1,4 @@
-# InternetCash (Multiproxy Support)
+# Internet Cash (Multiproxy Support)
 Internet Cash: Earn income with internet (Proxies Supported)
 
 This script lets you earn income by sharing your internet bandwidth. The main advantage of this script is the use of multiple proxies in docker. 
