@@ -4,7 +4,17 @@ Internet Cash: Earn income with internet (Proxies Supported)
 This script lets you earn income by sharing your internet bandwidth. The main advantage of this script is the use of multiple proxies in docker. 
 This script has been tested in linux amd64 and arm64 platforms. 
 
-## Register with the following links
+## Register with the following links:
+
+1. [EarnApp](https://earnapp.com/i/YVI34SG)  
+2. [PacketStream](https://packetstream.io/?psr=4tHH)  
+3. [Honeygain](https://r.honeygain.me/UBEADA3E30)  
+4. [IPRoyal](https://iproyal.com/pawns?r=170182)  
+5. [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  
+6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  
+7. [Repocket](https://link.repocket.co/pV1G)  
+8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
+9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 
 ## Prerequisites 
 You need to have docker installed in linux machine. If you don't have already, run the following command.
