@@ -1,1 +1,1 @@
-#Add your proxies below in the format protocol://username:password@ip:port or protocol://ip:port
+#Add your proxies below in each line in the format protocol://username:password@ip:port or protocol://ip:port
