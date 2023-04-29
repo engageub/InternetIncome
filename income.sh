@@ -160,6 +160,7 @@ start_containers() {
 
   #Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
+    echo "Starting Earnapp container.."
     echo "Copy the following node url and paste in your earnapp dashboard"
     echo "You will also find the urls in the file earnapp.txt in the same folder"
     RANDOM=$(date +%s)
