@@ -22,9 +22,10 @@ You need to have docker installed in linux machine. If you don't have already, r
 sudo apt-get install docker.io
 ```
 ## What next?
-Download the script name internetIncome.sh and edit the script using vi or notepad.
+Download the script name income.sh and edit the script using vi or notepad.
 
 Set the values in the user configuration section of the script.
+If you do not wish to use any particular app just leave the default value as it is and the script will not run for those apps.
 After setting the values and saving the script, give permissions to the script using the following command. 
 
 ```
