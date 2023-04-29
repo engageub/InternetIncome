@@ -62,10 +62,10 @@ USE_PROXIES=false
 ENABLE_LOGS=false
 
 
-################## User Configuration Ends here ##################
+########################## User Configuration Ends here ##########################
 
 
-# DO NOT EDIT THE CODE BELOW UNLESS YOU KNOW WHAT YOU ARE DOING  #
+######### DO NOT EDIT THE CODE BELOW UNLESS YOU KNOW WHAT YOU ARE DOING  #########
 
 #Setting Device name
 if [[ ! $DEVICE_NAME ]]; then
