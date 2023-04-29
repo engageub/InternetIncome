@@ -179,8 +179,8 @@ if [ "$USE_PROXIES" = true ]; then
   i=0;
   for proxy in `cat proxies.txt`
   do
-  i=`expr $i + 1`
-  start_containers "$i" "$proxy"
+    i=`expr $i + 1`
+    start_containers "$i" "$proxy"
   done
 else
   start_containers
