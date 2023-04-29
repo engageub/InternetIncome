@@ -2,7 +2,7 @@
 Internet Cash: Earn income with internet (Proxies Supported)
 
 This script lets you earn income by sharing your internet bandwidth. The main advantage of this script is the use of multiple proxies in docker. 
-This script has been tested in linux amd64 and arm64 platforms. 
+This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 
 ## Register with the following links:
 
