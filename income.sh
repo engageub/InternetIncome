@@ -249,10 +249,11 @@ if [[ "$1" == "--delete" ]]; then
      exit 1
   fi
   for i in `cat containers.txt`
-  do
+  do  
+    #Update containers not to restart
+    sudo docker update --restart=no $i
     #Check if container is running
     if [[ $(sudo docker inspect -f '{{.State.Running}}' $i) == "true" ]]; then
-      sudo docker update --restart=no $i
       sudo docker stop $i
     fi
     # Remove container
