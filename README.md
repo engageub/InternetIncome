@@ -32,7 +32,7 @@ Your income depends on the number of proxies used and the location of proxy.
 | [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit|
 | [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 
-
+* The comparision mentioned above was updated on 30-04-2023.
 ## Prerequisites 
 You need to have docker installed in linux machine. If you don't have already, run the following command.
 ```
