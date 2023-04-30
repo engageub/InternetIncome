@@ -75,7 +75,7 @@ After you have followed all the mentioned above steps just run the following com
 ```
 sudo ./income.sh --start
 ```
-## Stopping and deleting all containers
+## :stop_sign:Stopping and deleting all containers:stop_sign:	
 To stop and delete all the containers started with the script. Run the following command.
 ```
 sudo ./income.sh --delete
