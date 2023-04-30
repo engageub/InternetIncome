@@ -255,14 +255,14 @@ if [[ "$1" == "--delete" ]]; then
      exit 1
   fi
   for i in `cat $containers_file`
-  do  
+  do 
+    #Even if containers are not present, the script continues when using docker
+    #Not adding extra checks to speed up the process here
     #Update containers not to restart
     sudo docker update --restart=no $i
-    #Check if container is running
-    if [[ $(sudo docker inspect -f '{{.State.Running}}' $i) == "true" ]]; then
-      sudo docker stop $i
-    fi
-    # Remove container
+    #Stop the container
+    sudo docker stop $i
+    #Remove container
     sudo docker rm $i 
   done
   #Delete the container file
@@ -276,10 +276,7 @@ if [[ "$1" == "--delete" ]]; then
   if [ -f "$networks_file" ]; then
     for i in `$networks_file`
     do
-      if sudo docker network inspect $i > /dev/null 2>&1
-      then
-        sudo docker network rm $i
-      fi
+      sudo docker network rm $i
     done
     #Delete network file
     rm $networks_file
