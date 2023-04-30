@@ -1,7 +1,8 @@
 # Internet Cash (Multiproxy Support)
-Internet Cash: Earn income with internet (Proxies Supported)
+Internet Cash: Earn passive income with internet (Proxies Supported)
 
-This script lets you earn income by sharing your internet bandwidth. The main advantage of this script is the use of multiple proxies in docker. 
+This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
+The main advantage of this script is the use of multiple proxies in docker. 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy.
 
