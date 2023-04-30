@@ -33,18 +33,18 @@ networks_file="networks.txt"
 if [ -f "$banner_file" ]; then
   for count in {1..3}
   do
-  clear
-  echo -e "${RED}"
-  cat $banner_file
-  sleep 0.5
-  clear
-  echo -e "${GREEN}"
-  cat $banner_file
-  sleep 0.5
-  clear
-  echo -e "${YELLOW}"
-  cat $banner_file
-  sleep 0.5
+    clear
+    echo -e "${RED}"
+    cat $banner_file
+    sleep 0.5
+    clear
+    echo -e "${GREEN}"
+    cat $banner_file
+    sleep 0.5
+    clear
+    echo -e "${YELLOW}"
+    cat $banner_file
+    sleep 0.5
   done
   echo -e "${NOCOLOUR}"
   echo -e "\n\nStarting.."
