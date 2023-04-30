@@ -113,7 +113,7 @@ start_containers() {
   if [[ $i && $proxy ]]; then
     NETWORK=tunnetwork$i
     NETWORK_TUN="--network=container:tun$i"
-    if docker network inspect ${NETWORK} > /dev/null 2>&1
+    if sudo docker network inspect ${NETWORK} > /dev/null 2>&1
     then
       echo -e "${RED}Network '${NETWORK}' already exists ${NOCOLOUR}"
     else
