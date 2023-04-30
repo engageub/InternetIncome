@@ -18,7 +18,7 @@ Your income depends on the number of proxies used and the location of proxy.
 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 
-## Comparision of different apps which support datacenter or residential
+## Comparision of different apps based on proxy type
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |
 |  :--- |  :---: |  :---: |
