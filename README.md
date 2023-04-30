@@ -37,7 +37,7 @@ sudo chmod 777 income.sh
 
 ## How to use residential proxies?
 
-You need to set the value of variable USE_PROXIES to true in income.sh script.
+You need to set the value of variable USE_PROXIES to true in properties.conf file.
 Then, create a file name proxies.txt in the same folder you have income.sh file.
 Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
 Example proxies.txt file below. Use your own proxies. 
@@ -50,7 +50,7 @@ http://13.23.5.2:7872
 
 ## Can I use without proxies?
 
-Yes. You can use the script with direct internet connection by setting the variable USE_PROXIES to false.
+Yes. You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
 
 
 ## Final Step: Running the script
