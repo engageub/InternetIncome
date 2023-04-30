@@ -87,7 +87,14 @@ start_containers() {
   fi
 
   if [[ $i && $proxy ]]; then
-    sudo docker create network tunnetwork$i
+    NETWORK=tunnetwork$i
+    if docker network inspect ${NETWORK} > /dev/null 2>&1
+    then
+      echo "Network '${NETWORK}' already exists"
+    else
+      echo "Network '${NETWORK}' doesn't exist; creating it"
+      sudo docker network create ${NETWORK} > /dev/null
+    fi
     sleep 1
     #Starting tun containers 
     sudo docker run --name tun$i $LOGS_PARAM --restart=always --network tunnetwork$i -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks
