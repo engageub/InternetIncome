@@ -70,8 +70,26 @@ ENABLE_LOGS=false
 #Colours
 RED="\033[0;31m"
 GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
 NOCOLOUR="\033[0m"
 
+for count in {1..3}
+do
+clear
+echo -e "${RED}"
+cat banner.txt
+sleep 0.5
+clear
+echo -e "${GREEN}"
+cat banner.txt
+sleep 0.5
+clear
+echo -e "${YELLOW}"
+cat banner.txt
+sleep 0.5
+done
+echo -e "${NOCOLOUR}"
+echo -e "\n\nStarting.."
 
 #Setting Device name
 if [[ ! $DEVICE_NAME ]]; then
