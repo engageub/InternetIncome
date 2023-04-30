@@ -88,6 +88,7 @@ start_containers() {
 
   if [[ $i && $proxy ]]; then
     NETWORK=tunnetwork$i
+    NETWORK_TUN="--network=container:tun$i"
     if docker network inspect ${NETWORK} > /dev/null 2>&1
     then
       echo "Network '${NETWORK}' already exists"
@@ -97,14 +98,14 @@ start_containers() {
     fi
     sleep 1
     #Starting tun containers 
-    sudo docker run --name tun$i $LOGS_PARAM --restart=always --network tunnetwork$i -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks
+    sudo docker run --name tun$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks
     sleep 1
   fi
     
   #Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     echo "Starting Repocket container.."
-    sudo docker run -d --restart=always --network=container:tun$i $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket
+    sudo docker run -d --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket
   else
     echo "Repocket Email or Api is not configured. Ignoring Repocket.."
   fi
@@ -112,7 +113,7 @@ start_containers() {
   #Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo "Starting Traffmonetizer container.."
-    sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i --network=container:tun$i traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN
+    sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN
   else
     echo "Traffmonetizer Token is not configured. Ignoring Traffmonetizer.."
   fi
@@ -120,7 +121,7 @@ start_containers() {
   #Starting ProxyRack container
   if [[ $PROXY_RACK_API ]]; then
     echo "Starting ProxyRack container.."
-    sudo docker run -d --platform=linux/amd64 --network=container:tun$i $LOGS_PARAM --restart=always --name proxyrack$i -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop
+    sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always --name proxyrack$i -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop
   else
     echo "ProxyRack Api is not configured. Ignoring ProxyRack.."
   fi
@@ -128,7 +129,7 @@ start_containers() {
   #Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo "Starting IPRoyals container.."
-    sudo docker run -d --restart=always $LOGS_PARAM --network=container:tun$i iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos
+    sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos
   else
     echo "IPRoyals Email or Password is not configured. Ignoring IPRoyals.."
   fi
@@ -144,7 +145,7 @@ start_containers() {
   #Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo "Starting Peer2Profit container.."
-    sudo docker run -d --network=container:tun$i $LOGS_PARAM --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL --name peer2profit$i  peer2profit/peer2profit_linux:latest
+    sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL --name peer2profit$i  peer2profit/peer2profit_linux:latest
   else
     echo "Peer2Profit Email is not configured. Ignoring Peer2Profit.."
   fi
@@ -152,7 +153,7 @@ start_containers() {
   #Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
     echo "Starting PacketStream container.."
-    sudo docker run -d --network=container:tun$i $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy --name packetstream$i packetstream/psclient:latest
+    sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy --name packetstream$i packetstream/psclient:latest
   else
     echo "PacketStream CID is not configured. Ignoring PacketStream.."
   fi
@@ -160,7 +161,7 @@ start_containers() {
   #Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
     echo "Starting Proxylite container.."
-    sudo docker run -d --platform=linux/amd64 --network=container:tun$i $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always  --name proxylite$i proxylite/proxyservice
+    sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always  --name proxylite$i proxylite/proxyservice
   else
     echo "Proxylite is not configured. Ignoring Proxylite.."
   fi
@@ -174,7 +175,7 @@ start_containers() {
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
     printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a earnapp.txt
-    sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always --network=container:tun$i -e EARNAPP_UUID=sdk-node-$RANDOM_ID --name earnapp$i fazalfarhan01/earnapp:lite
+    sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID --name earnapp$i fazalfarhan01/earnapp:lite
   else
     echo "Earnapp is not enabled. Ignoring Earnapp.."
   fi
