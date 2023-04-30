@@ -27,6 +27,7 @@ properties_file="properties.conf"
 banner_file="banner.txt"
 proxies_file="proxies.txt"
 containers_file="containers.txt"
+earnapp_file="earnapp.txt"
 
 if [ -f "$banner_file" ]; then
   for count in {1..3}
@@ -73,7 +74,7 @@ start_containers() {
     sleep 1
     #Starting tun containers
 	if CONTAINER_ID=$(sudo docker run --name tun$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks); then
-      echo "$CONTAINER_ID" |tee -a containers.txt
+      echo "$CONTAINER_ID" |tee -a $containers_file
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
 	  exit 1
@@ -85,7 +86,7 @@ start_containers() {
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
     fi
@@ -98,7 +99,7 @@ start_containers() {
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
     
 	if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
     fi
@@ -110,7 +111,7 @@ start_containers() {
   if [[ $PROXY_RACK_API ]]; then
     echo -e "${GREEN}Starting ProxyRack container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always --name proxyrack$i -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for ProxyRack..${NOCOLOUR}"
   fi  
@@ -122,7 +123,7 @@ start_containers() {
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for IPRoyals..${NOCOLOUR}"
     fi   
@@ -134,7 +135,7 @@ start_containers() {
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
   fi
@@ -146,7 +147,7 @@ start_containers() {
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL --name peer2profit$i  peer2profit/peer2profit_linux:latest); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file
     else
       echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
     fi   
@@ -158,7 +159,7 @@ start_containers() {
   if [[ $PACKETSTREAM_CID ]]; then
     echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy --name packetstream$i packetstream/psclient:latest); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
     fi   
@@ -170,7 +171,7 @@ start_containers() {
   if [[ $PROXYLITE_USER_ID ]]; then
     echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
 	if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always  --name proxylite$i proxylite/proxyservice); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
     fi 
