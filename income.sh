@@ -67,9 +67,15 @@ ENABLE_LOGS=false
 
 ######### DO NOT EDIT THE CODE BELOW UNLESS YOU KNOW WHAT YOU ARE DOING  #########
 
+#Colours
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+NOCOLOUR="\033[0m"
+
+
 #Setting Device name
 if [[ ! $DEVICE_NAME ]]; then
-  echo "Device Name is not configured. Using default name ubuntu"
+  echo -e "${RED}Device Name is not configured. Using default name ${NOCOLOUR}ubuntu"
   DEVICE_NAME=ubuntu
 fi
 
@@ -91,9 +97,9 @@ start_containers() {
     NETWORK_TUN="--network=container:tun$i"
     if docker network inspect ${NETWORK} > /dev/null 2>&1
     then
-      echo "Network '${NETWORK}' already exists"
+      echo -e "${RED}Network '${NETWORK}' already exists ${NOCOLOUR}"
     else
-      echo "Network '${NETWORK}' doesn't exist; creating it"
+      echo -e "${RED}Network '${NETWORK}' doesn't exist; creating it${NOCOLOUR}"
       sudo docker network create ${NETWORK} > /dev/null
     fi
     sleep 1
@@ -104,80 +110,80 @@ start_containers() {
     
   #Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
-    echo "Starting Repocket container.."
+    echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
     sudo docker run -d --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket
   else
-    echo "Repocket Email or Api is not configured. Ignoring Repocket.."
+    echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
   fi
 
   #Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
-    echo "Starting Traffmonetizer container.."
+    echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
     sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN
   else
-    echo "Traffmonetizer Token is not configured. Ignoring Traffmonetizer.."
+    echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
   fi
 
   #Starting ProxyRack container
   if [[ $PROXY_RACK_API ]]; then
-    echo "Starting ProxyRack container.."
+    echo -e "${GREEN}Starting ProxyRack container..${NOCOLOUR}"
     sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always --name proxyrack$i -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop
   else
-    echo "ProxyRack Api is not configured. Ignoring ProxyRack.."
+    echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
   fi
 
   #Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
-    echo "Starting IPRoyals container.."
+    echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
     sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos
   else
-    echo "IPRoyals Email or Password is not configured. Ignoring IPRoyals.."
+    echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
   fi
   
   #Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
-    echo "Starting Honeygain container.."
+    echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i
   else
-    echo "Honeygain Email or Password is not configured. Ignoring Honeygain.."
+    echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
   fi
 
   #Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
-    echo "Starting Peer2Profit container.."
+    echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
     sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL --name peer2profit$i  peer2profit/peer2profit_linux:latest
   else
-    echo "Peer2Profit Email is not configured. Ignoring Peer2Profit.."
+    echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
   fi
 
   #Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
-    echo "Starting PacketStream container.."
+    echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
     sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy --name packetstream$i packetstream/psclient:latest
   else
-    echo "PacketStream CID is not configured. Ignoring PacketStream.."
+    echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
   fi
 
   #Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
-    echo "Starting Proxylite container.."
+    echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
     sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always  --name proxylite$i proxylite/proxyservice
   else
-    echo "Proxylite is not configured. Ignoring Proxylite.."
+    echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
   fi
 
   #Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
-    echo "Starting Earnapp container.."
-    echo "Copy the following node url and paste in your earnapp dashboard"
-    echo "You will also find the urls in the file earnapp.txt in the same folder"
+    echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
+    echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file earnapp.txt in the same folder${NOCOLOUR}"
     RANDOM=$(date +%s)
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
     printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a earnapp.txt
     sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID --name earnapp$i fazalfarhan01/earnapp:lite
   else
-    echo "Earnapp is not enabled. Ignoring Earnapp.."
+    echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
   fi
 
 } 
