@@ -22,15 +22,15 @@ Your income depends on the number of proxies used and the location of proxy.
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
 |  :--- |  :---: |  :---: | :---: | :---: |
-| [EarnApp](https://earnapp.com/i/YVI34SG)  | :white_check_mark:  | :x: | 15|1|
-| [PacketStream](https://packetstream.io/?psr=4tHH)  | :white_check_mark:  | :x: |No limit|1|
-| [Honeygain](https://r.honeygain.me/UBEADA3E30) | :white_check_mark:  | :x: |10|1|
-| [IPRoyal](https://iproyal.com/pawns?r=170182)  | :white_check_mark:  | :x: |No limit|1|
-| [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :white_check_mark:  | :white_check_mark: | No limit|No limit|
-| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :white_check_mark:  | :white_check_mark: |500|1|
-| [Repocket](https://link.repocket.co/pV1G)  | :white_check_mark:  | :white_check_mark: |No limit|2|
-| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :white_check_mark:  | :white_check_mark: |No limit|No limit|
-| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :white_check_mark:  | :white_check_mark: |No limit|1|
+| [EarnApp](https://earnapp.com/i/YVI34SG)  | :heavy_check_mark:	  | :x: | 15|1|
+| [PacketStream](https://packetstream.io/?psr=4tHH)  | :heavy_check_mark:	  | :x: |No limit|1|
+| [Honeygain](https://r.honeygain.me/UBEADA3E30) | :heavy_check_mark:	  | :x: |10|1|
+| [IPRoyal](https://iproyal.com/pawns?r=170182)  | :heavy_check_mark:	  | :x: |No limit|1|
+| [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit|
+| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1|
+| [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2|
+| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit|
+| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 
 
 ## Prerequisites 
