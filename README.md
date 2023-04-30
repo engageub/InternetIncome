@@ -20,17 +20,17 @@ Your income depends on the number of proxies used and the location of proxy.
 
 ## Comparision of different apps based on proxy type
 
-| App Name | Residential/Home ISP | Datacenter/Hosting/VPS |
-|  :--- |  :---: |  :---: |
-| [EarnApp](https://earnapp.com/i/YVI34SG)  | :white_check_mark:  | :x: |
-| [PacketStream](https://packetstream.io/?psr=4tHH)  | :white_check_mark:  | :x: |
-| [Honeygain](https://r.honeygain.me/UBEADA3E30) | :white_check_mark:  | :x: |
-| [IPRoyal](https://iproyal.com/pawns?r=170182)  | :white_check_mark:  | :x: |
-| [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :white_check_mark:  | :white_check_mark: | 
-| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :white_check_mark:  | :white_check_mark: |
-| [Repocket](https://link.repocket.co/pV1G)  | :white_check_mark:  | :white_check_mark: |
-| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :white_check_mark:  | :white_check_mark: |
-| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :white_check_mark:  | :white_check_mark: |
+| App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|
+|  :--- |  :---: |  :---: | :---: |
+| [EarnApp](https://earnapp.com/i/YVI34SG)  | :white_check_mark:  | :x: | 15|
+| [PacketStream](https://packetstream.io/?psr=4tHH)  | :white_check_mark:  | :x: |No limit|
+| [Honeygain](https://r.honeygain.me/UBEADA3E30) | :white_check_mark:  | :x: |10|
+| [IPRoyal](https://iproyal.com/pawns?r=170182)  | :white_check_mark:  | :x: |No limit|
+| [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :white_check_mark:  | :white_check_mark: | No limit|
+| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :white_check_mark:  | :white_check_mark: |500|
+| [Repocket](https://link.repocket.co/pV1G)  | :white_check_mark:  | :white_check_mark: |No limit|
+| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :white_check_mark:  | :white_check_mark: |No limit|
+| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :white_check_mark:  | :white_check_mark: |No limit|
 
 
 ## Prerequisites 
