@@ -1,4 +1,4 @@
-# :computer:	Internet Cash :money_with_wings:	(Multiproxy Support)
+# :computer:	Internet Cash :money_with_wings:	(Multiproxy Support):european_castle:	
 Internet Cash: Earn passive income with internet (Proxies Supported)
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
