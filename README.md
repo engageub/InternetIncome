@@ -27,11 +27,9 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 ```
 
 ## What next?
-Download the script name income.sh and edit the script using vi or notepad.
-
-Set the values in the user configuration section of the script.
+Download the code and edit the configuration file properties.conf with your account details.
 If you do not wish to use any particular app just leave the default value as it is and the script will not run for those apps.
-After setting the values and saving the script, give permissions to the script using the following command. 
+After setting the values and saving the file, give permissions to the script using the following command. 
 
 ```
 sudo chmod 777 income.sh
