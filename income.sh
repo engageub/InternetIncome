@@ -28,6 +28,7 @@ banner_file="banner.txt"
 proxies_file="proxies.txt"
 containers_file="containers.txt"
 earnapp_file="earnapp.txt"
+networks_file="networks.txt"
 
 if [ -f "$banner_file" ]; then
   for count in {1..3}
@@ -69,15 +70,20 @@ start_containers() {
       echo -e "${RED}Network '${NETWORK}' already exists ${NOCOLOUR}"
     else
       echo -e "${RED}Network '${NETWORK}' doesn't exist; creating it${NOCOLOUR}"
-      sudo docker network create ${NETWORK} > /dev/null
+      if CONTAINER_ID=$(sudo docker network create ${NETWORK}); then
+        echo "$CONTAINER_ID" |tee -a $networks_file
+      else
+        echo -e "${RED}Failed to create network. Exiting..${NOCOLOUR}"
+      exit 1
+      fi
     fi
     sleep 1
     #Starting tun containers
-	if CONTAINER_ID=$(sudo docker run --name tun$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks); then
+    if CONTAINER_ID=$(sudo docker run --name tun$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks); then
       echo "$CONTAINER_ID" |tee -a $containers_file
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
-	  exit 1
+      exit 1
     fi
     sleep 1
   fi
@@ -265,6 +271,19 @@ if [[ "$1" == "--delete" ]]; then
   if [ -f "$earnapp_file" ]; then
     rm $earnapp_file
   fi 
+  
+  #Delete networks
+  if [ -f "$networks_file" ]; then
+    for i in `$networks_file`
+    do
+      if sudo docker network inspect $i > /dev/null 2>&1
+      then
+        sudo docker network rm $i
+      fi
+    done
+    #Delete network file
+    rm $networks_file
+  fi  
 fi
 
 if [[ ! "$1" ]]; then
