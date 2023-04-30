@@ -256,8 +256,6 @@ if [[ "$1" == "--delete" ]]; then
   fi
   for i in `cat $containers_file`
   do 
-    #Even if containers are not present, the script continues when using docker
-    #Not adding extra checks to speed up the process here
     #Update containers not to restart
     sudo docker update --restart=no $i
     #Stop the container
