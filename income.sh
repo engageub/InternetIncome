@@ -15,81 +15,58 @@
 # advised of the possibility of such damages.                                    #
 ##################################################################################
 
-
-######################### User Configuration Starts here #########################
-
-#Set you device name below
-DEVICE_NAME=ubuntu
-
-#Set your repocket email and API
-REPOCKET_EMAIL=
-REPOCKET_API=
-
-#Set your traffmonetizer API
-TRAFFMONETIZER_TOKEN=
-
-#Set your proxyrack API
-PROXY_RACK_API=
-
-#Set your IPRoyals Pawns email and password
-IPROYALS_EMAIL=
-IPROYALS_PASSWORD=
-
-#Set your HoneyGain email and password
-HONEYGAIN_EMAIL=
-HONEYGAIN_PASSWORD=
-
-#Set your peer2profit email
-PEER2PROFIT_EMAIL=
-
-#Set your packetstream CID number 
-PACKETSTREAM_CID=
-
-#Set your proxylite email address 
-PROXYLITE_USER_ID=
-
-#Set the value to true if you wish to start earnapp
-#You will see URL of the earnapp node in the console output.
-#Login to your earnapp dashboard in browser and paste the URL to link the device.
-EARNAPP=false
-
-
-#Enable the following option if you use proxies
-#Create a file name proxies.txt and add your proxies in the format protocol://user:pass@ip:port
-USE_PROXIES=false
-
-#Enable logs only to debug issues, else performance will be degraded
-ENABLE_LOGS=false
-
-
-########################## User Configuration Ends here ##########################
-
-
 ######### DO NOT EDIT THE CODE BELOW UNLESS YOU KNOW WHAT YOU ARE DOING  #########
-
 #Colours
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
 NOCOLOUR="\033[0m"
 
-for count in {1..3}
-do
-clear
-echo -e "${RED}"
-cat banner.txt
-sleep 0.5
-clear
-echo -e "${GREEN}"
-cat banner.txt
-sleep 0.5
-clear
-echo -e "${YELLOW}"
-cat banner.txt
-sleep 0.5
-done
-echo -e "${NOCOLOUR}"
-echo -e "\n\nStarting.."
+#Files required 
+properties_file="properties.conf"
+banner_file="banner.txt"
+proxies_file="proxies.txt"
+
+if [ -f "$banner_file" ]; then
+  for count in {1..3}
+  do
+  clear
+  echo -e "${RED}"
+  cat $banner_file
+  sleep 0.5
+  clear
+  echo -e "${GREEN}"
+  cat $banner_file
+  sleep 0.5
+  clear
+  echo -e "${YELLOW}"
+  cat $banner_file
+  sleep 0.5
+  done
+  echo -e "${NOCOLOUR}"
+  echo -e "\n\nStarting.."
+fi
+
+# Check if the properties file exists
+if [ ! -f "$properties_file" ]; then
+    echo -e "${RED}Properties file $properties_file does not exist, exiting..${NOCOLOUR}"
+    exit 1
+fi
+
+
+# Read the properties file and export variables to the current shell
+while IFS='=' read -r key value; do
+    # Ignore lines that start with #
+    if [[ $key != '#'* ]]; then
+        # Ignore lines without a value after =
+        if [[ -n $value ]]; then
+            # Replace variables with their values
+            value=$(eval "echo $value")
+            # Export the key-value pairs as variables
+            export "$key"="$value"
+        fi
+    fi
+done < $properties_file
 
 #Setting Device name
 if [[ ! $DEVICE_NAME ]]; then
@@ -208,6 +185,12 @@ start_containers() {
 
 
 if [ "$USE_PROXIES" = true ]; then
+
+  if [ ! -f "$proxies_file" ]; then
+    echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  
   i=0;
   for proxy in `cat proxies.txt`
   do
