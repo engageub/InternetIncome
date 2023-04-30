@@ -183,13 +183,13 @@ start_containers() {
   if [ "$EARNAPP" = true ]; then
     echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the urls in the file earnapp.txt in the same folder${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
     RANDOM=$(date +%s)
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
-    printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a earnapp.txt
+    printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a $earnapp_file
 	if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID --name earnapp$i fazalfarhan01/earnapp:lite); then
-      echo "$CONTAINER_ID" |tee -a containers.txt 
+      echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
     fi  
@@ -249,7 +249,7 @@ if [[ "$1" == "--delete" ]]; then
      echo -e "${RED}Containers file $containers_file does not exist, exiting..${NOCOLOUR}"
      exit 1
   fi
-  for i in `cat containers.txt`
+  for i in `cat $containers_file`
   do  
     #Update containers not to restart
     sudo docker update --restart=no $i
@@ -261,7 +261,7 @@ if [[ "$1" == "--delete" ]]; then
     sudo docker rm $i 
   done
   #Delete the container file
-  rm containers.txt
+  rm $containers_file
 fi
 
 if [[ ! "$1" ]]; then
