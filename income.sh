@@ -137,7 +137,7 @@ start_containers() {
   #Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo "Starting Honeygain container.."
-    sudo docker run -d --network=container:tun$i $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i
+    sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i
   else
     echo "Honeygain Email or Password is not configured. Ignoring Honeygain.."
   fi
