@@ -245,7 +245,7 @@ if [[ "$1" == "--start" ]]; then
 fi
 
 if [[ "$1" == "--delete" ]]; then
-   if [ ! -f "$containers_file" ]; then
+  if [ ! -f "$containers_file" ]; then
      echo -e "${RED}Containers file $containers_file does not exist, exiting..${NOCOLOUR}"
      exit 1
   fi
@@ -262,6 +262,10 @@ if [[ "$1" == "--delete" ]]; then
   done
   #Delete the container file
   rm $containers_file
+  #Delete earnapp file
+  if [ -f "$earnapp_file" ]; then
+    rm $earnapp_file
+  fi 
 fi
 
 if [[ ! "$1" ]]; then
