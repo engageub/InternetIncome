@@ -97,8 +97,7 @@ start_containers() {
   #Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
-    
-	if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
