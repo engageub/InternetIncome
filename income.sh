@@ -69,7 +69,7 @@ start_containers() {
     if sudo docker network inspect ${NETWORK} > /dev/null 2>&1; then
       echo -e "${RED}Network '${NETWORK}' already exists ${NOCOLOUR}"
     else
-      echo -e "${RED}Network '${NETWORK}' doesn't exist; creating it${NOCOLOUR}"
+      echo -e "${GREEN}Network '${NETWORK}' doesn't exist; creating it${NOCOLOUR}"
       if CONTAINER_ID=$(sudo docker network create ${NETWORK}); then
         echo "$CONTAINER_ID" |tee -a $networks_file
       else
