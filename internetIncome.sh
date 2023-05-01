@@ -24,7 +24,7 @@ NOCOLOUR="\033[0m"
 
 # File names 
 properties_file="properties.conf"
-banner_file="banner.txt"
+banner_file="banner.jpg"
 proxies_file="proxies.txt"
 containers_file="containers.txt"
 earnapp_file="earnapp.txt"
