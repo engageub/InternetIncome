@@ -1,4 +1,4 @@
-# :computer:	Internet Cash :money_with_wings:	(Multiproxy Support):european_castle:	
+# :computer:	Internet Income :money_with_wings:	(Multiproxy Support):european_castle:	
 Internet Cash: Earn passive income with internet (Proxies Supported)
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
@@ -53,7 +53,7 @@ Always use double quotes "" while setting your email, password or token.
 ## :thinking:	How to use residential proxies:question:	
 
 You need to set the value of variable USE_PROXIES to true in properties.conf file.
-Then, create a file name proxies.txt in the same folder you have internetCash.sh file.
+Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
 Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
 Example proxies.txt file below. Use your own proxies. 
 ```
@@ -71,12 +71,12 @@ Yes. You can use the script with direct internet connection by setting the varia
 ## Final Step: :runner:Running the script:runner:
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ```
-sudo bash internetCash.sh --start
+sudo bash internetIncome.sh --start
 ```
 ## :stop_sign:Stopping and deleting all containers:stop_sign:	
 To stop and delete all the containers started with the script. Run the following command.
 ```
-sudo bash internetCash.sh --delete
+sudo bash internetIncome.sh --delete
 ```
 
 ## :warning:Disclaimer:warning:	
