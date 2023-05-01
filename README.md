@@ -38,11 +38,11 @@ Your income depends on the number of proxies used and the location of proxy.
 You need to have docker installed in linux machine. If you don't have already, run the following command.
 ```
 sudo apt-get update
-sudo apt-get install docker.io
+sudo apt-get -y install docker.io
 ```
 If you are using arm64 or aarch64 linux OS, you also need to install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your pc or you may also run the following command.
 ```
-sudo apt-get install qemu binfmt-support qemu-user-static
+sudo apt-get -y install qemu binfmt-support qemu-user-static
 ```
 
 ## :point_down:	What next:question:	 :point_down:	
