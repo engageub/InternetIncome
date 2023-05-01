@@ -53,7 +53,7 @@ Always use double quotes "" while setting your email, password or token.
 ## :thinking:	How to use residential proxies:question:	
 
 You need to set the value of variable USE_PROXIES to true in properties.conf file.
-Then, create a file name proxies.txt in the same folder you have income.sh file.
+Then, create a file name proxies.txt in the same folder you have internetCash.sh file.
 Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
 Example proxies.txt file below. Use your own proxies. 
 ```
