@@ -4,7 +4,7 @@
 # Author: engageub                                                               #
 # Description: This script lets you earn passive income by sharing your internet #
 # connection. It also supports multiple proxies with multiple accounts.          #
-# Script Name: Internet Cash (Supports Proxies)                                  # 
+# Script Name: Internet Income (Supports Proxies)                                  # 
 #                                                                                #
 # DISCLAIMER: This script is provided "as is" and without warranty of any kind.  #
 # The author makes no warranties, express or implied, that this script is free of#
