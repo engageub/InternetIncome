@@ -16,13 +16,13 @@
 ##################################################################################
 
 ######### DO NOT EDIT THE CODE BELOW UNLESS YOU KNOW WHAT YOU ARE DOING  #########
-#Colours
+# Colours
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
 NOCOLOUR="\033[0m"
 
-#Files required 
+# File names 
 properties_file="properties.conf"
 banner_file="banner.txt"
 proxies_file="proxies.txt"
@@ -30,6 +30,7 @@ containers_file="containers.txt"
 earnapp_file="earnapp.txt"
 networks_file="networks.txt"
 
+# Use banner if exists
 if [ -f "$banner_file" ]; then
   for count in {1..3}
   do
@@ -50,6 +51,7 @@ if [ -f "$banner_file" ]; then
   echo -e "\n\nStarting.."
 fi
 
+# Start all containers 
 start_containers() {
 
   i=$1
@@ -65,8 +67,7 @@ start_containers() {
   if [[ $i && $proxy ]]; then
     NETWORK=tunnetwork$i
     NETWORK_TUN="--network=container:tun$i"
-    if sudo docker network inspect ${NETWORK} > /dev/null 2>&1
-    then
+    if sudo docker network inspect ${NETWORK} > /dev/null 2>&1; then
       echo -e "${RED}Network '${NETWORK}' already exists ${NOCOLOUR}"
     else
       echo -e "${RED}Network '${NETWORK}' doesn't exist; creating it${NOCOLOUR}"
@@ -78,7 +79,7 @@ start_containers() {
       fi
     fi
     sleep 1
-    #Starting tun containers
+    # Starting tun containers
     if CONTAINER_ID=$(sudo docker run --name tun$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks); then
       echo "$CONTAINER_ID" |tee -a $containers_file
     else
@@ -88,7 +89,7 @@ start_containers() {
     sleep 1
   fi
     
-  #Starting Repocket container
+  # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
@@ -100,7 +101,7 @@ start_containers() {
     echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
   fi
 
-  #Starting Traffmonetizer container
+  # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
@@ -112,7 +113,7 @@ start_containers() {
     echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
   fi
 
-  #Starting ProxyRack container
+  # Starting ProxyRack container
   if [[ $PROXY_RACK_API ]]; then
     echo -e "${GREEN}Starting ProxyRack container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always --name proxyrack$i -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
@@ -124,7 +125,7 @@ start_containers() {
     echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
   fi
 
-  #Starting IPRoyals pawns container
+  # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
@@ -136,7 +137,7 @@ start_containers() {
     echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
   fi
   
-  #Starting Honeygain container
+  # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
@@ -148,7 +149,7 @@ start_containers() {
     echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
   fi
 
-  #Starting Peer2Profit container
+  # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL --name peer2profit$i  peer2profit/peer2profit_linux:latest); then
@@ -160,7 +161,7 @@ start_containers() {
     echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
   fi
 
-  #Starting PacketStream container
+  # Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
     echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy --name packetstream$i packetstream/psclient:latest); then
@@ -172,7 +173,7 @@ start_containers() {
     echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
   fi
 
-  #Starting Proxylite container
+  # Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
     echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always  --name proxylite$i proxylite/proxyservice); then
@@ -184,7 +185,7 @@ start_containers() {
     echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
   fi
 
-  #Starting Earnapp container
+  # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
     echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
@@ -225,7 +226,7 @@ if [[ "$1" == "--start" ]]; then
     fi
   done < $properties_file
 
-  #Setting Device name
+  # Setting Device name
   if [[ ! $DEVICE_NAME ]]; then
     echo -e "${RED}Device Name is not configured. Using default name ${NOCOLOUR}ubuntu"
     DEVICE_NAME=ubuntu
@@ -256,27 +257,42 @@ if [[ "$1" == "--delete" ]]; then
   fi
   for i in `cat $containers_file`
   do 
-    #Update containers not to restart
-    sudo docker update --restart=no $i
-    #Stop the container
-    sudo docker stop $i
-    #Remove container
-    sudo docker rm $i 
+  
+    # Check if container exists
+    if sudo docker inspect $i >/dev/null 2>&1; then
+      # Update container not to restart
+      sudo docker update --restart=no $i
+      # Check container status
+      status=$(sudo docker inspect -f '{{.State.Status}}' $i)
+      if [ "$status" = "running" ]; then
+        # Stop the container
+        sudo docker stop $i
+      fi
+      # Remove container
+      sudo docker rm $i
+    else
+      echo "Container $i does not exist"
+    fi
   done
-  #Delete the container file
+  # Delete the container file
   rm $containers_file
-  #Delete earnapp file
+  # Delete earnapp file
   if [ -f "$earnapp_file" ]; then
     rm $earnapp_file
   fi 
   
-  #Delete networks
+  # Delete networks
   if [ -f "$networks_file" ]; then
     for i in `$networks_file`
     do
-      sudo docker network rm $i
+      # Check if network exists and delete
+      if sudo docker network inspect $i > /dev/null 2>&1; then
+        sudo docker network rm $i
+      else
+        echo "Network $i does not exist"
+      fi
     done
-    #Delete network file
+    # Delete network file
     rm $networks_file
   fi  
 fi
