@@ -33,6 +33,7 @@ Your income depends on the number of proxies used and the location of proxy.
 | [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 
 * The comparison mentioned above was updated on 30-04-2023 and may be subject to change later.
+* No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. However try to use 1 IP per device if possible.
 
 ## :house_with_garden:	Prerequisites :house_with_garden:	
 You need to have docker installed in linux machine. If you don't have already, run the following command.
