@@ -37,6 +37,7 @@ Your income depends on the number of proxies used and the location of proxy.
 ## :house_with_garden:	Prerequisites :house_with_garden:	
 You need to have docker installed in linux machine. If you don't have already, run the following command.
 ```
+sudo apt-get update
 sudo apt-get install docker.io
 ```
 If you are using arm64 or aarch64 linux OS, you also need to install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your pc or you may also run the following command.
@@ -47,11 +48,7 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 ## :point_down:	What next:question:	 :point_down:	
 Download the code and edit the configuration file properties.conf with your account details.
 If you do not wish to use any particular app just leave the default value as it is and the script will not run for those apps.
-After setting the values and saving the file, give permissions to the script using the following command. 
-
-```
-sudo chmod 777 income.sh
-```
+Always use double quotes "" while setting your email, password or token.
 
 ## :thinking:	How to use residential proxies:question:	
 
@@ -74,12 +71,12 @@ Yes. You can use the script with direct internet connection by setting the varia
 ## Final Step: :runner:Running the script:runner:
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ```
-sudo ./income.sh --start
+sudo bash income.sh --start
 ```
 ## :stop_sign:Stopping and deleting all containers:stop_sign:	
 To stop and delete all the containers started with the script. Run the following command.
 ```
-sudo ./income.sh --delete
+sudo bash income.sh --delete
 ```
 
 ## :warning:Disclaimer:warning:	
