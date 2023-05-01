@@ -48,7 +48,6 @@ if [ -f "$banner_file" ]; then
     sleep 0.5
   done
   echo -e "${NOCOLOUR}"
-  echo -e "\n\nStarting.."
 fi
 
 # Start all containers 
@@ -206,6 +205,7 @@ start_containers() {
 } 
 
 if [[ "$1" == "--start" ]]; then
+  echo -e "\n\nStarting.."
   # Check if the properties file exists
   if [ ! -f "$properties_file" ]; then
     echo -e "${RED}Properties file $properties_file does not exist, exiting..${NOCOLOUR}"
@@ -250,6 +250,7 @@ if [[ "$1" == "--start" ]]; then
 fi
 
 if [[ "$1" == "--delete" ]]; then
+   echo -e "\n\nDeleting Containers and networks.."
   if [ ! -f "$containers_file" ]; then
      echo -e "${RED}Containers file $containers_file does not exist, exiting..${NOCOLOUR}"
      exit 1
