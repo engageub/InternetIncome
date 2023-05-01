@@ -71,12 +71,12 @@ Yes. You can use the script with direct internet connection by setting the varia
 ## Final Step: :runner:Running the script:runner:
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ```
-sudo bash income.sh --start
+sudo bash internetCash.sh --start
 ```
 ## :stop_sign:Stopping and deleting all containers:stop_sign:	
 To stop and delete all the containers started with the script. Run the following command.
 ```
-sudo bash income.sh --delete
+sudo bash internetCash.sh --delete
 ```
 
 ## :warning:Disclaimer:warning:	
