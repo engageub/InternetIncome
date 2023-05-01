@@ -238,13 +238,12 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
     i=0;
-    for proxy in `cat proxies.txt`
-    do
+    while IFS= read -r line; do
       if [[ "$line" =~ ^[^#].* ]]; then
         i=`expr $i + 1`
-        start_containers "$i" "$proxy"
+        start_containers "$i" "$line"
       fi
-    done
+    done < $proxies_file
   else
     start_containers
   fi
@@ -264,7 +263,7 @@ if [[ "$1" == "--delete" ]]; then
       sudo docker update --restart=no $i
       # Check container status
       status=$(sudo docker inspect -f '{{.State.Status}}' $i)
-      if [ "$status" = "running" ]; then
+      if [ "$status" != "exited" ]; then
         # Stop the container
         sudo docker stop $i
       fi
@@ -283,7 +282,7 @@ if [[ "$1" == "--delete" ]]; then
   
   # Delete networks
   if [ -f "$networks_file" ]; then
-    for i in `$networks_file`
+    for i in `cat $networks_file`
     do
       # Check if network exists and delete
       if sudo docker network inspect $i > /dev/null 2>&1; then
