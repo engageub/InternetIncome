@@ -51,6 +51,19 @@ if [ -f "$banner_file" ]; then
   echo -e "${NOCOLOUR}"
 fi
 
+# Login to bitping
+login_bitping() {
+  if [ "$BITPING" = true ]; then
+    if [ ! -d $bitping_folder ]; then
+      echo -e "${GREEN}Enter your bitping email and password below..${NOCOLOUR}"
+      echo -e "${RED}Press CTRL + C after it is connected..${NOCOLOUR}"	
+      mkdir $bitping_folder
+      sleep 5
+      sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
+    fi
+  fi
+}
+
 # Start all containers 
 start_containers() {
 
@@ -91,13 +104,6 @@ start_containers() {
   
   # Starting BitPing container
   if [ "$BITPING" = true ]; then
-    if [ ! -d $bitping_folder ]; then
-      echo -e "${GREEN}Enter your bitping email and password below..${NOCOLOUR}"
-      echo -e "${RED}Press CTRL + C after it is connected to continue the execution..${NOCOLOUR}"	
-      mkdir -p $bitping_folder
-      sleep 5
-      sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
-    fi
     echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d --restart=always --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
@@ -251,6 +257,9 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${RED}Device Name is not configured. Using default name ${NOCOLOUR}ubuntu"
     DEVICE_NAME=ubuntu
   fi
+  
+  #Login to bitping to set credentials
+  login_bitping
 
   if [ "$USE_PROXIES" = true ]; then
     if [ ! -f "$proxies_file" ]; then
