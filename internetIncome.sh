@@ -29,6 +29,7 @@ proxies_file="proxies.txt"
 containers_file="containers.txt"
 earnapp_file="earnapp.txt"
 networks_file="networks.txt"
+bitping_folder=".bitping"
 
 # Use banner if exists
 if [ -f "$banner_file" ]; then
@@ -87,7 +88,24 @@ start_containers() {
     fi
     sleep 1
   fi
-    
+  
+  # Starting BitPing container
+  if [ "$BITPING" = true ]; then
+    echo -e "${GREEN}Enter your bitping email and password below..${NOCOLOUR}"
+    echo -e "${RED}Press CTRL + C after it is connected to continue the execution..${NOCOLOUR}"
+	mkdir -p $bitping_folder
+	sleep 5
+    sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
+    echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
+    if CONTAINER_ID=$(sudo docker run -d --restart=always --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest); then
+      echo "$CONTAINER_ID" |tee -a $containers_file 
+    else
+      echo -e "${RED}Failed to start container for BitPing..${NOCOLOUR}"
+    fi
+  else
+    echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
+  fi
+
   # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
@@ -294,7 +312,13 @@ if [[ "$1" == "--delete" ]]; then
     done
     # Delete network file
     rm $networks_file
-  fi  
+  fi
+  
+  # Delete Bitping Directory
+  if [ -d $bitping_folder ]; then 
+    rm -Rf $bitping_folder;
+  fi
+
 fi
 
 if [[ ! "$1" ]]; then
