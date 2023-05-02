@@ -19,6 +19,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 10. [BitPing-Node](https://app.bitping.com/?r=drPpp600) (Updated soon)
 11. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
+12. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
 ## :judge: Comparison of different apps based on proxy type :judge:	
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
