@@ -17,7 +17,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 7. [Repocket](https://link.repocket.co/pV1G)  
 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
-10. [BitPing](https://app.bitping.com/?r=drPpp600) (Updated soon)
+10. [BitPing](https://app.bitping.com/?r=drPpp600)
 11. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
 12. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
 13. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
