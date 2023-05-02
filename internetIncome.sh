@@ -94,10 +94,10 @@ start_containers() {
     if [ ! -d $bitping_folder ]; then
       echo -e "${GREEN}Enter your bitping email and password below..${NOCOLOUR}"
       echo -e "${RED}Press CTRL + C after it is connected to continue the execution..${NOCOLOUR}"	
-	  mkdir -p $bitping_folder
-	  sleep 5
+      mkdir -p $bitping_folder
+      sleep 5
       sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
-	fi
+    fi
     echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
     if CONTAINER_ID=$(sudo docker run -d --restart=always --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
