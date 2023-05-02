@@ -21,6 +21,9 @@ Your income depends on the number of proxies used and the location of proxy. If 
 11. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
 12. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
 13. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
+14. [Mysterium](https://mystnodes.com/) (Not Supported now but available in docker)
+15. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
+16. [PacketShare](https://www.packetshare.io/) (Not Supported)
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type :judge:	
 
@@ -36,6 +39,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit|
 | [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 | [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
+| [Mysterium](https://mystnodes.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 
 * The comparison mentioned above was updated on 30-04-2023 and may be subject to change later.
 * No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. Try to use 1 device per IP if possible.
