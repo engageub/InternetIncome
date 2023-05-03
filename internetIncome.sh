@@ -31,6 +31,10 @@ earnapp_file="earnapp.txt"
 networks_file="networks.txt"
 bitping_folder=".bitping"
 
+#Unique Id
+RANDOM=$(date +%s)
+UNIQUE_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
+
 # Use banner if exists
 if [ -f "$banner_file" ]; then
   for count in {1..3}
@@ -78,8 +82,8 @@ start_containers() {
   fi
 
   if [[ $i && $proxy ]]; then
-    NETWORK=tunnetwork$i
-    NETWORK_TUN="--network=container:tun$i"
+    NETWORK="tunnetwork$UNIQUE_ID$i"
+    NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
     if sudo docker network inspect ${NETWORK} > /dev/null 2>&1; then
       echo -e "${RED}Network '${NETWORK}' already exists ${NOCOLOUR}"
     else
@@ -93,7 +97,7 @@ start_containers() {
     fi
     sleep 1
     # Starting tun containers
-    if CONTAINER_ID=$(sudo docker run --name tun$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --network $NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e TUN_EXCLUDED_ROUTES=8.8.8.8,8.8.4.4,208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN -d xjasonlyu/tun2socks); then
       echo "$CONTAINER_ID" |tee -a $containers_file
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -129,7 +133,7 @@ start_containers() {
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM --name trafff$i $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
@@ -141,7 +145,7 @@ start_containers() {
   # Starting ProxyRack container
   if [[ $PROXY_RACK_API ]]; then
     echo -e "${GREEN}Starting ProxyRack container..${NOCOLOUR}"
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always --name proxyrack$i -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for ProxyRack..${NOCOLOUR}"
@@ -177,7 +181,7 @@ start_containers() {
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL --name peer2profit$i  peer2profit/peer2profit_linux:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file
     else
       echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
@@ -189,7 +193,7 @@ start_containers() {
   # Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
     echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy --name packetstream$i packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy packetstream/psclient:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
@@ -201,7 +205,7 @@ start_containers() {
   # Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
     echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always  --name proxylite$i proxylite/proxyservice); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
@@ -219,7 +223,7 @@ start_containers() {
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
     printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a $earnapp_file
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID --name earnapp$i fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
@@ -237,7 +241,25 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${RED}Properties file $properties_file does not exist, exiting..${NOCOLOUR}"
     exit 1
   fi
-
+  
+  # Check if containers file exists
+  if [ -f "$containers_file" ]; then
+    echo -e "${RED}Containers file $containers_file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  
+  # Check if networks file exists
+  if [ -f "$networks_file" ]; then
+    echo -e "${RED}Networks file $networks_file still exists, there might be networks still running. Please stop them and delete  before running the script. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  
+  # Check if bitping folder still exists
+  if [ -d $bitping_folder ]; then 
+    echo -e "${RED}Bitping folder $bitping_folder still exists. Please stop related containers and delete the folder before running the script. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  
   # Read the properties file and export variables to the current shell
   while IFS='=' read -r key value; do
     # Ignore lines that start with #
@@ -267,7 +289,7 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
     i=0;
-    while IFS= read -r line; do
+    while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
         i=`expr $i + 1`
         start_containers "$i" "$line"
