@@ -56,9 +56,20 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 ```
 
 ## :point_down:	What next:question:	 :point_down:	
-Download the code and edit the configuration file properties.conf with your account details.
+Download the code and edit the configuration file properties.conf with your account details.  
+If you don't have GUI access, use the following commands to download the code. Install unzip if you don't have.
+```
+wget https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
+sudo apt-get install unzip
+unzip main.zip
+cd InternetIncome-main
+```
+Edit the properties.conf using the following and save the file. If you use proxies set USE_PROXIES to true.
+Always use double quotes "" while setting your email, password or token due to special characters.
 If you do not wish to use any particular app just leave the default value as it is and the script will not run for those apps.
-Always use double quotes "" while setting your email, password or token.
+```
+vi properties.conf
+```
 
 ## :thinking:	How to use residential proxies:question:	
 
