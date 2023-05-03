@@ -64,9 +64,11 @@ sudo apt-get install unzip
 unzip main.zip
 cd InternetIncome-main
 ```
-Edit the properties.conf using the following and save the file. If you use proxies set USE_PROXIES to true.
-Always use double quotes "" while setting your email, password or token due to special characters.
-If you do not wish to use any particular app just leave the default value as it is and the script will not run for those apps.
+* Please edit the "properties.conf" file using the following instructions and save the changes.  
+* If you are using proxies, please set the "USE_PROXIES" value to "true". 
+* When setting your email, password, or token, always use double quotes ("") due to special characters. 
+* If you do not wish to use a particular application, leave the default value as is, and the script will not run for that application.
+
 ```
 vi properties.conf
 ```
