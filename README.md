@@ -2,7 +2,7 @@
 Internet Income: Earn passive income with internet (Proxies Supported)
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
-The main advantage of this script is the use of multiple proxies through docker containers. 
+The main advantage of this script is the use of multiple proxies and multiple accounts through docker containers. 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
@@ -79,7 +79,7 @@ Add your proxies in each line in the format protocol://user:pass@ip:port or prot
 Example proxies.txt file below. Use your own proxies. 
 ```
 socks5://username:password@12.4.5.2:7874
-http://username:passwword@1.23.5.2:7878
+http://username:password@1.23.5.2:7878
 socks5://15.4.5.2:7875
 http://13.23.5.2:7872
 ```
