@@ -46,6 +46,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 ## :house_with_garden:	Prerequisites :house_with_garden:	
 You need to have docker installed in linux machine. If you don't have already, run the following command.
+### Install docker
 ```
 sudo apt-get update
 sudo apt-get -y install docker.io
@@ -58,6 +59,7 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 ## :point_down:	What next:question:	 :point_down:	
 Download the code and edit the configuration file properties.conf with your account details.  
 If you don't have GUI access but have terminal access, use the following commands to download the code.
+### Download the code
 ```
 wget https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
 sudo apt-get install unzip
@@ -68,7 +70,7 @@ cd InternetIncome-main
 * If you are using proxies, please set the "USE_PROXIES" value to "true". 
 * When setting your email, password, or token, always use double quotes ("") due to special characters. 
 * If you do not wish to use a particular application, leave the default value as it is, and the script will not run for that application.
-
+### Update configuration 
 ```
 vi properties.conf
 ```
@@ -79,6 +81,7 @@ You need to set the value of variable USE_PROXIES to true in properties.conf fil
 Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
 Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
 Example proxies.txt file below. Use your own proxies. 
+### Proxy list example format
 ```
 socks5://username:password@12.4.5.2:7874
 http://username:password@1.23.5.2:7878
@@ -93,11 +96,13 @@ Yes. You can use the script with direct internet connection by setting the varia
 
 ## Final Step: :runner:Running the script:runner:
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
+### Start the process
 ```
 sudo bash internetIncome.sh --start
 ```
 ## :stop_sign:Stopping and deleting all containers:stop_sign:	
 To stop and delete all the containers started with the script. Run the following command.
+### Stop all process and delete data
 ```
 sudo bash internetIncome.sh --delete
 ```
