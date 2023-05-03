@@ -253,12 +253,16 @@ if [[ "$1" == "--start" ]]; then
   # Check if networks file exists
   if [ -f "$networks_file" ]; then
     echo -e "${RED}Networks file $networks_file still exists, there might be networks still running. Please stop them and delete  before running the script. Exiting..${NOCOLOUR}"
+	echo -e "To stop and delete containers run the following command\n"
+	echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
     exit 1
   fi
   
   # Check if bitping folder still exists
   if [ -d $bitping_folder ]; then 
     echo -e "${RED}Bitping folder $bitping_folder still exists. Please stop related containers and delete the folder before running the script. Exiting..${NOCOLOUR}"
+	echo -e "To stop and delete containers run the following command\n"
+	echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
     exit 1
   fi
   
