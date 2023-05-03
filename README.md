@@ -99,6 +99,10 @@ To stop and delete all the containers started with the script. Run the following
 ```
 sudo bash internetIncome.sh --delete
 ```
+
+## :thinking:How to use multiple accounts:question:		
+If you and your friend/husband/wife want to use same host to save resources but have different proxies with you, simply create different folders and download the script in each folder and set the configuration.
+
 ## :card_index:License::card_index:		
 * This product is available for free and may be freely copied and distributed in its original form. 
 * However, it is prohibited to distribute modified copies of the product. 
