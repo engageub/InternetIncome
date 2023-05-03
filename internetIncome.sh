@@ -245,6 +245,8 @@ if [[ "$1" == "--start" ]]; then
   # Check if containers file exists
   if [ -f "$containers_file" ]; then
     echo -e "${RED}Containers file $containers_file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+	echo -e "To stop and delete containers run the following command\n"
+	echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
     exit 1
   fi
   
@@ -284,6 +286,7 @@ if [[ "$1" == "--start" ]]; then
   login_bitping
 
   if [ "$USE_PROXIES" = true ]; then
+    echo -e "${GREEN}USE_PROXIES is enabled, using proxies.." 
     if [ ! -f "$proxies_file" ]; then
       echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
       exit 1
@@ -296,37 +299,37 @@ if [[ "$1" == "--start" ]]; then
       fi
     done < $proxies_file
   else
+    echo -e "${RED}USE_PROXIES is disabled, using direct internet connection.." 
     start_containers
   fi
 fi
 
 if [[ "$1" == "--delete" ]]; then
-   echo -e "\n\nDeleting Containers and networks.."
-  if [ ! -f "$containers_file" ]; then
-     echo -e "${RED}Containers file $containers_file does not exist, exiting..${NOCOLOUR}"
-     exit 1
-  fi
-  for i in `cat $containers_file`
-  do 
+  echo -e "\n\nDeleting Containers and networks.."
   
-    # Check if container exists
-    if sudo docker inspect $i >/dev/null 2>&1; then
-      # Update container not to restart
-      sudo docker update --restart=no $i
-      # Check container status
-      status=$(sudo docker inspect -f '{{.State.Status}}' $i)
-      if [ "$status" != "exited" ]; then
-        # Stop the container
-        sudo docker stop $i
+  if [ -f "$containers_file" ]; then
+    for i in `cat $containers_file`
+    do 
+      # Check if container exists
+      if sudo docker inspect $i >/dev/null 2>&1; then
+        # Update container not to restart
+        sudo docker update --restart=no $i
+        # Check container status
+        status=$(sudo docker inspect -f '{{.State.Status}}' $i)
+        if [ "$status" != "exited" ]; then
+          # Stop the container
+          sudo docker stop $i
+        fi
+        # Remove container
+        sudo docker rm $i
+      else
+        echo "Container $i does not exist"
       fi
-      # Remove container
-      sudo docker rm $i
-    else
-      echo "Container $i does not exist"
-    fi
-  done
-  # Delete the container file
-  rm $containers_file
+    done
+    # Delete the container file
+    rm $containers_file
+  fi
+
   # Delete earnapp file
   if [ -f "$earnapp_file" ]; then
     rm $earnapp_file
