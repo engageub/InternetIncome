@@ -102,7 +102,7 @@ sudo bash internetIncome.sh --start
 ```
 ## :stop_sign:Stopping and deleting all containers:stop_sign:	
 To stop and delete all the containers started with the script. Run the following command.
-### Stop all process and delete data
+### Stop process and delete data
 ```
 sudo bash internetIncome.sh --delete
 ```
