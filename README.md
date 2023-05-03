@@ -57,7 +57,7 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 
 ## :point_down:	What next:question:	 :point_down:	
 Download the code and edit the configuration file properties.conf with your account details.  
-If you don't have GUI access, use the following commands to download the code. Install unzip if you don't have.
+If you don't have GUI access, use the following commands to download the code.
 ```
 wget https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
 sudo apt-get install unzip
