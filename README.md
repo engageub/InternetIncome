@@ -55,7 +55,8 @@ If you are using arm64 or aarch64 linux OS, you also need to install [binfmt](ht
 ```
 sudo apt-get install qemu binfmt-support qemu-user-static
 ```
-
+### Want to try docker for free without installation?
+If you like to use docker directly for free, you can use [Play with Docker](https://labs.play-with-docker.com/). This is just to test and it resets every 4 hours. 
 ## :point_down:	What next:question:	 :point_down:	
 Download the code and edit the configuration file properties.conf with your account details.  
 If you don't have GUI access but have terminal access, use the following commands to download the code.
