@@ -73,7 +73,7 @@ cd InternetIncome-main
 * If you are using proxies, please set the "USE_PROXIES" value to "true". 
 * When setting your email, password, or token, always use double quotes ("") due to special characters. 
 * If you do not wish to use a particular application, leave the default value as it is, and the script will not run for that application.
-### Update configuration 
+### Update configuration and save
 ```
 vi properties.conf
 ```
