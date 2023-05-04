@@ -51,8 +51,10 @@ You need to have docker installed in linux machine. If you don't have already, r
 sudo apt-get update
 sudo apt-get -y install docker.io
 ```
-If you are using arm64 or aarch64 linux OS, you also need to install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your pc or you may also run the following command.
+If you are using arm or aarch linux OS, you also need to install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your pc.
+### For ARM or AARCH Architectures
 ```
+sudo docker run --privileged --rm tonistiigi/binfmt --install all
 sudo apt-get install qemu binfmt-support qemu-user-static
 ```
 ### Want to try docker for free without installation?
