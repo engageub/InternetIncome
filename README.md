@@ -94,7 +94,7 @@ http://13.23.5.2:7872
 
 ## :thinking:	Can I use without proxies:question:		
 
-**Yes!** You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
+**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
 
 
 ## Final Step: :runner:Running the script:runner:
