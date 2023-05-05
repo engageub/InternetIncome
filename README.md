@@ -18,12 +18,13 @@ Your income depends on the number of proxies used and the location of proxy. If 
 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 10. [BitPing](https://app.bitping.com/?r=drPpp600)
-11. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
-12. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
-13. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
-14. [Mysterium](https://mystnodes.com/) (Not Supported now but available in docker)
-15. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-16. [PacketShare](https://www.packetshare.io/) (Not Supported)
+11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Not Supported now)
+12. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
+13. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
+14. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
+15. [Mysterium](https://mystnodes.com/) (Not Supported now but available in docker)
+16. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
+17. [PacketShare](https://www.packetshare.io/) (Not Supported)
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type :judge:	
 
@@ -33,6 +34,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | [PacketStream](https://packetstream.io/?psr=4tHH)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Honeygain](https://r.honeygain.me/UBEADA3E30) | :heavy_check_mark:	  | :x: |10|1|
 | [IPRoyal](https://iproyal.com/pawns?r=170182)  | :heavy_check_mark:	  | :x: |No limit|1|
+| [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit|
 | [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1|
 | [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2|
