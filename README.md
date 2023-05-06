@@ -99,7 +99,7 @@ http://13.23.5.2:7872
 **Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
 
 
-## Final Step: :runner:Running the script:runner:
+## :runner:Running the script
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ### Start the process
 ```
