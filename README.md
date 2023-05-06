@@ -6,7 +6,7 @@ The main advantage of this script is the use of multiple proxies and multiple ac
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
-## :moneybag:	Register with the following links::moneybag:	
+## :moneybag:	Register with the following links:
 
 1. [EarnApp](https://earnapp.com/i/YVI34SG)  
 2. [PacketStream](https://packetstream.io/?psr=4tHH)  
@@ -26,7 +26,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 16. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
 17. [PacketShare](https://www.packetshare.io/) (Not Supported)
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
-## :judge: Comparison of different apps based on proxy type :judge:	
+## :judge: Comparison of different apps based on proxy type 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
 |  :--- |  :---: |  :---: | :---: | :---: |
@@ -46,7 +46,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 * The comparison mentioned above was updated on 30-04-2023 and may be subject to change later.
 * No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. Try to use 1 device per IP if possible.
 
-## :house_with_garden:	Prerequisites :house_with_garden:	
+## :house_with_garden:	Prerequisites 	
 You need to have docker installed in linux machine. If you don't have already, run the following command.
 ### Install docker
 ```
@@ -61,7 +61,7 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 ```
 ### Want to try docker for free without installation?
 If you like to use docker directly for free, you can use [Play with Docker](https://labs.play-with-docker.com/). It resets every 4 hours. 
-## :point_down:	What next:question:	 :point_down:	
+## :point_down:	What next:question:	
 Download the code and edit the configuration file properties.conf with your account details.  
 If you don't have GUI access but have terminal access, use the following commands to download the code.
 ### Download the code
@@ -105,7 +105,7 @@ After you have followed all the mentioned above steps just run the following com
 ```
 sudo bash internetIncome.sh --start
 ```
-## :stop_sign:Stopping and deleting all containers:stop_sign:	
+## :stop_sign:Stopping and deleting all containers
 To stop and delete all the containers started with the script. Run the following command.
 ### Stop process and delete data
 ```
@@ -115,7 +115,7 @@ sudo bash internetIncome.sh --delete
 ## :thinking:How to use multiple accounts:question:		
 For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration.
 
-## :card_index:License::card_index:		
+## :card_index:License:
 * This product is available for free and may be freely copied and distributed in its original form. 
 * However, it is prohibited to distribute modified copies of the product. 
 * Personal modifications are allowed for personal use only.
@@ -125,7 +125,7 @@ For multiple users to use the same host, simply create different folders and dow
 
 
 
-## :warning:Disclaimer:warning:	
+## :warning:Disclaimer
 This script is provided "as is" and without warranty of any kind.  
 The author makes no warranties, express or implied, that this script is free of errors, defects, or suitable for any particular purpose.  
 The author shall not  be liable for any damages suffered by any user of this script, whether direct, indirect, incidental, consequential, or special, arising from the use of or inability to use this script or its documentation, even if the author has been advised of the possibility of such damages.  
