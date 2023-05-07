@@ -277,7 +277,7 @@ if [[ "$1" == "--start" ]]; then
   login_bitping
 
   if [ "$USE_PROXIES" = true ]; then
-    echo -e "${GREEN}USE_PROXIES is enabled, using proxies.." 
+    echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
     if [ ! -f "$proxies_file" ]; then
       echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
       exit 1
@@ -290,7 +290,7 @@ if [[ "$1" == "--start" ]]; then
       fi
     done < $proxies_file
   else
-    echo -e "${RED}USE_PROXIES is disabled, using direct internet connection.." 
+    echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}" 
     start_containers
   fi
 fi
