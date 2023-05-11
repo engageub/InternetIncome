@@ -304,16 +304,8 @@ if [[ "$1" == "--delete" ]]; then
     do 
       # Check if container exists
       if sudo docker inspect $i >/dev/null 2>&1; then
-        # Update container not to restart
-        sudo docker update --restart=no $i
-        # Check container status
-        status=$(sudo docker inspect -f '{{.State.Status}}' $i)
-        if [ "$status" != "exited" ]; then
-          # Stop the container
-          sudo docker stop $i
-        fi
-        # Remove container
-        sudo docker rm $i
+        # Stop and Remove container
+        sudo docker rm -f $i
       else
         echo "Container $i does not exist"
       fi
