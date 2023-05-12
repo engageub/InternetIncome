@@ -169,7 +169,7 @@ start_containers() {
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file
     else
       echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
