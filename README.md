@@ -104,13 +104,13 @@ socks5://15.4.5.2:7875
 http://13.23.5.2:7872
 ```
 
-## :runner:Running the script
+## :runner:Run the script
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ### Start the process
 ```
 sudo bash internetIncome.sh --start
 ```
-## :stop_sign:Stopping and deleting containers
+## :stop_sign:Stop and Delete containers
 To stop and delete all the containers started with the script. Run the following command.
 ### Stop process and delete data
 ```
