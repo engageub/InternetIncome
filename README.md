@@ -8,7 +8,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 ## :moneybag:	Register with the following links:
 
-1. [EarnApp](https://earnapp.com/i/YVI34SG)  
+1. [EarnApp](https://t.co/k0w7jqLfxq)  
 2. [PacketStream](https://packetstream.io/?psr=4tHH)  
 3. [Honeygain](https://t.co/SZQw8tyPuN)  
 4. [IPRoyal](https://iproyal.com/pawns?r=170182)  
@@ -31,7 +31,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
 |  :--- |  :---: |  :---: | :---: | :---: |
-| [EarnApp](https://earnapp.com/i/YVI34SG)  | :heavy_check_mark:	  | :x: | 15|1|
+| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 15|1|
 | [PacketStream](https://packetstream.io/?psr=4tHH)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Honeygain](https://t.co/SZQw8tyPuN) | :heavy_check_mark:	  | :x: |10|1|
 | [IPRoyal](https://iproyal.com/pawns?r=170182)  | :heavy_check_mark:	  | :x: |No limit|1|
