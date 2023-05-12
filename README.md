@@ -118,9 +118,14 @@ To stop and delete all the containers started with the script. Run the following
 ```
 sudo bash internetIncome.sh --delete
 ```
-
-## :thinking:How to use multiple accounts:question:		
+## FAQ
+### :thinking:How to use multiple accounts:question:		
 For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration.
+### :thinking:How to auto update containers:question:
+To auto update all containers on the host, run the following command.
+```
+sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
+```
 
 ## :card_index:License:
 * This product is available for free and may be freely copied and distributed in its original form. 
