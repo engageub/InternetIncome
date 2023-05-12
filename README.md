@@ -48,8 +48,10 @@ Your income depends on the number of proxies used and the location of proxy. If 
 * No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. Try to use 1 device per IP if possible.
 
 ## :house_with_garden:	Prerequisites 	
-You need to have docker installed in linux machine. If you don't have already, run the following command.
-### Install docker
+You need to have docker installed in linux machine. If you don't have already, run the following command.  
+
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+### Install docker on Linux
 ```
 sudo apt-get update
 sudo apt-get -y install docker.io
@@ -60,6 +62,10 @@ If you are using arm or aarch linux OS, you also need to install [binfmt](https:
 sudo docker run --privileged --rm tonistiigi/binfmt --install all
 sudo apt-get install qemu binfmt-support qemu-user-static
 ```
+
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+### Install Docker on Windows
+Follow this [tutorial](https://www.youtube.com/watch?v=2ezNqqaSjq8) till 7.30 minutes where docker runs on ubuntu and then follow the next steps below to download the code.
 ### Want to try docker for free without installation?
 If you like to use docker directly for free, you can use [Play with Docker](https://labs.play-with-docker.com/). It resets every 4 hours. 
 ## :point_down:	What next:question:	
