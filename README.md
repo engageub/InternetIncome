@@ -104,30 +104,30 @@ socks5://15.4.5.2:7875
 http://13.23.5.2:7872
 ```
 
-## :runner:Run the script
+## :runner: Run the script
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ### Start the process
 ```
 sudo bash internetIncome.sh --start
 ```
-## :stop_sign:Stop and Delete containers
+## :stop_sign: Stop and Delete containers
 To stop and delete all the containers started with the script. Run the following command.
 ### Stop process and delete data
 ```
 sudo bash internetIncome.sh --delete
 ```
-## :grey_question:FAQ
+## :grey_question: FAQ
 ### :thinking:	Can I use without proxies:question:		
 **Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
-### :thinking:How to use multiple accounts:question:		
+### :thinking: How to use multiple accounts:question:		
 For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration.
-### :thinking:How to auto update containers:question:
+### :thinking: How to auto update containers:question:
 To auto update all containers on the host, run the following command.
 ```
 sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
 ```
 
-## :card_index:License:
+## :card_index: License:
 * This product is available for free and may be freely copied and distributed in its original form. 
 * However, it is prohibited to distribute modified copies of the product. 
 * Personal modifications are allowed for personal use only.
@@ -137,7 +137,7 @@ sudo docker run --detach --name watchtower --restart always --volume /var/run/do
 
 
 
-## :warning:Disclaimer
+## :warning: Disclaimer
 This script is provided "as is" and without warranty of any kind.  
 The author makes no warranties, express or implied, that this script is free of errors, defects, or suitable for any particular purpose.  
 The author shall not  be liable for any damages suffered by any user of this script, whether direct, indirect, incidental, consequential, or special, arising from the use of or inability to use this script or its documentation, even if the author has been advised of the possibility of such damages.  
