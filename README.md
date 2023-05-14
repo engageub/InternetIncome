@@ -127,8 +127,8 @@ To auto update all containers on the host, run the following command.
 ```
 sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
 ```
-### :thinking: Why few instances of same application are online and others offline:question:
-If you do not have sufficient RAM space this could happen. Even if you try to increase swap space sometimes this may not work.
+### :thinking: Why are some of the containers for the same application offline:question:
+If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing.
 
 ## :card_index: License:
 * This product is available for free and may be freely copied and distributed in its original form. 
