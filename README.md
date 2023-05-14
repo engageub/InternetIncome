@@ -1,5 +1,7 @@
 # :computer:	Internet Income :money_with_wings:	(Multiproxy Support):european_castle:	
 
+<img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
+
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
 The main advantage of this script is the use of multiple proxies and multiple accounts through docker containers. 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
