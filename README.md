@@ -11,7 +11,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 1. [EarnApp](https://t.co/k0w7jqLfxq)  
 2. [PacketStream](https://packetstream.io/?psr=4tHH)  
-3. [Honeygain](https://t.co/SZQw8tyPuN)  
+3. [Honeygain](https://honeygain.com/)  
 4. [IPRoyal](https://iproyal.com/pawns?r=170182)  
 5. [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  
 6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  
@@ -34,7 +34,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 |  :--- |  :---: |  :---: | :---: | :---: |
 | [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 15|1|
 | [PacketStream](https://packetstream.io/?psr=4tHH)  | :heavy_check_mark:	  | :x: |No limit|1|
-| [Honeygain](https://t.co/SZQw8tyPuN) | :heavy_check_mark:	  | :x: |10|1|
+| [Honeygain](https://honeygain.com/) | :heavy_check_mark:	  | :x: |10|1|
 | [IPRoyal](https://iproyal.com/pawns?r=170182)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit|
