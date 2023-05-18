@@ -3,7 +3,7 @@
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
-The main advantage of this script is the use of multiple proxies and multiple accounts through docker containers. 
+The main advantage of this script is the use of multiple proxies through docker containers. 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
@@ -122,7 +122,7 @@ sudo bash internetIncome.sh --delete
 ### :thinking:	Can I use without proxies:question:		
 **Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
 ### :thinking: How to use multiple accounts:question:		
-For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration.
+For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
 ### :thinking: How to auto update containers:question:
 To auto update all containers on the host, run the following command.
 ```
