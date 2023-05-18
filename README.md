@@ -3,7 +3,7 @@
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
-The main advantage of this script is the use of multiple proxies and multiple accounts through docker containers. 
+The main advantage of this script is the use of multiple proxies through docker containers. 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
@@ -19,15 +19,16 @@ Your income depends on the number of proxies used and the location of proxy. If 
 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 10. [BitPing](https://app.bitping.com/?r=drPpp600)
-11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Updated soon)
-12. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
-13. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
-14. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
-15. [Mysterium](https://mystnodes.com/) (Updated soon)
-16. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-17. [PacketShare](https://www.packetshare.io/) (Not Supported)
-18. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Not Supported)
+11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) 
+12. [Mysterium](https://mystnodes.com/) 
+13. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
+14. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
+15. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
+16. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
+17. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
+18. [PacketShare](https://www.packetshare.io/) (Not Supported)
 19. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
+
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type 
 
@@ -123,7 +124,7 @@ sudo bash internetIncome.sh --delete
 ### :thinking:	Can I use without proxies:question:		
 **Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
 ### :thinking: How to use multiple accounts:question:		
-For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration.
+For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
 ### :thinking: How to auto update containers:question:
 To auto update all containers on the host, run the following command.
 ```
@@ -131,16 +132,22 @@ sudo docker run --detach --name watchtower --restart always --volume /var/run/do
 ```
 ### :thinking: Why are some of the containers for the same application offline:question:
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing.
+### :thinking: Why is Mysterium node not working:question:
+It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy. When utilizing a direct internet connection, it is imperative to ensure that your firewall is configured to allow UDP traffic.
+
+### :thinking: Where is Mysterium data stored:question:
+The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
+Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
+### :thinking: How to replace proxies for already running containers:question:
+If you wish to use change proxies for already running container due to bad proxies or proxies being offline, update them in proxies.txt and remove your old proxies. Make sure you have the same number of proxies as you had earlier in proxies.txt file. Then run the following command.
+```
+sudo bash updateProxies.sh
+```
 
 ## :card_index: License:
 * This product is available for free and may be freely copied and distributed in its original form. 
 * However, it is prohibited to distribute modified copies of the product. 
 * Personal modifications are allowed for personal use only.
-
-
-
-
-
 
 ## :warning: Disclaimer
 This script is provided "as is" and without warranty of any kind.  
