@@ -212,7 +212,7 @@ start_containers() {
       fi
       
       # Unzip the file
-      unzip $firefox_profile_zipfile
+      unzip -o $firefox_profile_zipfile
       
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
@@ -237,7 +237,7 @@ start_containers() {
     if [[  ! $proxy ]]; then
         eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" |tee -a $containers_file
       echo "$CONTAINER_ID" |tee -a $firefox_containers_file
       echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
