@@ -35,8 +35,9 @@ firefox_containers_file="firefoxcontainers.txt"
 bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
-restart_firefox="restartFirefox.sh"
-
+firefox_profile_zipfile="firefoxprofiledata.zip"
+restart_firefox_file="restartFirefox.sh"
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $earnapp_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder)
 
@@ -199,10 +200,19 @@ start_containers() {
       sudo docker pull jlesage/firefox
       
       # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_firefox" ];then
+      if [ ! -f "$PWD/$restart_firefox_file" ];then
         echo -e "${RED}Firefox restart script does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi 
+      
+      # Exit, if firefox profile zip file is missing
+      if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
+        echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      # Unzip the file
+      unzip $firefox_profile_zipfile
       
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
@@ -313,7 +323,7 @@ start_containers() {
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull  iproyal/pawns-cli:latest
+      sudo docker pull iproyal/pawns-cli:latest
     fi
     if CONTAINER_ID=$(sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
@@ -422,11 +432,16 @@ start_containers() {
 
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
-  # Check if the properties file exists
-  if [ ! -f "$properties_file" ]; then
-    echo -e "${RED}Properties file $properties_file does not exist, exiting..${NOCOLOUR}"
+  
+  # Check if the required files are present
+  for required_file in "${required_files[@]}"
+  do
+  if [ ! -f "$required_file" ]; then
+    echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
     exit 1
   fi
+  done
+   
    
   for file in "${files_to_be_removed[@]}"
   do
