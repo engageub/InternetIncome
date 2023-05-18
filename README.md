@@ -19,7 +19,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 10. [BitPing](https://app.bitping.com/?r=drPpp600)
-11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) 
+11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted)
 12. [Mysterium](https://mystnodes.com/) 
 13. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
 14. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
