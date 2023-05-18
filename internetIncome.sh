@@ -313,7 +313,7 @@ start_containers() {
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 iproyal/pawns-cli:latest
+      sudo docker pull  iproyal/pawns-cli:latest
     fi
     if CONTAINER_ID=$(sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
