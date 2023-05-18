@@ -39,7 +39,7 @@ firefox_profile_zipfile="firefoxprofiledata.zip"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $earnapp_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder)
+folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data)
 
 container_pulled=false
 
