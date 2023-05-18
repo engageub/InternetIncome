@@ -135,6 +135,11 @@ It is crucial to understand that the Mysterium node operates differently from ot
 ### :thinking: Where is Mysterium data stored:question:
 The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
 Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
+### :thinking: How to replace proxies:question:
+If you wish to use change proxies in the same container due to bad proxies or proxies being offline, update them in proxies.txt and remove your old proxies. Make sure you have the same number of proxies as you had earlier in proxies.txt file. Then run the following command.
+```
+sudo bash updateProxies.sh
+```
 
 ## :card_index: License:
 * This product is available for free and may be freely copied and distributed in its original form. 
