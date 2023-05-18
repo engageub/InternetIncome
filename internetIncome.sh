@@ -175,8 +175,10 @@ start_containers() {
     fi
     if [[  ! $proxy ]]; then
 	  myst_port="-p $mysterium_first_port:4449"
-	fi
-    if CONTAINER_ID=$(sudo docker run -d --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v myst-data$UNIQUE_ID$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    fi
+    mkdir -p $PWD/mysterium-data/node$i
+    sudo chmod -R 777 $PWD/mysterium-data/node$i
+    if CONTAINER_ID=$(sudo docker run -d --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/mysterium-data/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo "$CONTAINER_ID" |tee -a $containers_file
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
