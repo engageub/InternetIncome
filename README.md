@@ -132,7 +132,7 @@ sudo docker run --detach --name watchtower --restart always --volume /var/run/do
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing.
 ### :thinking: Why is Mysterium node not working:question:
 It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy.
-### :thinking: Where is the Mysterium data stored:question:
+### :thinking: Where is Mysterium data stored:question:
 The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
 Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
 
@@ -140,11 +140,6 @@ Therefore, it is imperative to exercise caution and ensure the safety and securi
 * This product is available for free and may be freely copied and distributed in its original form. 
 * However, it is prohibited to distribute modified copies of the product. 
 * Personal modifications are allowed for personal use only.
-
-
-
-
-
 
 ## :warning: Disclaimer
 This script is provided "as is" and without warranty of any kind.  
