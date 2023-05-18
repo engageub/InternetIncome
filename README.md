@@ -27,6 +27,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 16. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
 17. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
 18. [PacketShare](https://www.packetshare.io/) (Not Supported)
+19. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
 
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type 
