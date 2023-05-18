@@ -76,7 +76,7 @@ login_bitping() {
   if [ "$BITPING" = true ]; then
     if [ ! -d $bitping_folder ]; then
       echo -e "${GREEN}Enter your bitping email and password below..${NOCOLOUR}"
-      echo -e "${RED}Press CTRL + C after it is connected..${NOCOLOUR}"	
+      echo -e "${RED}Press CTRL + C after it is connected..${NOCOLOUR}"    
       mkdir $bitping_folder
       sleep 5
       sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
@@ -129,35 +129,35 @@ start_containers() {
 
   if [[ $i && $proxy ]]; then
     NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
-		
-	if [ "$MYSTERIUM" = true ]; then
-	  mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
-	  if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
+        
+    if [ "$MYSTERIUM" = true ]; then
+      mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
+      if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
-		 echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-	  mysterium_port="-p $mysterium_first_port:4449 "
-	fi
-	
-	if [[ $EBESUCHER_USERNAME ]]; then
-	  ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
-	  if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
+      mysterium_port="-p $mysterium_first_port:4449 "
+    fi
+    
+    if [[ $EBESUCHER_USERNAME ]]; then
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
-		 echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-	  ebesucher_port="-p $ebesucher_first_port:5800 "
-	fi
-	combined_ports=$mysterium_port$ebesucher_port
-	
+      ebesucher_port="-p $ebesucher_first_port:5800 "
+    fi
+    combined_ports=$mysterium_port$ebesucher_port
+    
     # Starting tun containers
-	if [ "$container_pulled" = false ]; then
+    if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks  
     fi
     if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks); then
       echo "$CONTAINER_ID" |tee -a $containers_file
-	  sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+      sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
       exit 1
@@ -174,7 +174,7 @@ start_containers() {
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
     if [[  ! $proxy ]]; then
-	  myst_port="-p $mysterium_first_port:4449"
+      myst_port="-p $mysterium_first_port:4449"
     fi
     mkdir -p $PWD/mysterium-data/node$i
     sudo chmod -R 777 $PWD/mysterium-data/node$i
