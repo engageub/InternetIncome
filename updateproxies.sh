@@ -1,7 +1,6 @@
 #!/bin/bash
 
 #Script to update proxies and restart instances if proxies are updated in proxies.txt
-
 containers_file="containers.txt"
 proxies_file="proxies.txt"
 tun_containers_file="tuncontainers.txt"
@@ -69,7 +68,18 @@ else
   exit 1
 fi
 
-#Restart all containers
+# Stop all containers
+for container in `cat $containers_file`
+do
+if sudo docker inspect $container >/dev/null 2>&1; then
+  sudo docker stop $container
+fi
+done
+
+echo "Waiting for 5 seconds before starting"
+sleep 5
+
+# Restart/Start all containers
 echo "Restarting Containers"
 for container in `cat $containers_file`
 do
