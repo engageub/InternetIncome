@@ -21,12 +21,13 @@ Your income depends on the number of proxies used and the location of proxy. If 
 10. [BitPing](https://app.bitping.com/?r=drPpp600)
 11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) 
 12. [Mysterium](https://mystnodes.com/) 
-13. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
-14. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
-15. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
-16. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-17. [PacketShare](https://www.packetshare.io/) (Not Supported)
-18. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
+13. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
+14. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
+15. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
+16. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
+17. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
+18. [PacketShare](https://www.packetshare.io/) (Not Supported)
+
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type 
 
