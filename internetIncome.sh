@@ -88,10 +88,9 @@ login_bitping() {
 check_open_ports() {
   local first_port=$1
   local num_ports=$2
-
   port_range=$(seq $first_port $((first_port+num_ports-1)))
-
   open_ports=0
+  
   for port in $port_range; do
     nc -z localhost $port > /dev/null 2>&1
     if [ $? -eq 0 ]; then
