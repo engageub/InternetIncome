@@ -212,7 +212,7 @@ start_containers() {
       fi
       
       # Unzip the file
-      unzip -o $firefox_profile_zipfile
+      unzip $firefox_profile_zipfile
       
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
