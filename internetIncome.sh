@@ -174,6 +174,12 @@ start_containers() {
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
     if [[  ! $proxy ]]; then
+      mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
+      if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
       myst_port="-p $mysterium_first_port:4449"
     fi
     mkdir -p $PWD/mysterium-data/node$i
@@ -235,7 +241,13 @@ start_containers() {
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
     if [[  ! $proxy ]]; then
-        eb_port="-p $ebesucher_first_port:5800"
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      eb_port="-p $ebesucher_first_port:5800"
     fi
     if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" |tee -a $containers_file
