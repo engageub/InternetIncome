@@ -388,7 +388,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
