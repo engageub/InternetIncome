@@ -28,6 +28,7 @@ banner_file="banner.jpg"
 proxies_file="proxies.txt"
 containers_file="containers.txt"
 earnapp_file="earnapp.txt"
+earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
 ebesucher_file="ebesucher.txt"
@@ -39,7 +40,7 @@ firefox_profile_zipfile="firefoxprofiledata.zip"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $earnapp_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data)
+folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 
 container_pulled=false
 
@@ -428,7 +429,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID fazalfarhan01/earnapp:lite); then
+    mkdir -p $PWD/$earnapp_data_folder/data$i
+    sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=sdk-node-$RANDOM_ID fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
