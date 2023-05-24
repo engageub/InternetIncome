@@ -39,7 +39,7 @@ firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $earnapp_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
+files_to_be_removed=($containers_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 
 container_pulled=false
@@ -425,13 +425,26 @@ start_containers() {
     RANDOM=$(date +%s)
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
-    printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a $earnapp_file
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
     fi
     mkdir -p $PWD/$earnapp_data_folder/data$i
     sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=sdk-node-$RANDOM_ID fazalfarhan01/earnapp:lite); then
+    if [ -f $earnapp_file ] && uuid=$(sed "${i}q;d" $earnapp_file | grep -o 'https[^[:space:]]*'| sed 's/https:\/\/earnapp.com\/r\///g');then
+      if [[ $uuid ]];then
+        echo $uuid
+      else
+        echo "UUID does not exist, creating UUID"
+        uuid=sdk-node-$RANDOM_ID
+        printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+      fi
+    else
+      echo "UUID does not exist, creating UUID"
+      uuid=sdk-node-$RANDOM_ID
+      printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+    fi
+    
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
@@ -568,7 +581,7 @@ if [[ "$1" == "--delete" ]]; then
     rm -Rf $folder;
   fi
   done
-  
+
 fi
 
 if [[ ! "$1" ]]; then
