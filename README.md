@@ -140,6 +140,10 @@ It is crucial to understand that the Mysterium node operates differently from ot
 ### :thinking: Where is Mysterium data stored:question:
 The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
 Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
+
+### :thinking: Where are earnapp node urls stored and how to restore them:question:
+The UUID or node IDs are required to identify your unique nodes in earnapp dashboard. These nodes are stored in earnapp.txt file and are not deleted. The same node Ids will be used when you start the application again. You do not need to delete existing nodes in dashboard and add them again when you use --delete option.  If you already have an existing node and would like to use it via the script you may add them in earnapp.txt file in the same format as the existing file.
+
 ### :thinking: How to replace proxies for already running containers:question:
 If you wish to use change proxies for already running container due to bad proxies or proxies being offline, update them in proxies.txt and remove your old proxies. Make sure you have the same number of proxies as you had earlier in proxies.txt file. Then run the following command.
 ```
