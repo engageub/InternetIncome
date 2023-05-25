@@ -28,6 +28,7 @@ banner_file="banner.jpg"
 proxies_file="proxies.txt"
 containers_file="containers.txt"
 earnapp_file="earnapp.txt"
+earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
 ebesucher_file="ebesucher.txt"
@@ -36,10 +37,12 @@ bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
+traffmonetizer_data_folder="traffmonetizerdata"
+proxyrack_data_folder="proxyrackdata"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $earnapp_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data)
+files_to_be_removed=($containers_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
+folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 
 container_pulled=false
 
@@ -174,6 +177,12 @@ start_containers() {
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
     if [[  ! $proxy ]]; then
+      mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
+      if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
       myst_port="-p $mysterium_first_port:4449"
     fi
     mkdir -p $PWD/mysterium-data/node$i
@@ -235,7 +244,13 @@ start_containers() {
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
     if [[  ! $proxy ]]; then
-        eb_port="-p $ebesucher_first_port:5800"
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      eb_port="-p $ebesucher_first_port:5800"
     fi
     if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" |tee -a $containers_file
@@ -291,7 +306,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 traffmonetizer/cli
     fi
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    mkdir -p $PWD/$traffmonetizer_data_folder/data$i
+    sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN -v $PWD/$traffmonetizer_data_folder/data$i:/app:rw traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
@@ -308,16 +325,30 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    mkdir -p $PWD/$proxyrack_data_folder/data$i
+    sudo chmod -R 777 $PWD/$proxyrack_data_folder
+    if [ -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ] && proxyrack_uuid=$(cat $PWD/$proxyrack_data_folder/data$i/uuid.cfg);then
+	  if [[ $proxyrack_uuid ]];then
+       echo "UUID already exists"
+       proxyrack_volume="-v $PWD/$proxyrack_data_folder/data$i/uuid.cfg:/app/uuid.cfg"
+	  fi
+    fi
+
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
+      echo "$CONTAINER_ID" |tee -a $containers_file
+      if [[ ! $proxyrack_volume ]];then
+	     sleep 5
+         sudo docker exec $CONTAINER_ID cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
+      fi
     else
       echo -e "${RED}Failed to start container for ProxyRack..${NOCOLOUR}"
-  fi  
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
     fi
   fi
+
 
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
@@ -376,7 +407,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID -e http_proxy=$proxy -e https_proxy=$proxy packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
@@ -412,11 +443,26 @@ start_containers() {
     RANDOM=$(date +%s)
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
-    printf "$date_time https://earnapp.com/r/sdk-node-%s\n" "$RANDOM_ID" | tee -a $earnapp_file
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -e EARNAPP_UUID=sdk-node-$RANDOM_ID fazalfarhan01/earnapp:lite); then
+    mkdir -p $PWD/$earnapp_data_folder/data$i
+    sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
+    if [ -f $earnapp_file ] && uuid=$(sed "${i}q;d" $earnapp_file | grep -o 'https[^[:space:]]*'| sed 's/https:\/\/earnapp.com\/r\///g');then
+      if [[ $uuid ]];then
+        echo $uuid
+      else
+        echo "UUID does not exist, creating UUID"
+        uuid=sdk-node-$RANDOM_ID
+        printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+      fi
+    else
+      echo "UUID does not exist, creating UUID"
+      uuid=sdk-node-$RANDOM_ID
+      printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+    fi
+    
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
@@ -553,7 +599,7 @@ if [[ "$1" == "--delete" ]]; then
     rm -Rf $folder;
   fi
   done
-  
+
 fi
 
 if [[ ! "$1" ]]; then
