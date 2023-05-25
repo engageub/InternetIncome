@@ -306,9 +306,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 traffmonetizer/cli
     fi
-    mkdir -p $PWD/$traffmonetizer_data_folder/data$i
-    sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN -v $PWD/$traffmonetizer_data_folder/data$i:/app:rw traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
