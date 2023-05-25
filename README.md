@@ -94,22 +94,6 @@ cd InternetIncome-main
 ```
 vi properties.conf
 ```
-
-## :thinking:	How to use residential proxies:question:	
-
-If you wish to use direct connection, you may skip this section and move on to running the script.
-If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
-Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
-Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
-Example proxies.txt file below. Use your own proxies. 
-### Proxy list example format
-```
-socks5://username:password@12.4.5.2:7874
-http://username:password@1.23.5.2:7878
-socks5://15.4.5.2:7875
-http://13.23.5.2:7872
-```
-
 ## :runner: Run the script
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ### Start the process
@@ -123,6 +107,20 @@ To stop and delete all the containers started with the script. Run the following
 sudo bash internetIncome.sh --delete
 ```
 ## :grey_question: FAQ
+### :thinking:	How to use residential proxies:question:	
+
+If you wish to use direct connection, you may skip this section and move on to running the script.
+If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
+Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
+Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
+Example proxies.txt file below. Use your own proxies. 
+### Proxy list example format
+```
+socks5://username:password@12.4.5.2:7874
+http://username:password@1.23.5.2:7878
+socks5://15.4.5.2:7875
+http://13.23.5.2:7872
+```
 ### :thinking:	Can I use without proxies:question:		
 **Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
 ### :thinking: How to use multiple accounts:question:		
