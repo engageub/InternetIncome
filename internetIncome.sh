@@ -325,8 +325,8 @@ start_containers() {
     fi
     mkdir -p $PWD/$proxyrack_data_folder/data$i
     sudo chmod -R 777 $PWD/$proxyrack_data_folder
-	proxyrack_volume=""
-	proxyrack_uuid=""
+    proxyrack_volume=""
+    proxyrack_uuid=""
     if [ -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ] && proxyrack_uuid=$(cat $PWD/$proxyrack_data_folder/data$i/uuid.cfg);then
       if [[ $proxyrack_uuid ]];then
        echo "UUID already exists"
