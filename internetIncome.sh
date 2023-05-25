@@ -328,18 +328,18 @@ start_containers() {
     mkdir -p $PWD/$proxyrack_data_folder/data$i
     sudo chmod -R 777 $PWD/$proxyrack_data_folder
     if [ -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ] && proxyrack_uuid=$(cat $PWD/$proxyrack_data_folder/data$i/uuid.cfg);then
-	  if [[ $proxyrack_uuid ]];then
+      if [[ $proxyrack_uuid ]];then
        echo "UUID already exists"
        proxyrack_volume="-v $PWD/$proxyrack_data_folder/data$i/uuid.cfg:/app/uuid.cfg"
-	  else
-	    sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
-	  fi
+      else
+        sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
+      fi
     fi
 
     if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
       echo "$CONTAINER_ID" |tee -a $containers_file
       if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
-	     sleep 5
+         sleep 5
          sudo docker exec $CONTAINER_ID cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
       fi
     else
