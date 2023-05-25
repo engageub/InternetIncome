@@ -108,8 +108,6 @@ sudo bash internetIncome.sh --delete
 ```
 ## :grey_question: FAQ
 ### :thinking:	How to use residential proxies:question:	
-
-If you wish to use direct connection, you may skip this section and move on to running the script.
 If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
 Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
 Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
