@@ -122,7 +122,7 @@ socks5://15.4.5.2:7875
 http://13.23.5.2:7872
 ```
 ### :thinking:	Can I use without proxies:question:		
-**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file.
+**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file. This is the default configuration when you download the script. 
 ### :thinking: How to use multiple accounts:question:		
 For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
 ### :thinking: How to auto update containers:question:
