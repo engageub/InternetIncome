@@ -618,6 +618,26 @@ fi
 
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
+
+  for file in "${files_to_be_removed[@]}"
+  do
+  if [ -f "$file" ]; then
+    echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+    echo -e "To stop and delete containers run the following command\n"
+    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+    exit 1
+  fi
+  done
+  
+  for folder in "${folders_to_be_removed[@]}"
+  do
+  if [ -d "$folder" ]; then
+    echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+    echo -e "To stop and delete containers run the following command\n"
+    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+    exit 1
+  fi
+  done
     
   for file in "${back_up_files[@]}"
   do
