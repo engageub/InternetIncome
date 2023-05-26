@@ -153,7 +153,7 @@ start_containers() {
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
     combined_ports=$mysterium_port$ebesucher_port
-    
+    echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks  
@@ -306,7 +306,10 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 traffmonetizer/cli
     fi
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    mkdir -p $PWD/$traffmonetizer_data_folder/data$i
+    sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
+    traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
@@ -512,9 +515,15 @@ if [[ "$1" == "--start" ]]; then
   done
   
   # Read the properties file and export variables to the current shell
-  while IFS='=' read -r key value; do
+  while IFS= read -r line; do
     # Ignore lines that start with #
-    if [[ $key != '#'* ]]; then
+    if [[ $line != '#'* ]]; then
+        # Split the line at the first occurrence of =
+        key="${line%%=*}"
+        value="${line#*=}"
+        # Trim leading and trailing whitespace from key and value
+        key="${key%"${key##*[![:space:]]}"}"
+        value="${value%"${value##*[![:space:]]}"}"
         # Ignore lines without a value after =
         if [[ -n $value ]]; then
             # Replace variables with their values
