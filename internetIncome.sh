@@ -37,6 +37,8 @@ bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
+traffmonetizer_data_folder="traffmonetizerdata"
+proxyrack_data_folder="proxyrackdata"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
@@ -151,7 +153,7 @@ start_containers() {
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
     combined_ports=$mysterium_port$ebesucher_port
-    
+    echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks  
@@ -304,7 +306,10 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 traffmonetizer/cli
     fi
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    mkdir -p $PWD/$traffmonetizer_data_folder/data$i
+    sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
+    traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
@@ -321,16 +326,34 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    mkdir -p $PWD/$proxyrack_data_folder/data$i
+    sudo chmod -R 777 $PWD/$proxyrack_data_folder
+    proxyrack_volume=""
+    proxyrack_uuid=""
+    if [ -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ] && proxyrack_uuid=$(cat $PWD/$proxyrack_data_folder/data$i/uuid.cfg);then
+      if [[ $proxyrack_uuid ]];then
+       echo "UUID already exists"
+       proxyrack_volume="-v $PWD/$proxyrack_data_folder/data$i/uuid.cfg:/app/uuid.cfg"
+      else
+        sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
+      fi
+    fi
+
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
+      echo "$CONTAINER_ID" |tee -a $containers_file
+      if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
+         sleep 5
+         sudo docker exec $CONTAINER_ID cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
+      fi
     else
       echo -e "${RED}Failed to start container for ProxyRack..${NOCOLOUR}"
-  fi  
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
     fi
   fi
+
 
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
@@ -492,9 +515,15 @@ if [[ "$1" == "--start" ]]; then
   done
   
   # Read the properties file and export variables to the current shell
-  while IFS='=' read -r key value; do
+  while IFS= read -r line; do
     # Ignore lines that start with #
-    if [[ $key != '#'* ]]; then
+    if [[ $line != '#'* ]]; then
+        # Split the line at the first occurrence of =
+        key="${line%%=*}"
+        value="${line#*=}"
+        # Trim leading and trailing whitespace from key and value
+        key="${key%"${key##*[![:space:]]}"}"
+        value="${value%"${value##*[![:space:]]}"}"
         # Ignore lines without a value after =
         if [[ -n $value ]]; then
             # Replace variables with their values
