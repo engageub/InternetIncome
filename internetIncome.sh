@@ -31,6 +31,7 @@ earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
+mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 firefox_containers_file="firefoxcontainers.txt"
 bitping_folder=".bitping"
@@ -43,6 +44,8 @@ restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+back_up_folders=($proxyrack_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
+back_up_files=($earnapp_file)
 
 container_pulled=false
 
@@ -185,9 +188,9 @@ start_containers() {
       fi
       myst_port="-p $mysterium_first_port:4449"
     fi
-    mkdir -p $PWD/mysterium-data/node$i
-    sudo chmod -R 777 $PWD/mysterium-data/node$i
-    if CONTAINER_ID=$(sudo docker run -d --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/mysterium-data/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    mkdir -p $PWD/$mysterium_data_folder/node$i
+    sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
+    if CONTAINER_ID=$(sudo docker run -d --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo "$CONTAINER_ID" |tee -a $containers_file
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
@@ -612,6 +615,26 @@ if [[ "$1" == "--delete" ]]; then
   done
 
 fi
+
+if [[ "$1" == "--deleteBackup" ]]; then
+  echo -e "\n\nDeleting backup folders and files.."
+    
+  for file in "${back_up_files[@]}"
+  do
+  if [ -f "$file" ]; then
+    rm $file
+  fi
+  done
+  
+  for folder in "${back_up_folders[@]}"
+  do
+  if [ -d "$folder" ]; then
+    rm -Rf $folder;
+  fi
+  done
+
+fi
+
 
 if [[ ! "$1" ]]; then
   echo "No option provided. Use --start or --delete to execute"
