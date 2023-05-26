@@ -102,7 +102,8 @@ sudo bash internetIncome.sh --start
 ```
 ## :stop_sign: Stop and Delete containers
 To stop and delete all the containers started with the script. Run the following command.  Note that for earnapp, proxyrack, traffmonetizer and mysterium the data is not deleted and same ids will be used on delete and start, since it is required to do manual setup each time you start. Delete them or use a different folder to download the script if you want to change the node ids.
-### Stop process and delete data
+### Stop and delete containers
+Note that back up of device Ids and node Ids are present in the same folder of the script. 
 ```
 sudo bash internetIncome.sh --delete
 ```
