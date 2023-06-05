@@ -312,7 +312,7 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN --device-name $DEVICE_NAME$i); then
       echo "$CONTAINER_ID" |tee -a $containers_file 
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
