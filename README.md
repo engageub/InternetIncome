@@ -126,7 +126,7 @@ http://13.23.5.2:7872
 ### :thinking: How to use multiple accounts:question:		
 For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
 ### :thinking: How to auto update containers:question:
-Note: Please wait for next release before using this command since it is changing the container ids after update and tracking them is not possible with the existing version. 
+Note: Please wait for next release before using this command since it is changing the container ids after update and tracking them is not possible with the existing version.  
 The script updates the containers when it is started. However if you wish to update it while the script is already running you may use the following command. To auto update all containers on the host, run the following command.
 ```
 sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
