@@ -130,6 +130,11 @@ To auto update all containers on the host, run the following command.
 ```
 sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
 ```
+### :thinking: How to clean up all docker containers on the host:question:
+Please run the following command to delete all the running and stale containers on your host.
+```
+sudo docker container ls -a | awk '{print $1}' | xargs sudo docker rm -f
+```
 ### :thinking: Why are some of the containers for the same application offline:question:
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing. In addition to this, the application website may also be throttling the requests either due to multiple authentication requests in a short span of time or the request may be timing out etc. For example in case of iproyals pawns website this happens very frequently when multiple devices are added. Giving a delay between startup of instances is not always a solution for this, since it worked without any delay sometimes. Restarting the instance multiple times always worked. This is something intermittent and related to the application that is being used. You will need to restart containers manually for those instances where proxies are offline.
 ### :thinking: Why is Mysterium node not working:question:
