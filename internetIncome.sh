@@ -27,6 +27,7 @@ properties_file="properties.conf"
 banner_file="banner.jpg"
 proxies_file="proxies.txt"
 containers_file="containers.txt"
+container_names_file="containernames.txt"
 earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
@@ -42,7 +43,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_data_folder="proxyrackdata"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 back_up_folders=($proxyrack_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file)
@@ -162,7 +163,8 @@ start_containers() {
       sudo docker pull xjasonlyu/tun2socks  
     fi
     if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks); then
-      echo "$CONTAINER_ID" |tee -a $containers_file
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
       sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -190,8 +192,9 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    if CONTAINER_ID=$(sudo docker run -d --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
-      echo "$CONTAINER_ID" |tee -a $containers_file
+    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "myst$UNIQUE_ID$i" | tee -a $container_names_file 
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
     else
@@ -232,9 +235,10 @@ start_containers() {
         exit 1
       fi
       
-      if CONTAINER_ID=$(sudo docker run -d $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
         echo "Firefox restart container started"
-        echo "$CONTAINER_ID" |tee -a $containers_file
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file 
       else
         echo -e "${RED}Failed to start container for ebesucher firefox restart..${NOCOLOUR}"
         exit 1
@@ -255,9 +259,10 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
-      echo "$CONTAINER_ID" |tee -a $containers_file
-      echo "$CONTAINER_ID" |tee -a $firefox_containers_file
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file 
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
       echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
       ebesucher_first_port=`expr $ebesucher_first_port + 1`      
     else
@@ -275,8 +280,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 bitping/bitping-node:latest  
     fi 
-    if CONTAINER_ID=$(sudo docker run -d --restart=always --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file 
     else
       echo -e "${RED}Failed to start container for BitPing..${NOCOLOUR}"
     fi
@@ -292,8 +298,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    if CONTAINER_ID=$(sudo docker run -d --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
     fi
@@ -312,8 +319,9 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN --device-name $DEVICE_NAME$i); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN --device-name $DEVICE_NAME$i); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
     fi
@@ -342,8 +350,9 @@ start_containers() {
       fi
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
-      echo "$CONTAINER_ID" |tee -a $containers_file
+    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
       if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
          sleep 5
          sudo docker exec $CONTAINER_ID cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
@@ -364,8 +373,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file 
     else
       echo -e "${RED}Failed to start container for IPRoyals..${NOCOLOUR}"
     fi   
@@ -381,8 +391,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 honeygain/honeygain    
     fi
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
     else
       echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
   fi
@@ -398,8 +409,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull peer2profit/peer2profit_linux:latest     
     fi
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest); then
-      echo "$CONTAINER_ID" |tee -a $containers_file
+    if CONTAINER_ID=$(sudo docker run -d --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "peer2profit$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
     fi   
@@ -415,8 +427,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
     fi   
@@ -432,8 +445,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice     
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "proxylite$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
     fi 
@@ -470,8 +484,9 @@ start_containers() {
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
     
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
-      echo "$CONTAINER_ID" |tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file 
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
     fi  
@@ -569,6 +584,7 @@ fi
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
   
+  # Delete containers by container ids
   if [ -f "$containers_file" ]; then
     for i in `cat $containers_file`
     do 
@@ -584,6 +600,21 @@ if [[ "$1" == "--delete" ]]; then
     rm $containers_file
   fi
   
+  # Delete containers by container names
+  if [ -f "$container_names_file" ]; then
+    for i in `cat $container_names_file`
+    do 
+      # Check if container exists
+      if sudo docker inspect $i >/dev/null 2>&1; then
+        # Stop and Remove container
+        sudo docker rm -f $i
+      else
+        echo "Container $i does not exist"
+      fi
+    done
+    # Delete the container file
+    rm $container_names_file
+  fi
   
   # Delete networks
   if [ -f "$networks_file" ]; then
