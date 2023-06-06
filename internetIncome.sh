@@ -584,22 +584,6 @@ fi
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
   
-  # Delete containers by container ids
-  if [ -f "$containers_file" ]; then
-    for i in `cat $containers_file`
-    do 
-      # Check if container exists
-      if sudo docker inspect $i >/dev/null 2>&1; then
-        # Stop and Remove container
-        sudo docker rm -f $i
-      else
-        echo "Container $i does not exist"
-      fi
-    done
-    # Delete the container file
-    rm $containers_file
-  fi
-  
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
     for i in `cat $container_names_file`
