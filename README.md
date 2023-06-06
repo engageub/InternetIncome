@@ -109,7 +109,7 @@ Note that back up of device Ids and node Ids are present in the same folder of t
 sudo bash internetIncome.sh --delete
 ```
 ### Delete backup files and folders
-To delete the backup files and folders created by the script, use the following command. This will also delete mysterium data, so if you already made payment for the node keep the backup before runnning the command.
+To delete the backup files and folders created by the script, use the following command. This will also delete mysterium data, so if you already made payment for the node take a backup before runnning the command.
 ```
 sudo bash internetIncome.sh --deleteBackup
 ```
