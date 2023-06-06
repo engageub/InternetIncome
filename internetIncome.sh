@@ -319,7 +319,7 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --token $TRAFFMONETIZER_TOKEN --device-name $DEVICE_NAME$i); then
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
