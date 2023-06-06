@@ -108,6 +108,12 @@ Note that back up of device Ids and node Ids are present in the same folder of t
 ```
 sudo bash internetIncome.sh --delete
 ```
+### Delete backup files and folders
+To delete the backup files and folders created by the script, use the following command. This will also delete mysterium data, so if you already made payment for the node keep the backup before runnning the command.
+```
+sudo bash internetIncome.sh --deleteBackup
+```
+
 ## :grey_question: FAQ
 ### :thinking:	How to use residential proxies:question:	
 If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
