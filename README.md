@@ -114,7 +114,7 @@ To delete the backup files and folders created by the script, use the following 
 sudo bash internetIncome.sh --deleteBackup
 ```
 
-## Proxies or Hosting Providers
+## :department_store:	Proxies or Hosting Providers
 [Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
 
 ## :grey_question: FAQ
