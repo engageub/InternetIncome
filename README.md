@@ -114,6 +114,9 @@ To delete the backup files and folders created by the script, use the following 
 sudo bash internetIncome.sh --deleteBackup
 ```
 
+## Proxies or Hosting Providers
+[Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
+
 ## :grey_question: FAQ
 ### :thinking:	How to use residential proxies:question:	
 If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
