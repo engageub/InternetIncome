@@ -55,7 +55,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 * No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. Try to use 1 device per IP if possible.
 
 ## :house_with_garden:	Prerequisites 	
-You need to have docker installed in linux machine. If you don't have already, run the following command.  
+Run the following commands to install or update docker.
 
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ### Install docker on Linux
