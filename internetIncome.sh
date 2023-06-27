@@ -92,7 +92,7 @@ login_bitping() {
   fi
 }
 
-# Define a function to check for open ports
+# Function to check for open ports
 check_open_ports() {
   local first_port=$1
   local num_ports=$2
@@ -120,6 +120,29 @@ check_open_ports() {
 
   echo $first_port
 }
+
+# Execute docker command
+execute_docker_command() {
+  container_parameters=$1
+  app_name=$2
+  if [[ $MAX_MEMORY ]]; then
+    MAX_MEMORY_PARAM="-m $MAX_MEMORY"
+  fi
+  if [[ $MEMORY_RESERVATION ]]; then
+    MEMORY_RESERVATION_PARAM="--memory-reservation=$MEMORY_RESERVATION"
+  fi
+  if [[ $CPU ]]; then
+    CPU_PARAM="--cpus=$CPU"
+  fi
+  echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
+  if CONTAINER_ID=$(sudo docker run -d $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --restart=always $LOGS_PARAM $container_parameters); then
+    echo "$CONTAINER_ID" | tee -a $containers_file 
+  else
+    echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+}
+
 
 # Start all containers 
 start_containers() {
