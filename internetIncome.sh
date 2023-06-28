@@ -125,6 +125,7 @@ check_open_ports() {
 execute_docker_command() {
   container_parameters=$1
   app_name=$2
+  container_name=$3
   if [[ $MAX_MEMORY ]]; then
     MAX_MEMORY_PARAM="-m $MAX_MEMORY"
   fi
@@ -135,7 +136,8 @@ execute_docker_command() {
     CPU_PARAM="--cpus=$CPU"
   fi
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
-  if CONTAINER_ID=$(sudo docker run -d $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --restart=always $LOGS_PARAM $container_parameters); then
+  echo "$container_name" | tee -a $container_names_file
+  if CONTAINER_ID=$(sudo docker run -d $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --name $container_name --restart=always $LOGS_PARAM $container_parameters); then
     echo "$CONTAINER_ID" | tee -a $containers_file 
   else
     echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
@@ -180,27 +182,18 @@ start_containers() {
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
     combined_ports=$mysterium_port$ebesucher_port
-    echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks  
     fi
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.0); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
-      sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
-    else
-      echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
+    docker_command="-e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0"
+    execute_docker_command "$docker_command" "Proxy" "tun$UNIQUE_ID$i"
+    sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     sleep 1
   fi
   
   # Starting Mysterium container
   if [ "$MYSTERIUM" = true ]; then
-    echo -e "${GREEN}Starting Mysterium container..${NOCOLOUR}"
-    echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
@@ -215,14 +208,12 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "myst$UNIQUE_ID$i" | tee -a $container_names_file 
-      echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
-      mysterium_first_port=`expr $mysterium_first_port + 1`
-    else
-      echo -e "${RED}Failed to start container for Mysterium..${NOCOLOUR}"
-    fi
+    docker_command="--cap-add=NET_ADMIN $NETWORK_TUN -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions"
+    execute_docker_command "$docker_command" "Mysterium" "myst$UNIQUE_ID$i"
+    echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
+    mysterium_first_port=`expr $mysterium_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
@@ -231,9 +222,6 @@ start_containers() {
   
   # Starting Ebesucher container
   if [[ $EBESUCHER_USERNAME ]]; then
-    echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
-    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
       
@@ -257,15 +245,9 @@ start_containers() {
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
-        echo "Firefox restart container started"
-        echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file 
-      else
-        echo -e "${RED}Failed to start container for ebesucher firefox restart..${NOCOLOUR}"
-        exit 1
-      fi
+	  
+      docker_command="-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'"
+      execute_docker_command "$docker_command" "Firefox restart" "dind$UNIQUE_ID$i"    
     fi
         
     # Create folder and copy files
@@ -282,15 +264,13 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file 
-      echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
-      echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
-      ebesucher_first_port=`expr $ebesucher_first_port + 1`      
-    else
-      echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
-    fi
+    
+    docker_command="$NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox"
+    execute_docker_command "$docker_command" "Ebesucher" "ebesucher$UNIQUE_ID$i"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
+    ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
@@ -299,16 +279,11 @@ start_containers() {
   
   # Starting BitPing container
   if [ "$BITPING" = true ]; then
-    echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 bitping/bitping-node:latest  
+      sudo docker pull --platform=linux/amd64 bitping/bitping-node:latest 
     fi 
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file 
-    else
-      echo -e "${RED}Failed to start container for BitPing..${NOCOLOUR}"
-    fi
+    docker_command="--platform=linux/amd64 $NETWORK_TUN --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest"
+    execute_docker_command "$docker_command" "BitPing" "bitping$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
@@ -317,16 +292,11 @@ start_containers() {
 
   # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
-    echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
-    fi
+    docker_command="$NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket"
+    execute_docker_command "$docker_command" "Repocket" "repocket$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
@@ -335,19 +305,14 @@ start_containers() {
 
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
-    echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 traffmonetizer/cli
     fi
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
-    fi
+    docker_command="--platform=linux/amd64 $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN"
+    execute_docker_command "$docker_command" "Traffmonetizer" "traffmon$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
@@ -356,7 +321,6 @@ start_containers() {
 
   # Starting ProxyRack container
   if [[ $PROXY_RACK_API ]]; then
-    echo -e "${GREEN}Starting ProxyRack container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
@@ -372,16 +336,11 @@ start_containers() {
         sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
       fi
     fi
-
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
-      if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
-         sleep 5
-         sudo docker exec $CONTAINER_ID cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
-      fi
-    else
-      echo -e "${RED}Failed to start container for ProxyRack..${NOCOLOUR}"
+    docker_command="--platform=linux/amd64 $NETWORK_TUN $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop"
+    execute_docker_command "$docker_command" "ProxyRack" "proxyrack$UNIQUE_ID$i"
+    if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
+      sleep 5
+      sudo docker exec proxyrack$UNIQUE_ID$i cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
     fi
   else
     if [ "$container_pulled" = false ]; then
@@ -389,19 +348,13 @@ start_containers() {
     fi
   fi
 
-
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
-    echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file 
-    else
-      echo -e "${RED}Failed to start container for IPRoyals..${NOCOLOUR}"
-    fi   
+    docker_command="$NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos"
+    execute_docker_command "$docker_command" "IPRoyals" "pawns$UNIQUE_ID$i"  
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
@@ -410,16 +363,11 @@ start_containers() {
   
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 honeygain/honeygain    
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
-    else
-      echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
-  fi
+    docker_command="$NETWORK_TUN --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i"
+    execute_docker_command "$docker_command" "Honeygain" "honey$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
@@ -428,16 +376,11 @@ start_containers() {
 
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
-    echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull peer2profit/peer2profit_linux:latest     
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "peer2profit$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
-    fi   
+    docker_command="$NETWORK_TUN -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest"
+    execute_docker_command "$docker_command" "Peer2Profit" "peer2profit$UNIQUE_ID$i"   
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
@@ -449,13 +392,9 @@ start_containers() {
     echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
-    fi    
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
-    fi   
+    fi
+    docker_command="$NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest"
+    execute_docker_command "$docker_command" "PacketStream" "packetstream$UNIQUE_ID$i"   
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
@@ -468,12 +407,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice     
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "proxylite$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
-    fi 
+    docker_command="--platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice"
+    execute_docker_command "$docker_command" "Proxylite" "proxylite$UNIQUE_ID$i" 
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
@@ -506,13 +441,8 @@ start_containers() {
       uuid=sdk-node-$RANDOM_ID
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
-    
-    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file 
-    else
-      echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
-    fi  
+    docker_command="--platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite"
+    execute_docker_command "$docker_command" "Proxylite" "earnapp$UNIQUE_ID$i" 
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
