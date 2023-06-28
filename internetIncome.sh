@@ -186,8 +186,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks  
     fi
-    docker_command="-e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0"
-    execute_docker_command "$docker_command" "Proxy" "tun$UNIQUE_ID$i"
+    docker_parameters="-e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0"
+    execute_docker_command "$docker_parameters" "Proxy" "tun$UNIQUE_ID$i"
     sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     sleep 1
   fi
@@ -208,8 +208,8 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    docker_command="--cap-add=NET_ADMIN $NETWORK_TUN -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions"
-    execute_docker_command "$docker_command" "Mysterium" "myst$UNIQUE_ID$i"
+    docker_parameters="--cap-add=NET_ADMIN $NETWORK_TUN -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions"
+    execute_docker_command "$docker_parameters" "Mysterium" "myst$UNIQUE_ID$i"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
@@ -246,8 +246,8 @@ start_containers() {
         exit 1
       fi
 	  
-      docker_command="-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'"
-      execute_docker_command "$docker_command" "Firefox restart" "dind$UNIQUE_ID$i"    
+      docker_parameters="-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'"
+      execute_docker_command "$docker_parameters" "Firefox restart" "dind$UNIQUE_ID$i"    
     fi
         
     # Create folder and copy files
@@ -265,8 +265,8 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:5800"
     fi
     
-    docker_command="$NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox"
-    execute_docker_command "$docker_command" "Ebesucher" "ebesucher$UNIQUE_ID$i"
+    docker_parameters="$NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox"
+    execute_docker_command "$docker_parameters" "Ebesucher" "ebesucher$UNIQUE_ID$i"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
@@ -282,8 +282,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 bitping/bitping-node:latest 
     fi 
-    docker_command="--platform=linux/amd64 $NETWORK_TUN --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest"
-    execute_docker_command "$docker_command" "BitPing" "bitping$UNIQUE_ID$i"
+    docker_parameters="--platform=linux/amd64 $NETWORK_TUN --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest"
+    execute_docker_command "$docker_parameters" "BitPing" "bitping$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
@@ -295,8 +295,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    docker_command="$NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket"
-    execute_docker_command "$docker_command" "Repocket" "repocket$UNIQUE_ID$i"
+    docker_parameters="$NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket"
+    execute_docker_command "$docker_parameters" "Repocket" "repocket$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
@@ -311,8 +311,8 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    docker_command="--platform=linux/amd64 $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN"
-    execute_docker_command "$docker_command" "Traffmonetizer" "traffmon$UNIQUE_ID$i"
+    docker_parameters="--platform=linux/amd64 $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN"
+    execute_docker_command "$docker_parameters" "Traffmonetizer" "traffmon$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
@@ -336,8 +336,8 @@ start_containers() {
         sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
       fi
     fi
-    docker_command="--platform=linux/amd64 $NETWORK_TUN $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop"
-    execute_docker_command "$docker_command" "ProxyRack" "proxyrack$UNIQUE_ID$i"
+    docker_parameters="--platform=linux/amd64 $NETWORK_TUN $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop"
+    execute_docker_command "$docker_parameters" "ProxyRack" "proxyrack$UNIQUE_ID$i"
     if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
       sleep 5
       sudo docker exec proxyrack$UNIQUE_ID$i cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
@@ -353,8 +353,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    docker_command="$NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos"
-    execute_docker_command "$docker_command" "IPRoyals" "pawns$UNIQUE_ID$i"  
+    docker_parameters="$NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos"
+    execute_docker_command "$docker_parameters" "IPRoyals" "pawns$UNIQUE_ID$i"  
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
@@ -366,8 +366,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 honeygain/honeygain    
     fi
-    docker_command="$NETWORK_TUN --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i"
-    execute_docker_command "$docker_command" "Honeygain" "honey$UNIQUE_ID$i"
+    docker_parameters="$NETWORK_TUN --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i"
+    execute_docker_command "$docker_parameters" "Honeygain" "honey$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
@@ -379,8 +379,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull peer2profit/peer2profit_linux:latest     
     fi
-    docker_command="$NETWORK_TUN -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest"
-    execute_docker_command "$docker_command" "Peer2Profit" "peer2profit$UNIQUE_ID$i"   
+    docker_parameters="$NETWORK_TUN -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest"
+    execute_docker_command "$docker_parameters" "Peer2Profit" "peer2profit$UNIQUE_ID$i"   
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
@@ -393,8 +393,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi
-    docker_command="$NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest"
-    execute_docker_command "$docker_command" "PacketStream" "packetstream$UNIQUE_ID$i"   
+    docker_parameters="$NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest"
+    execute_docker_command "$docker_parameters" "PacketStream" "packetstream$UNIQUE_ID$i"   
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
@@ -407,8 +407,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice     
     fi
-    docker_command="--platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice"
-    execute_docker_command "$docker_command" "Proxylite" "proxylite$UNIQUE_ID$i" 
+    docker_parameters="--platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice"
+    execute_docker_command "$docker_parameters" "Proxylite" "proxylite$UNIQUE_ID$i" 
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
@@ -441,8 +441,8 @@ start_containers() {
       uuid=sdk-node-$RANDOM_ID
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
-    docker_command="--platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite"
-    execute_docker_command "$docker_command" "Proxylite" "earnapp$UNIQUE_ID$i" 
+    docker_parameters="--platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite"
+    execute_docker_command "$docker_parameters" "Proxylite" "earnapp$UNIQUE_ID$i" 
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
@@ -463,7 +463,6 @@ if [[ "$1" == "--start" ]]; then
     exit 1
   fi
   done
-   
    
   for file in "${files_to_be_removed[@]}"
   do
@@ -620,9 +619,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
     rm -Rf $folder;
   fi
   done
-
 fi
-
 
 if [[ ! "$1" ]]; then
   echo "No option provided. Use --start or --delete to execute"
