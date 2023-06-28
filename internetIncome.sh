@@ -54,7 +54,6 @@ container_pulled=false
 mysterium_first_port=2000
 ebesucher_first_port=3000
 
-
 #Unique Id
 RANDOM=$(date +%s)
 UNIQUE_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
@@ -245,7 +244,7 @@ start_containers() {
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-	  
+      
       docker_parameters="-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'"
       execute_docker_command "$docker_parameters" "Firefox restart" "dind$UNIQUE_ID$i"    
     fi
@@ -389,7 +388,6 @@ start_containers() {
 
   # Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
-    echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi
@@ -403,7 +401,6 @@ start_containers() {
 
   # Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
-    echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice     
     fi
@@ -417,9 +414,6 @@ start_containers() {
 
   # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
-    echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
-    echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
     RANDOM=$(date +%s)
     RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
     date_time=`date "+%D %T"`
@@ -434,15 +428,16 @@ start_containers() {
       else
         echo "UUID does not exist, creating UUID"
         uuid=sdk-node-$RANDOM_ID
-        printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
       fi
     else
       echo "UUID does not exist, creating UUID"
       uuid=sdk-node-$RANDOM_ID
-      printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
     docker_parameters="--platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite"
-    execute_docker_command "$docker_parameters" "Proxylite" "earnapp$UNIQUE_ID$i" 
+    execute_docker_command "$docker_parameters" "Earnapp" "earnapp$UNIQUE_ID$i"
+    echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
+    printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
