@@ -118,7 +118,7 @@ sudo bash internetIncome.sh --deleteBackup
 [Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
 
 
-Official support of proxies for these type of apps from [proxyfish](https://www.proxyfish.com/billing/aff.php?aff=449). Click the banner below to sign up. 
+Official support of proxies for bandwidth sharing apps from [proxyfish](https://www.proxyfish.com/billing/aff.php?aff=449). 
 
 [![Description of the image](https://i.ibb.co/TYd8fVy/image.png)](https://www.proxyfish.com/billing/aff.php?aff=449)
 
