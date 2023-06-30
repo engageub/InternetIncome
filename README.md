@@ -136,6 +136,9 @@ http://username:password@1.23.5.2:7878
 socks5://15.4.5.2:7875
 http://13.23.5.2:7872
 ```
+For any other proxy format, please [click here](https://github.com/engageub/InternetIncome/wiki/Formatting-proxies-to-user:password@ip:port) to format proxies.  
+
+
 ### :thinking:	Can I use without proxies:question:		
 **Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file. This is the default configuration when you download the script. 
 ### :thinking: How to use multiple accounts:question:		
