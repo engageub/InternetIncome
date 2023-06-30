@@ -125,18 +125,9 @@ execute_docker_command() {
   container_parameters=$1
   app_name=$2
   container_name=$3
-  if [[ $MAX_MEMORY ]]; then
-    MAX_MEMORY_PARAM="-m $MAX_MEMORY"
-  fi
-  if [[ $MEMORY_RESERVATION ]]; then
-    MEMORY_RESERVATION_PARAM="--memory-reservation=$MEMORY_RESERVATION"
-  fi
-  if [[ $CPU ]]; then
-    CPU_PARAM="--cpus=$CPU"
-  fi
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   echo "$container_name" | tee -a $container_names_file
-  if CONTAINER_ID=$(sudo docker run -d $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --name $container_name --restart=always $LOGS_PARAM $container_parameters); then
+  if CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always $container_parameters); then
     echo "$CONTAINER_ID" | tee -a $containers_file 
   else
     echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
@@ -156,6 +147,18 @@ start_containers() {
     TUN_LOG_PARAM="silent"
   else
     TUN_LOG_PARAM="info"
+  fi
+  
+  if [[ $MAX_MEMORY ]]; then
+    MAX_MEMORY_PARAM="-m $MAX_MEMORY"
+  fi
+  
+  if [[ $MEMORY_RESERVATION ]]; then
+    MEMORY_RESERVATION_PARAM="--memory-reservation=$MEMORY_RESERVATION"
+  fi
+  
+  if [[ $CPU ]]; then
+    CPU_PARAM="--cpus=$CPU"
   fi
 
   if [[ $i && $proxy ]]; then
@@ -185,7 +188,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks  
     fi
-    docker_parameters="-e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0"
     execute_docker_command "$docker_parameters" "Proxy" "tun$UNIQUE_ID$i"
     sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     sleep 1
@@ -207,7 +210,7 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    docker_parameters="--cap-add=NET_ADMIN $NETWORK_TUN -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --cap-add=NET_ADMIN $NETWORK_TUN -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions"
     execute_docker_command "$docker_parameters" "Mysterium" "myst$UNIQUE_ID$i"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
@@ -245,7 +248,7 @@ start_containers() {
         exit 1
       fi
       
-      docker_parameters="-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'"
+      docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'"
       execute_docker_command "$docker_parameters" "Firefox restart" "dind$UNIQUE_ID$i"    
     fi
         
@@ -264,7 +267,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:5800"
     fi
     
-    docker_parameters="$NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox"
     execute_docker_command "$docker_parameters" "Ebesucher" "ebesucher$UNIQUE_ID$i"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
@@ -281,7 +284,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 bitping/bitping-node:latest 
     fi 
-    docker_parameters="--platform=linux/amd64 $NETWORK_TUN --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest"
     execute_docker_command "$docker_parameters" "BitPing" "bitping$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
@@ -294,7 +297,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    docker_parameters="$NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket"
     execute_docker_command "$docker_parameters" "Repocket" "repocket$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
@@ -310,7 +313,7 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    docker_parameters="--platform=linux/amd64 $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN"
     execute_docker_command "$docker_parameters" "Traffmonetizer" "traffmon$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
@@ -335,7 +338,7 @@ start_containers() {
         sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
       fi
     fi
-    docker_parameters="--platform=linux/amd64 $NETWORK_TUN $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop"
     execute_docker_command "$docker_parameters" "ProxyRack" "proxyrack$UNIQUE_ID$i"
     if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
       sleep 5
@@ -352,7 +355,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    docker_parameters="$NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos"
     execute_docker_command "$docker_parameters" "IPRoyals" "pawns$UNIQUE_ID$i"  
   else
     if [ "$container_pulled" = false ]; then
@@ -365,7 +368,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 honeygain/honeygain    
     fi
-    docker_parameters="$NETWORK_TUN --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i"
     execute_docker_command "$docker_parameters" "Honeygain" "honey$UNIQUE_ID$i"
   else
     if [ "$container_pulled" = false ]; then
@@ -378,7 +381,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull peer2profit/peer2profit_linux:latest     
     fi
-    docker_parameters="$NETWORK_TUN -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e P2P_EMAIL=$PEER2PROFIT_EMAIL peer2profit/peer2profit_linux:latest"
     execute_docker_command "$docker_parameters" "Peer2Profit" "peer2profit$UNIQUE_ID$i"   
   else
     if [ "$container_pulled" = false ]; then
@@ -391,7 +394,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi
-    docker_parameters="$NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest"
     execute_docker_command "$docker_parameters" "PacketStream" "packetstream$UNIQUE_ID$i"   
   else
     if [ "$container_pulled" = false ]; then
@@ -404,7 +407,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice     
     fi
-    docker_parameters="--platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice"
     execute_docker_command "$docker_parameters" "Proxylite" "proxylite$UNIQUE_ID$i" 
   else
     if [ "$container_pulled" = false ]; then
@@ -433,7 +436,7 @@ start_containers() {
       echo "UUID does not exist, creating UUID"
       uuid=sdk-node-$RANDOM_ID
     fi
-    docker_parameters="--platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite"
+    docker_parameters="$LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite"
     execute_docker_command "$docker_parameters" "Earnapp" "earnapp$UNIQUE_ID$i"
     echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
