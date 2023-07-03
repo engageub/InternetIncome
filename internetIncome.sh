@@ -186,7 +186,7 @@ start_containers() {
     combined_ports=$mysterium_port$ebesucher_port
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xjasonlyu/tun2socks  
+      sudo docker pull xjasonlyu/tun2socks:v2.5.0
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0)
     execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
