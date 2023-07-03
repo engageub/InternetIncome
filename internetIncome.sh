@@ -160,7 +160,7 @@ start_containers() {
     echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xjasonlyu/tun2socks  
+      sudo docker pull xjasonlyu/tun2socks:v2.5.0
     fi
     if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.0); then
       echo "$CONTAINER_ID" | tee -a $containers_file
