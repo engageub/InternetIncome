@@ -79,10 +79,10 @@ Download the code and edit the configuration file properties.conf with your acco
 If you don't have GUI access but have terminal access, use the following commands to download the code.
 ### Download the code
 ```
-wget https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
+wget https://github.com/engageub/InternetIncome/archive/refs/heads/test.zip
 sudo apt-get install unzip
-unzip main.zip
-cd InternetIncome-main
+unzip test.zip
+cd InternetIncome-test
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
 * If you are using proxies, please set the "USE_PROXIES" value to "true". 
