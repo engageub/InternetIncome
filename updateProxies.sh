@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Script to update proxies and restart instances if proxies are updated in proxies.txt
-containers_file="containers.txt"
+containers_file="containernames.txt"
 proxies_file="proxies.txt"
 tun_containers_file="tuncontainers.txt"
 updated_proxies_file="updatedproxies.txt"
