@@ -29,7 +29,7 @@ for container in `cat $containers_file`
 do
 if sudo docker inspect $container >/dev/null 2>&1; then
   container_image=`sudo docker inspect --format='{{.Config.Image}}' $container`
-  if [ $container_image == "xjasonlyu/tun2socks" ]; then
+  if [ $container_image == "xjasonlyu/tun2socks:v2.5.0" ]; then
     echo $container | tee -a $tun_containers_file
   fi
 fi
