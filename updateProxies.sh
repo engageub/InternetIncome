@@ -83,12 +83,5 @@ sleep 5
 echo "Restarting Containers"
 for container in `cat $containers_file`
 do
-if sudo docker inspect $container >/dev/null 2>&1; then
-  status=$(sudo docker inspect -f '{{.State.Status}}' $container)
-  if [ "$status" != "exited" ]; then
-    sudo docker restart $container
-  else
-    sudo docker start $container
-  fi
-fi
+  sudo docker restart $container
 done
