@@ -554,7 +554,6 @@ if [[ "$1" == "--start" ]]; then
         start_containers "$i" "$line" "true"
       fi
     done < $vpns_file
-    exit 1
   fi
 
   if [ "$USE_PROXIES" = true ]; then
@@ -570,11 +569,14 @@ if [[ "$1" == "--start" ]]; then
         i=`expr $i + 1`
         start_containers "$i" "$line"
       fi
-    done < $proxies_file
-  else
-    echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}" 
-    start_containers 
+    done < $proxies_file 
   fi
+
+  if [ "$USE_DIRECT_CONNECTION" = true ]; then
+     echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}" 
+     start_containers
+  fi
+  
 fi
 
 if [[ "$1" == "--delete" ]]; then
