@@ -382,6 +382,20 @@ start_containers() {
     fi
   fi
 
+  
+  # Starting Gaganode container
+  if [[ $GAGANODE_TOKEN ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull --platform=linux/amd64 jepbura/gaganode    
+    fi
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --platform=linux/amd64 -e TOKEN=$GAGANODE_TOKEN jepbura/gaganode)
+    execute_docker_command "Gaganode" "gaganode$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Gaganode Token is not configured. Ignoring Gaganode..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
