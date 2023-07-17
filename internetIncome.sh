@@ -26,6 +26,7 @@ NOCOLOUR="\033[0m"
 properties_file="properties.conf"
 banner_file="banner.jpg"
 proxies_file="proxies.txt"
+vpns_file="vpns.txt"
 containers_file="containers.txt"
 container_names_file="containernames.txt"
 earnapp_file="earnapp.txt"
@@ -141,6 +142,7 @@ start_containers() {
 
   i=$1
   proxy=$2
+  vpn_enabled=$3
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
@@ -188,9 +190,15 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks:v2.5.0
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0)
-    execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
-    sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+
+    if [ "$vpn_enabled" ];then
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
+      execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
+    else    
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0)
+      execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+      sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+    fi
     sleep 1
   fi
   
@@ -530,6 +538,23 @@ if [[ "$1" == "--start" ]]; then
   
   #Login to bitping to set credentials
   login_bitping
+
+  if [ "$USE_VPNS" = true ]; then
+    echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}" 
+    if [ ! -f "$vpns_file" ]; then
+      echo -e "${RED}Vpns file $vpns_file does not exist, exiting..${NOCOLOUR}"
+      exit 1
+    fi
+    
+    i=0;
+    while IFS= read -r line || [ -n "$line" ]; do
+      if [[ "$line" =~ ^[^#].* ]]; then
+        i=`expr $i + 1`
+        start_containers "$i" "$line" "true"
+      fi
+    done < $vpns_file
+    exit 1
+  fi
 
   if [ "$USE_PROXIES" = true ]; then
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
