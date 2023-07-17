@@ -1,0 +1,4 @@
+# Add all environment variables for gluetun container. An example below
+# -e VPN_TYPE=openvpn -e OPENVPN_USER="someusername" -e OPENVPN_PASSWORD="somepassword"
+# Refer to the following documentation on adding environmental variables. Do not add anything apart from volumes and environment variables in each line.
+# https://github.com/qdm12/gluetun
