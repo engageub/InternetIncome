@@ -192,6 +192,7 @@ start_containers() {
     fi
 
     if [ "$vpn_enabled" ];then
+      NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else    
