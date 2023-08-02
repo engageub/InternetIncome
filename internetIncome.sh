@@ -540,6 +540,13 @@ if [[ "$1" == "--start" ]]; then
   #Login to bitping to set credentials
   login_bitping
 
+  # Use direct Connection
+  if [ "$USE_DIRECT_CONNECTION" = true ]; then
+     echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}" 
+     start_containers
+  fi
+
+  # Use Vpns
   if [ "$USE_VPNS" = true ]; then
     echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}" 
     if [ ! -f "$vpns_file" ]; then
@@ -556,6 +563,7 @@ if [[ "$1" == "--start" ]]; then
     done < $vpns_file
   fi
 
+  # Use Proxies
   if [ "$USE_PROXIES" = true ]; then
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
     if [ ! -f "$proxies_file" ]; then
@@ -570,11 +578,6 @@ if [[ "$1" == "--start" ]]; then
         start_containers "$i" "$line"
       fi
     done < $proxies_file 
-  fi
-
-  if [ "$USE_DIRECT_CONNECTION" = true ]; then
-     echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}" 
-     start_containers
   fi
   
 fi
