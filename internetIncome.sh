@@ -570,6 +570,9 @@ if [[ "$1" == "--start" ]]; then
       echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
       exit 1
     fi
+
+    # Remove ^M characters from file
+    sed -i 's/\r//g' proxies.txt
     
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
