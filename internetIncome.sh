@@ -572,7 +572,7 @@ if [[ "$1" == "--start" ]]; then
     fi
 
     # Remove ^M characters from file
-    sed -i 's/\r//g' proxies.txt
+    sed -i 's/\r//g' $proxies_file
     
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
