@@ -9,7 +9,8 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 ```diff
 - Note: Traffmonetizer and Repocket have been removed from dockerhub and they are resolving it soon.
-- Please remove them from properties.conf to continue using other containers. 
+- Please remove them from properties.conf to continue using other containers.
+- Existing users who are already running these containers are not affected by this. 
 ```
 ## :moneybag:	Register with the following links:
 
