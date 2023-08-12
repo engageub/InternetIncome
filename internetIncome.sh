@@ -318,9 +318,9 @@ start_containers() {
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     CPU_ARCH=`uname -m`
-    container_image="--platform=linux/amd64 traffmonetizer/cli"
+    container_image="--platform=linux/amd64 traffmonetizer/cli_v2"
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
-      container_image="traffmonetizer/cli:arm64v8"
+      container_image="traffmonetizer/cli_v2:arm64v8"
     fi
     if [ "$container_pulled" = false ]; then
       sudo docker pull $container_image
