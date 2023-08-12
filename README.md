@@ -8,7 +8,7 @@ This script has been tested in linux amd64, arm64 or aarch64 platforms.
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
 ```diff
-- Note: Repocket have been removed from dockerhub and they are resolving it soon.
+- Note: Repocket has been removed from dockerhub and they are resolving it soon.
 - Please remove it from properties.conf to continue using other containers.
 - Existing users who are already running these containers are not affected by this. 
 ```
