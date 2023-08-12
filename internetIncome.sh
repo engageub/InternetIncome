@@ -531,6 +531,9 @@ if [[ "$1" == "--start" ]]; then
     exit 1
   fi
   done
+
+  # Remove special characters ^M from properties file
+  sed -i 's/\r//g' $properties_file
   
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
@@ -567,6 +570,9 @@ if [[ "$1" == "--start" ]]; then
       echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
       exit 1
     fi
+
+    # Remove special characters ^M from proxies file
+    sed -i 's/\r//g' $proxies_file
     
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
