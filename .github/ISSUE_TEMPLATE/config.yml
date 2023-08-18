@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: Internet Income GitHub FAQ
+    url: https://github.com/engageub/InternetIncome#grey_question-faq
+    about: Please see the FAQ before raising an issue
+  - name: Internet Income GitHub Discussions
+    url: https://github.com/engageub/InternetIncome/discussions
+    about: Ask questions and get help on GitHub Discussions
