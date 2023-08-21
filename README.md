@@ -160,9 +160,12 @@ The data pertaining to your Mysterium keys is stored in the designated "mysteriu
 Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
 
 ### :thinking: How to access 127.0.0.1 urls for ebesucher or mystnodes if GUI is not available in linux:question:
-If you have urls in your ebesucher or mysterium text file and would like to access them in browser from anywhere else, please run the following command.
+If your VPS does not have port restrictions to access your VPS IP globally, you can access your localhost urls by replacing it with your VPS IP address.
+For example, if your VPS IP address is 2.4.75.2 and you wish to access your localhost url http://127.0.0.1:2000 ,then replace the IP with your VPS IP to access it elsewhere. The url to access directly using VPS IP would be http://2.4.75.2:2000 
+
+If your VPS IP is not accessible globally, please run the following command to get the corresponsing url.
 ```
-ssh -R 80:127.0.0.1:2000 serveo.net
+ssh -R 80:localhost:2000 serveo.net
 ```
 In the above command 2000 represents the port number of your localhost or 127.0.0.1. For each browser instance, there is a separate port number. Please change the port number accordingly. You will receive an url after running the above command which can be accessed globally. 
 
