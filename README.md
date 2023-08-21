@@ -159,6 +159,13 @@ It is crucial to understand that the Mysterium node operates differently from ot
 The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
 Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
 
+### :thinking: How to access 127.0.0.1 urls for ebesucher or mystnodes if GUI is not available in linux:question:
+If you have urls in your ebesucher or mysterium text file and would like to access them in browser from anywhere else, please run the following command.
+```
+ssh -R 80:127.0.0.1:2000 serveo.net
+```
+In the above command 2000 represents the port number of your localhost or 127.0.0.1. For each browser instance, there is a separate port number. Please change the port number accordingly. You will receive an url after running the above command which can be accessed globally. 
+
 ### :thinking: Where are earnapp node urls stored and how to restore them:question:
 The UUID or node IDs are required to identify your unique nodes in earnapp dashboard. These nodes are stored in earnapp.txt file and are not deleted. The same node Ids will be used when you start the application again. You do not need to delete existing nodes in dashboard and add them again when you use --delete option.  If you already have an existing node and would like to use it via the script you may add them in earnapp.txt file in the same format as the existing file.
 
