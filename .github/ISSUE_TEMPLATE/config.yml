@@ -6,4 +6,7 @@ contact_links:
     about: Please see the FAQ before raising an issue
   - name: Internet Income GitHub Discussions
     url: https://github.com/engageub/InternetIncome/discussions
-    about: Ask questions and get help on GitHub Discussions
+    about: Ask questions and get help on GitHub Discussions 
+  - name: Formatting proxies for Internet Income
+    url: https://github.com/engageub/InternetIncome/wiki/Formatting-proxies-to-user:password@ip:port
+    about: Commands to format different types of proxy formats
