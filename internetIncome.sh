@@ -304,7 +304,7 @@ start_containers() {
 
   
   # Starting Adnade container
-  if [[ $Adnade_USERNAME ]]; then
+  if [[ $ADNADE_USERNAME ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
     fi
