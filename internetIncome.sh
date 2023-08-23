@@ -35,6 +35,7 @@ networks_file="networks.txt"
 mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
+adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
 bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
@@ -54,6 +55,7 @@ container_pulled=false
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
 ebesucher_first_port=3000
+adnade_first_port=4000
 
 #Unique Id
 RANDOM=$(date +%s)
@@ -185,7 +187,18 @@ start_containers() {
       fi
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
-    combined_ports=$mysterium_port$ebesucher_port
+
+    if [[ $ADNADE_USERNAME ]]; then
+      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      adnade_port="-p $adnade_first_port:5800 "
+    fi
+    
+    combined_ports=$mysterium_port$ebesucher_port$adnade_port
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks:v2.5.0
@@ -286,6 +299,35 @@ start_containers() {
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+    fi
+  fi
+
+  
+  # Starting Adnade container
+  if [[ $Adnade_USERNAME ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull jlesage/firefox
+    fi
+        
+    if [[  ! $proxy ]]; then
+      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      ad_port="-p $adnade_first_port:5800"
+    fi
+    
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox)
+    execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
+    adnade_first_port=`expr $adnade_first_port + 1`
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
   
