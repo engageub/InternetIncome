@@ -24,6 +24,9 @@ if [ ! -f $proxies_file ]; then
   exit 1
 fi
 
+# Remove special characters ^M from proxies file
+sed -i 's/\r//g' $proxies_file
+
 # Get tun containers and stop other containers
 for container in `cat $containers_file`
 do
