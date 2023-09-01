@@ -32,7 +32,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 21. [Cash Raven](https://cashraven.io/) (Mobile device)
 22. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported)
 23. [Adnade](https://t.co/KthcbzPa08) (Updated Soon)
-
+24. [Pi](https://minepi.com/engageub) (Available in Windows only and only 1 node per account)
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type 
 
