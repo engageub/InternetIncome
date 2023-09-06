@@ -296,12 +296,7 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-
-      if [ "$EBESUCHER_USE_CHROME" = true ]; then
-          eb_port="-p $ebesucher_first_port:3000 "
-      else
-          eb_port="-p $ebesucher_first_port:5800"
-      fi
+      eb_port="-p $ebesucher_first_port:5800"
     fi
     
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox)
@@ -316,6 +311,71 @@ start_containers() {
       echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
+
+# Starting Ebesucher Chrome container
+  if [[ $EBESUCHER_USERNAME && $EBESUCHER_USE_CHROME ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull lscr.io/linuxserver/chromium:latest
+      
+      # Exit, if restart script is missing
+      if [ ! -f "$PWD/$restart_chrome_file" ];then
+        echo -e "${RED}Chrome restart script does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi 
+
+      # Download the chrome profile if not present
+      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip     
+      fi
+      
+      # Exit, if chrome profile zip file is missing
+      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+        echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      # Unzip the file
+      unzip $chrome_profile_zipfile
+      
+      # Exit, if chrome profile data is missing
+      if [ ! -d "$PWD/$chrome_profile_data" ];then
+        echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restartChrome.sh && while true; do sleep 3600; /chrome/restartChrome.sh; done')
+      execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
+    fi
+        
+    # Create folder and copy files
+    mkdir -p $PWD/$chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_profile_data
+    sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
+    
+    if [[  ! $proxy ]]; then
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      eb_port="-p $ebesucher_first_port:3000 "
+    fi
+    
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest)
+    execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
+    echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
+    ebesucher_first_port=`expr $ebesucher_first_port + 1`
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+    fi
+  fi
+
 
   
   # Starting Adnade container
