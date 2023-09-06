@@ -189,7 +189,13 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ebesucher_port="-p $ebesucher_first_port:5800 "
+      
+      if [ "$EBESUCHER_USE_CHROME" = true ]; then
+          ebesucher_port="-p $ebesucher_first_port:3000 "
+      else
+          ebesucher_port="-p $ebesucher_first_port:5800 "
+      fi
+      
     fi
 
     if [[ $ADNADE_USERNAME ]]; then
@@ -290,7 +296,12 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      eb_port="-p $ebesucher_first_port:5800"
+
+      if [ "$EBESUCHER_USE_CHROME" = true ]; then
+          eb_port="-p $ebesucher_first_port:3000 "
+      else
+          eb_port="-p $ebesucher_first_port:5800"
+      fi
     fi
     
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox)
