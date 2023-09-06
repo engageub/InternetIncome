@@ -256,7 +256,7 @@ start_containers() {
   fi
   
   # Starting Ebesucher Firefox container
-  if [[ $EBESUCHER_USERNAME && !$EBESUCHER_USE_CHROME ]]; then
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = false  ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
       
@@ -314,7 +314,7 @@ start_containers() {
   fi
 
 # Starting Ebesucher Chrome container
-  if [[ $EBESUCHER_USERNAME && $EBESUCHER_USE_CHROME ]]; then
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = true ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
       
