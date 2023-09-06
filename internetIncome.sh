@@ -37,16 +37,20 @@ mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
+chrome_containers_file="chromecontainers.txt"
 bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
+chrome_data_folder="chromedata"
+chrome_profile_data="chromeprofiledata"
+chrome_profile_zipfile="chromeprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_data_folder="proxyrackdata"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file $chrome_containers_file)
+folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($proxyrack_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file)
 
@@ -244,8 +248,8 @@ start_containers() {
     fi
   fi
   
-  # Starting Ebesucher container
-  if [[ $EBESUCHER_USERNAME ]]; then
+  # Starting Ebesucher Firefox container
+  if [[ $EBESUCHER_USERNAME && !$EBESUCHER_USE_CHROME ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
       
