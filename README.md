@@ -58,6 +58,8 @@ Your income depends on the number of proxies used and the location of proxy. If 
 ## :house_with_garden:	Prerequisites 	
 Run the following commands to install or update docker.
 
+Ubuntu 20.04 is recommended. 
+
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ### Install docker on Linux
 ```
