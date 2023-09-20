@@ -34,6 +34,7 @@ networks_file="networks.txt"
 mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
+adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
 bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
@@ -43,7 +44,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_data_folder="proxyrackdata"
 restart_firefox_file="restartFirefox.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $firefox_containers_file)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 back_up_folders=($proxyrack_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file)
@@ -53,6 +54,7 @@ container_pulled=false
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
 ebesucher_first_port=3000
+adnade_first_port=4000
 
 
 #Unique Id
@@ -156,7 +158,18 @@ start_containers() {
       fi
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
-    combined_ports=$mysterium_port$ebesucher_port
+
+     if [[ $ADNADE_USERNAME ]]; then
+      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      adnade_port="-p $adnade_first_port:5800 "
+    fi
+    
+    combined_ports=$mysterium_port$ebesucher_port$adnade_port
     echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
@@ -271,6 +284,36 @@ start_containers() {
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Adnade container
+  if [[ $ADNADE_USERNAME ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull jlesage/firefox
+    fi
+        
+    if [[  ! $proxy ]]; then
+      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      ad_port="-p $adnade_first_port:5800"
+    fi
+
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file 
+      echo "http://127.0.0.1:$adnade_first_port" | tee -a $adnade_file
+      adnade_first_port=`expr $adnade_first_port + 1`      
+    else
+      echo -e "${RED}Failed to start container for Adnade..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
   
