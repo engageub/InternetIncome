@@ -19,19 +19,19 @@ Your income depends on the number of proxies used and the location of proxy. If 
 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 10. [BitPing](https://app.bitping.com/?r=drPpp600)
-11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted. Good earnings but consumes more CPU and memory)
+11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted)
 12. [Mysterium](https://mystnodes.com/) (Payment of $1 or ~0.22 MYST is required during setup for every node)
-13. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
-14. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
-15. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
-16. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
-17. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-18. [PacketShare](https://www.packetshare.io/) (Not Supported)
-19. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
-20. [Meson Network](https://dashboard.meson.network/register) (Updated soon)
-21. [Cash Raven](https://cashraven.io/) (Mobile device)
-22. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported)
-23. [Adnade](https://t.co/KthcbzPa08) (Updated Soon)
+13. [Adnade](https://t.co/KthcbzPa08) (Private autosurf)
+14. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
+15. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
+16. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
+17. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
+18. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
+19. [PacketShare](https://www.packetshare.io/) (Not Supported)
+20. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
+21. [Meson Network](https://dashboard.meson.network/register) (Updated soon)
+22. [Cash Raven](https://cashraven.io/) (Mobile device)
+23. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported)
 24. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account)
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type 
@@ -43,6 +43,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1|
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1|
+| [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit|
 | [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1|
 | [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2|
