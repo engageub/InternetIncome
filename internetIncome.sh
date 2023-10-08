@@ -388,12 +388,12 @@ start_containers() {
       else
         echo "Proxyrack UUID does not exist, creating UUID"
         proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
-        printf "$proxyrack_uuid" | tee -a $proxyrack_file
+        printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
       fi
     else
       echo "Proxyrack UUID does not exist, creating UUID"
       proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
-      printf "$proxyrack_uuid" | tee -a $proxyrack_file
+      printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
 	    
     if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
