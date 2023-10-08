@@ -179,6 +179,7 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
       sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+      sudo docker exec $CONTAINER_ID sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 8.8.8.8' > /etc/resolv.conf;echo 'nameserver 1.1.1.1' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
       exit 1
