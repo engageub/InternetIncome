@@ -11,7 +11,7 @@ i=`expr $i + 1`
 docker update --restart=no $container
 docker stop $container
 # Chrome with direct connection
-if [ -d "/chrome/chromedata/data" ];then
+if [ -d "/chrome/$chrome_data_folder/data" ];then
   chmod -R 777 /chrome/$chrome_data_folder/data
   rm -rf /chrome/$chrome_data_folder/data/*
   chown -R 911:911 /chrome/$chrome_profile_data
@@ -22,7 +22,7 @@ if [ -d "/chrome/chromedata/data" ];then
   exit 1
 fi
 
-if [ ! -d "/chrome/chromedata/data$i" ];then
+if [ ! -d "/chrome/$chrome_data_folder/data$i" ];then
 echo "Folder data$i does not exist. Exiting.."
 exit 1
 fi
