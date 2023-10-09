@@ -44,6 +44,7 @@ firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 restart_firefox_file="restartFirefox.sh"
 chrome_data_folder="chromedata"
+adnade_data_folder="adnadedata"
 chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 restart_chrome_file="restartChrome.sh"
@@ -51,7 +52,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
+folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
 
@@ -274,7 +275,7 @@ start_containers() {
       fi
       
       # Unzip the file
-      unzip $firefox_profile_zipfile
+      unzip -o $firefox_profile_zipfile
       
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
@@ -337,7 +338,7 @@ start_containers() {
       fi
       
       # Unzip the file
-      unzip $chrome_profile_zipfile
+      unzip -o $chrome_profile_zipfile
       
       # Exit, if chrome profile data is missing
       if [ ! -d "$PWD/$chrome_profile_data" ];then
@@ -381,7 +382,7 @@ start_containers() {
 
   
   # Starting Adnade container
-  if [[ $ADNADE_USERNAME ]]; then
+  if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = false ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
     fi
@@ -401,6 +402,68 @@ start_containers() {
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
+    adnade_first_port=`expr $adnade_first_port + 1`
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Adnade Chrome container
+  if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = true ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull lscr.io/linuxserver/chromium:latest
+      
+      # Exit, if restart script is missing
+      if [ ! -f "$PWD/$restart_chrome_file" ];then
+        echo -e "${RED}Chrome restart script does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi 
+
+      # Download the chrome profile if not present
+      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip     
+      fi
+      
+      # Exit, if chrome profile zip file is missing
+      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+        echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      # Unzip the file
+      unzip -o $chrome_profile_zipfile
+      
+      # Exit, if chrome profile data is missing
+      if [ ! -d "$PWD/$chrome_profile_data" ];then
+        echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+    fi
+        
+    # Create folder and copy files
+    mkdir -p $PWD/$adnade_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_profile_data
+    sudo cp -r $PWD/$chrome_profile_data $PWD/$adnade_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
+    
+    if [[  ! $proxy ]]; then
+      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      ad_port="-p $adnade_first_port:3000 "
+    fi
+    
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $ad_port lscr.io/linuxserver/chromium:latest)
+    execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
+    echo "adnade$UNIQUE_ID$i" | tee -a $chrome_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
