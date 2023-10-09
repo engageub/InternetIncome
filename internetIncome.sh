@@ -48,12 +48,12 @@ chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 restart_chrome_file="restartChrome.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
-proxyrack_data_folder="proxyrackdata"
+proxyrack_file="proxyrack.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
-back_up_folders=($proxyrack_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($earnapp_file)
+back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
+back_up_files=($proxyrack_file $earnapp_file)
 
 container_pulled=false
 
@@ -456,28 +456,27 @@ start_containers() {
   fi
 
   # Starting ProxyRack container
-  if [[ $PROXY_RACK_API ]]; then
+  if [ "$PROXYRACK" = true ]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
-    mkdir -p $PWD/$proxyrack_data_folder/data$i
-    sudo chmod -R 777 $PWD/$proxyrack_data_folder
-    proxyrack_volume=""
-    proxyrack_uuid=""
-    if [ -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ] && proxyrack_uuid=$(cat $PWD/$proxyrack_data_folder/data$i/uuid.cfg);then
+    if [ -f $proxyrack_file ] && proxyrack_uuid=$(sed "${i}q;d" $proxyrack_file);then
       if [[ $proxyrack_uuid ]];then
-       echo "UUID already exists"
-       proxyrack_volume="-v $PWD/$proxyrack_data_folder/data$i/uuid.cfg:/app/uuid.cfg"
+        echo $proxyrack_uuid
       else
-        sudo rm $PWD/$proxyrack_data_folder/data$i/uuid.cfg
+        echo "Proxyrack UUID does not exist, creating UUID"
+        proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+        printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
       fi
+    else
+      echo "Proxyrack UUID does not exist, creating UUID"
+      proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN $proxyrack_volume -e api_key=$PROXY_RACK_API -e device_name=$DEVICE_NAME$i proxyrack/pop)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid proxyrack/pop)
     execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "${docker_parameters[@]}"
-    if [[ ! -f $PWD/$proxyrack_data_folder/data$i/uuid.cfg ]];then
-      sleep 5
-      sudo docker exec proxyrack$UNIQUE_ID$i cat uuid.cfg > $PWD/$proxyrack_data_folder/data$i/uuid.cfg
-    fi
+    echo -e "${GREEN}Copy the node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
@@ -579,16 +578,17 @@ start_containers() {
       else
         echo "UUID does not exist, creating UUID"
         uuid=sdk-node-$RANDOM_ID
+        printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
       fi
     else
       echo "UUID does not exist, creating UUID"
       uuid=sdk-node-$RANDOM_ID
+      printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite)
     execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "${docker_parameters[@]}"
-    echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
+    echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
-    printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
