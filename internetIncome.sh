@@ -38,6 +38,7 @@ ebesucher_file="ebesucher.txt"
 adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
+adnade_containers_file="adnadecontainers.txt"
 bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
@@ -51,7 +52,7 @@ restart_chrome_file="restartChrome.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -463,7 +464,7 @@ start_containers() {
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
-    echo "adnade$UNIQUE_ID$i" | tee -a $chrome_containers_file
+    echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
