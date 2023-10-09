@@ -440,6 +440,9 @@ start_containers() {
         echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
+
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restartAdnade.sh && while true; do sleep 7200; /chrome/restartAdnade.sh; done')
+      execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "${docker_parameters[@]}"
       
     fi
         
