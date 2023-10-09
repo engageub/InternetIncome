@@ -63,7 +63,7 @@ while read container_id <&3 && read container_proxy <&4; do
   container_image=`sudo docker inspect --format='{{.Config.Image}}' $container_id`
   if [[ $container_image == "xjasonlyu/tun2socks"* ]]; then
     sudo docker exec $container_id sh -c "sed -i \"\#--proxy#s#.*#    --proxy ${container_proxy//\//\\\\/} \\\\\#\" entrypoint.sh"
-    sudo docker exec $container_id sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 8.8.8.8' > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
+    sudo docker exec $container_id sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 8.8.8.8' > /etc/resolv.conf;echo 'nameserver 1.1.1.1' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
   fi
 done 3<$tun_containers_file 4<$updated_proxies_file
 else
