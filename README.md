@@ -27,7 +27,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 16. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
 17. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
 18. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-19. [PacketShare](https://www.packetshare.io/) (Not Supported)
+19. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported)
 20. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
 21. [Meson Network](https://dashboard.meson.network/register) (Updated soon)
 22. [Cash Raven](https://cashraven.io/) (Mobile device)
