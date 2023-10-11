@@ -192,13 +192,11 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      
       if [ "$EBESUCHER_USE_CHROME" = true ]; then
           ebesucher_port="-p $ebesucher_first_port:3000 "
       else
           ebesucher_port="-p $ebesucher_first_port:5800 "
       fi
-      
     fi
 
     if [[ $ADNADE_USERNAME ]]; then
@@ -208,7 +206,11 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      adnade_port="-p $adnade_first_port:5800 "
+      if [ "$ADNADE_USE_CHROME" = true ]; then
+          adnade_port="-p $adnade_first_port:3500 "
+      else
+          adnade_port="-p $adnade_first_port:5900 "
+      fi 
     fi
     
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
@@ -395,10 +397,10 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ad_port="-p $adnade_first_port:5800"
+      ad_port="-p $adnade_first_port:5900"
     fi
     
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e WEB_LISTENING_PORT=5900 -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
@@ -459,10 +461,10 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ad_port="-p $adnade_first_port:3000 "
+      ad_port="-p $adnade_first_port:3500 "
     fi
     
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -v $PWD/$adnade_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $ad_port lscr.io/linuxserver/chromium:latest)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CUSTOM_PORT=3500 -e CHROME_CLI="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -v $PWD/$adnade_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $ad_port lscr.io/linuxserver/chromium:latest)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
