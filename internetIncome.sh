@@ -166,7 +166,7 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      adnade_port="-p $adnade_first_port:5800 "
+      adnade_port="-p $adnade_first_port:5900 "
     fi
     
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
@@ -301,10 +301,10 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ad_port="-p $adnade_first_port:5800"
+      ad_port="-p $adnade_first_port:5900"
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e WEB_LISTENING_PORT=5900 -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file 
       echo "http://127.0.0.1:$adnade_first_port" | tee -a $adnade_file
