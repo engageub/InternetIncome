@@ -53,10 +53,10 @@ traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
+files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($proxyrack_file $earnapp_file $cloud_collab_file)
+back_up_files=($proxyrack_file $earnapp_file)
 
 container_pulled=false
 
@@ -550,6 +550,23 @@ start_containers() {
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting CloudCollab container
+  if [ "$CLOUDCOLLAB" = true ]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull --platform=linux/amd64 cloudcollabapp/peer
+    fi
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN cloudcollabapp/peer)
+    execute_docker_command "CloudCollab" "cloudcollab$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the device id and paste in your cloud collab dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the device ids in the file $cloud_collab_file in the same folder${NOCOLOUR}"
+	sleep 5
+	sudo docker exec cloudcollab$UNIQUE_ID$i cat /root/.config/CloudCollab/deviceid | od -A n -v -t x1 | tr -d ' ' | tee -a $cloud_collab_file
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}CloudCollab is not enabled. Ignoring CloudCollab..${NOCOLOUR}"
     fi
   fi
 
