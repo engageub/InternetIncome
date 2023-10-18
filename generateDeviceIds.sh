@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Script to generate device Ids
+#Script to get device Ids from containers
 containers_file="containernames.txt"
 cloud_collab_file="cloudcollab.txt"
 
