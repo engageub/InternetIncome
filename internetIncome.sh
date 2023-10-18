@@ -44,6 +44,7 @@ firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 restart_firefox_file="restartFirefox.sh"
+generate_device_ids_file="generateDeviceIds.sh"
 chrome_data_folder="chromedata"
 adnade_data_folder="adnadedata"
 chrome_profile_data="chromeprofiledata"
@@ -52,7 +53,7 @@ restart_chrome_file="restartChrome.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $generate_device_ids_file)
 files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
@@ -99,6 +100,15 @@ login_bitping() {
       sleep 5
       sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
     fi
+  fi
+}
+
+# Function to generate device Ids
+generate_device_ids() {
+  if [ "$CLOUDCOLLAB" = true ]; then
+    echo "Waiting 30 seconds before generating device Ids"
+    sleep 30
+    sudo bash $generate_device_ids_file
   fi
 }
 
@@ -795,6 +805,9 @@ if [[ "$1" == "--start" ]]; then
       fi
     done < $proxies_file 
   fi
+
+  # Generate device Ids
+  generate_device_ids
   
 fi
 
