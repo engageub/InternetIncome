@@ -51,11 +51,12 @@ chrome_profile_zipfile="chromeprofiledata.zip"
 restart_chrome_file="restartChrome.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
+cloud_collab_file="cloudcollab.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
 folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($proxyrack_file $earnapp_file)
+back_up_files=($proxyrack_file $earnapp_file $cloud_collab_file)
 
 container_pulled=false
 
