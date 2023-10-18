@@ -556,9 +556,9 @@ start_containers() {
   # Starting CloudCollab container
   if [ "$CLOUDCOLLAB" = true ]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 cloudcollabapp/peer
+      sudo docker pull --platform=linux/amd64 cloudcollabapp/peer:x64
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN cloudcollabapp/peer)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN cloudcollabapp/peer:x64)
     execute_docker_command "CloudCollab" "cloudcollab$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the device id and paste in your cloud collab dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the device ids in the file $cloud_collab_file in the same folder${NOCOLOUR}"
