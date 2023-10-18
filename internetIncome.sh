@@ -563,8 +563,8 @@ start_containers() {
     execute_docker_command "CloudCollab" "cloudcollab$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the device id and paste in your cloud collab dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the device ids in the file $cloud_collab_file in the same folder${NOCOLOUR}"
-	sleep 5
-	sudo docker exec cloudcollab$UNIQUE_ID$i cat /root/.config/CloudCollab/deviceid | od -A n -v -t x1 | tr -d ' ' | tee -a $cloud_collab_file
+    sleep 20
+    sudo docker exec cloudcollab$UNIQUE_ID$i cat /root/.config/CloudCollab/deviceid | od -A n -v -t x1 | tr -d ' ' | tee -a $cloud_collab_file
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}CloudCollab is not enabled. Ignoring CloudCollab..${NOCOLOUR}"
