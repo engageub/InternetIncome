@@ -81,7 +81,7 @@ If you don't have GUI access but have terminal access, use the following command
 ```
 wget https://github.com/engageub/InternetIncome/archive/refs/heads/test.zip
 sudo apt-get install unzip
-unzip test.zip
+unzip -o test.zip
 cd InternetIncome-test
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
