@@ -554,6 +554,7 @@ start_containers() {
   fi
 
   # Starting CloudCollab container
+  # ToDo: Check if device Id is generated within 5 seconds
   if [ "$CLOUDCOLLAB" = true ]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 cloudcollabapp/peer:x64
