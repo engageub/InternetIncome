@@ -325,7 +325,7 @@ start_containers() {
     ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+      echo -e "${RED}Ebesucher username for firefox is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
 
@@ -389,12 +389,10 @@ start_containers() {
     ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+      echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
 
-
-  
   # Starting Adnade container
   if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = false ]]; then
     if [ "$container_pulled" = false ]; then
@@ -419,7 +417,7 @@ start_containers() {
     adnade_first_port=`expr $adnade_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
+      echo -e "${RED}Adnade username for firefox is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
 
@@ -484,7 +482,7 @@ start_containers() {
     adnade_first_port=`expr $adnade_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
+      echo -e "${RED}Adnade username for chrome is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
   
