@@ -79,7 +79,7 @@ Download the code and edit the configuration file properties.conf with your acco
 If you don't have GUI access but have terminal access, use the following commands to download the code.
 ### Download the code
 ```
-wget https://github.com/engageub/InternetIncome/archive/refs/heads/test.zip
+wget -O test.zip https://github.com/engageub/InternetIncome/archive/refs/heads/test.zip
 sudo apt-get install unzip
 unzip -o test.zip
 cd InternetIncome-test
