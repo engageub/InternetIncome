@@ -533,6 +533,20 @@ start_containers() {
     fi
   fi
 
+  # Starting Earn Fm container
+  if [[ $EARN_FM_API ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull earnfm/earnfm-client:latest
+    fi
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest)
+    execute_docker_command "EarnFm" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
+    fi
+  fi
+
+
   # Starting ProxyRack container
   if [ "$PROXYRACK" = true ]; then
     if [ "$container_pulled" = false ]; then
