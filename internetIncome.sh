@@ -476,6 +476,7 @@ start_containers() {
       sudo docker logs -n 10 "$CONTAINER_ID"
       if sudo docker logs -n 10 "$CONTAINER_ID" 2>&1 | grep -q "PacketStream background process is running"; then
           echo "$proxy is residential"
+          echo "$proxy" | tee -a residential.txt
       else
           sudo docker rm -f "$CONTAINER_ID"
       fi
