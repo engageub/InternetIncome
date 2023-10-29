@@ -9,7 +9,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 ## :moneybag:	Register with the following links:
 | | | |
-| :- |  :- | :- |
+| :--- |  :--- | :--- |
 | 1. [EarnApp](https://t.co/k0w7jqLfxq) | 2. [PacketStream](https://t.co/FtklOxS7QN) | 3. [Honeygain](https://t.co/Xo1FwoUJx1)|  
 | 4. [IPRoyal](https://t.co/7hZUclQbCd) |  5. [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | 6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  |
 | 7. [Repocket](https://link.repocket.co/pV1G)  | 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  | 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  |
