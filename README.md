@@ -8,33 +8,17 @@ This script has been tested in linux amd64, arm64 or aarch64 platforms.
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
 ## :moneybag:	Register with the following links:
-
-1. [EarnApp](https://t.co/k0w7jqLfxq)  
-2. [PacketStream](https://t.co/FtklOxS7QN)  
-3. [Honeygain](https://t.co/Xo1FwoUJx1)  
-4. [IPRoyal](https://t.co/7hZUclQbCd)  
-5. [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  
-6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  
-7. [Repocket](https://link.repocket.co/pV1G)  
-8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
-9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
-10. [BitPing](https://app.bitping.com/?r=drPpp600)
-11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted)
-12. [Mysterium](https://mystnodes.com/) (Payment of $1 or ~0.22 MYST is required during setup for every node)
-13. [Adnade](https://t.co/KthcbzPa08) (Private autosurf)
-14. [EarnFM](https://t.co/SX6ggtooDW) (Updated soon)
-15. [CloudCollab](https://cloudcollab.uk/) (Updated soon)
-16. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
-17. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
-18. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
-19. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
-20. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-21. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported)
-22. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
-23. [Meson Network](https://dashboard.meson.network/register) (Updated soon)
-24. [Cash Raven](https://cashraven.io/) (Mobile device)
-25. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported)
-26. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account)
+| | | |
+| :- |  :- | :- |
+| 1. [EarnApp](https://t.co/k0w7jqLfxq) | 2. [PacketStream](https://t.co/FtklOxS7QN) | 3. [Honeygain](https://t.co/Xo1FwoUJx1)|  
+| 4. [IPRoyal](https://t.co/7hZUclQbCd) |  5. [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  | 6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  |
+| 7. [Repocket](https://link.repocket.co/pV1G)  | 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  | 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  |
+| 10. [BitPing](https://app.bitping.com/?r=drPpp600) | 11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted) |12. [Mysterium](https://mystnodes.com/) (Payment of $1 or ~0.22 MYST is required during setup for every node) |
+| 13. [Adnade](https://t.co/KthcbzPa08) (Private autosurf) | 14. [EarnFM](https://t.co/SX6ggtooDW)  | 15. [CloudCollab](https://cloudcollab.uk/) (Updated soon) |
+| 16. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon) | 17. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported) | 18. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported) |
+| 19. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported) | 20. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device) | 21. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported) |
+| 22. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported) | 23. [Meson Network](https://dashboard.meson.network/register) (Updated soon) | 24. [Cash Raven](https://cashraven.io/) (Mobile device) |
+| 25. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported) | 26. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account) |
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 * [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox browser inside the container, so they consume more resources compared to other containers. 
 ## :judge: Comparison of different apps based on proxy type 
