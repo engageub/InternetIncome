@@ -507,6 +507,24 @@ start_containers() {
     fi
   fi
 
+  # Starting Earn Fm container
+  if [[ $EARN_FM_API ]]; then
+    echo -e "${GREEN}Starting EarnFm container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull earnfm/earnfm-client:latest
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for EarnFm..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
     echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
