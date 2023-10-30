@@ -183,7 +183,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
       exit 1
     fi
-    sleep 1
+    sleep 5
   fi
   
   # Starting Mysterium container
