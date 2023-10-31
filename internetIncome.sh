@@ -469,17 +469,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i --restart always -e HTTP_PROXY=$proxy -e HTTPS_PROXY=$proxy -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
-      sleep 10
-      sudo docker logs -n 10 "$CONTAINER_ID"
-      if sudo docker logs -n 10 "$CONTAINER_ID" 2>&1 | grep -q "PacketStream is running"; then
-          echo "$proxy is residential"
-          echo "$proxy" | tee -a residential.txt
-      else
-          sudo docker rm -f "$CONTAINER_ID"
-      fi
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
     fi   
