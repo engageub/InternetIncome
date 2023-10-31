@@ -469,7 +469,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN --restart always -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN --restart always --e HTTP_PROXY="" -e HTTPS_PROXY="" e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
