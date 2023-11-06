@@ -27,6 +27,7 @@ properties_file="properties.conf"
 banner_file="banner.jpg"
 proxies_file="proxies.txt"
 vpns_file="vpns.txt"
+multi_ip_file="multiips.txt"
 containers_file="containers.txt"
 container_names_file="containernames.txt"
 earnapp_file="earnapp.txt"
@@ -230,10 +231,16 @@ start_containers() {
       sudo docker pull xjasonlyu/tun2socks:v2.5.0
     fi
 
-    if [ "$vpn_enabled" ];then
+    if [ "$vpn_enabled" = true ];then
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
+    elif [ "$vpn_enabled" = false ];then
+      subnet_number=`expr 32 + $i`
+      NETWORK_TUN="--network multi$UNIQUE_ID$i"
+      echo "multi$UNIQUE_ID$i" | tee -a $networks_file
+      sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet 192.168.$subnet_number.0/24
+      sudo iptables -t nat -I POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $proxy
     else    
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -794,6 +801,26 @@ if [[ "$1" == "--start" ]]; then
     done < $vpns_file
   fi
 
+  # Use Multi IPs
+  if [ "$USE_MULTI_IP" = true ]; then
+    echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}" 
+    if [ ! -f "$multi_ip_file" ]; then
+      echo -e "${RED}Multi IP file $multi_ip_file does not exist, exiting..${NOCOLOUR}"
+      exit 1
+    fi
+
+    # Remove special character ^M from vpn file
+    sed -i 's/\r//g' $multi_ip_file
+    
+    i=0;
+    while IFS= read -r line || [ -n "$line" ]; do
+      if [[ "$line" =~ ^[^#].* ]]; then
+        i=`expr $i + 1`
+        start_containers "$i" "$line" "false"
+      fi
+    done < $multi_ip_file
+  fi
+
   # Use Proxies
   if [ "$USE_PROXIES" = true ]; then
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
@@ -842,15 +869,23 @@ if [[ "$1" == "--delete" ]]; then
   if [ -f "$networks_file" ]; then
     for i in `cat $networks_file`
     do
-      # Check if network exists and delete
-      if sudo docker network inspect $i > /dev/null 2>&1; then
-        sudo docker network rm $i
-      else
-        echo "Network $i does not exist"
-      fi
+      sudo docker network rm $i
     done
     # Delete network file
     rm $networks_file
+  fi
+
+  # Delete IP tables
+  k=1
+  if [ "$USE_MULTI_IP" = true ]; then
+      if [ -f "$multi_ip_file" ]; then
+        for ip in `cat $multi_ip_file`
+        do
+          subnet_number=`expr 32 + $k`
+          sudo iptables -t nat -D POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $ip
+          k=`expr $k +1`
+        done
+      fi
   fi
   
   for file in "${files_to_be_removed[@]}"
