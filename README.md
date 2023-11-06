@@ -76,7 +76,7 @@ If you don't have GUI access but have terminal access, use the following command
 ```
 wget https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
 sudo apt-get install unzip
-unzip main.zip
+unzip -o main.zip
 cd InternetIncome-main
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
