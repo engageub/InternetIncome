@@ -809,7 +809,7 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
 
-    # Remove special character ^M from vpn file
+    # Remove special character ^M from multi ip file
     sed -i 's/\r//g' $multi_ip_file
     
     i=0;
