@@ -36,6 +36,8 @@ mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 adnade_file="adnade.txt"
+adnade_data_folder="adnadedata"
+adnade_containers_file="adnadecontainers.txt"
 firefox_containers_file="firefoxcontainers.txt"
 bitping_folder=".bitping"
 firefox_data_folder="firefoxdata"
@@ -43,9 +45,10 @@ firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 restart_firefox_file="restartFirefox.sh"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+restart_adnade_file="restartAdnade.sh"
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file)
+folders_to_be_removed=($bitping_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 
@@ -241,7 +244,7 @@ start_containers() {
       fi
       
       # Unzip the file
-      unzip $firefox_profile_zipfile
+      unzip -o $firefox_profile_zipfile
       
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
@@ -288,12 +291,51 @@ start_containers() {
     fi
   fi
 
+
   # Starting Adnade container
   if [[ $ADNADE_USERNAME ]]; then
+    echo -e "${GREEN}Starting Adnade container..${NOCOLOUR}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
+      
+      # Exit, if restart script is missing
+      if [ ! -f "$PWD/$restart_adnade_file" ];then
+        echo -e "${RED}Adnade restart script does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi 
+      
+      # Exit, if firefox profile zip file is missing
+      if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
+        echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      # Unzip the file
+      unzip -o $firefox_profile_zipfile
+      
+      # Exit, if firefox profile data is missing
+      if [ ! -d "$PWD/$firefox_profile_data" ];then
+        echo -e "${RED}Firefox profile Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnade.sh && while true; do sleep 7200; /firefox/restartAdnade.sh; done'); then
+        echo "Firefox restart container started"
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file 
+      else
+        echo -e "${RED}Failed to start container for adnade firefox restart..${NOCOLOUR}"
+        exit 1
+      fi
     fi
         
+    # Create folder and copy files
+    mkdir -p $PWD/$adnade_data_folder/data$i
+    sudo chmod -R 777 $PWD/$firefox_profile_data
+    cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
+    sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
     if [[  ! $proxy ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -303,11 +345,11 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e WEB_LISTENING_PORT=5900 -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file 
-      echo "http://127.0.0.1:$adnade_first_port" | tee -a $adnade_file
+      echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
+      echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
       adnade_first_port=`expr $adnade_first_port + 1`      
     else
       echo -e "${RED}Failed to start container for Adnade..${NOCOLOUR}"
