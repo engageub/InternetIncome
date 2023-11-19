@@ -677,8 +677,7 @@ start_containers() {
 
   # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
-    RANDOM=$(date +%s)
-    RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
+    RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
     date_time=`date "+%D %T"`
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
