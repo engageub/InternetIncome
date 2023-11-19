@@ -24,7 +24,7 @@ do
   if [[ $container == "cloudcollab"* ]]; then
     sudo docker exec  $container cat /root/.config/CloudCollab/deviceid | od -A n -v -t x1 | tr -d ' ' | tee -a $cloud_collab_file
   fi
-  if [[ $container == "testing"* ]]; then
+  if [[ $container == "earnapp"* ]]; then
     sudo docker exec -it $container earnapp showid | tee -a $earn_app_file
   fi
 done
