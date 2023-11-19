@@ -97,7 +97,7 @@ login_bitping() {
   fi
 }
 
-# Define a function to check for open ports
+# Check for open ports
 check_open_ports() {
   local first_port=$1
   local num_ports=$2
@@ -565,8 +565,7 @@ start_containers() {
     echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
-    RANDOM=$(date +%s)
-    RANDOM_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
+    RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
     date_time=`date "+%D %T"`
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
