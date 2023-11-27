@@ -228,6 +228,10 @@ start_containers() {
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
   
     if [ "$vpn_enabled" = true ];then
+      # Starting vpn containers
+      if [ "$container_pulled" = false ]; then
+        sudo docker pull ghcr.io/qdm12/gluetun
+      fi
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
