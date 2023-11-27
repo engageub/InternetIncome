@@ -255,7 +255,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
-    if [[  ! $proxy ]]; then
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
@@ -313,7 +313,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
-    if [[  ! $proxy ]]; then
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -377,7 +377,7 @@ start_containers() {
     sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
     
-    if [[  ! $proxy ]]; then
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -406,7 +406,7 @@ start_containers() {
       sudo docker pull jlesage/firefox
     fi
         
-    if [[  ! $proxy ]]; then
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -470,7 +470,7 @@ start_containers() {
     sudo cp -r $PWD/$chrome_profile_data $PWD/$adnade_data_folder/data$i
     sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
     
-    if [[  ! $proxy ]]; then
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
