@@ -104,7 +104,7 @@ login_bitping() {
   fi
 }
 
-# Function to generate device Ids
+# Generate device Ids
 generate_device_ids() {
   if [ "$CLOUDCOLLAB" = true ]; then
     echo "Waiting 30 seconds before generating device Ids"
@@ -113,7 +113,7 @@ generate_device_ids() {
   fi
 }
 
-# Function to check for open ports
+# Check for open ports
 check_open_ports() {
   local first_port=$1
   local num_ports=$2
@@ -226,11 +226,7 @@ start_containers() {
     fi
     
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
-    # Starting tun containers
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull xjasonlyu/tun2socks:v2.5.0
-    fi
-
+  
     if [ "$vpn_enabled" = true ];then
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
@@ -241,7 +237,11 @@ start_containers() {
       echo "multi$UNIQUE_ID$i" | tee -a $networks_file
       sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet 192.168.$subnet_number.0/24
       sudo iptables -t nat -I POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $proxy
-    else    
+    else 
+      # Starting tun containers
+      if [ "$container_pulled" = false ]; then
+        sudo docker pull xjasonlyu/tun2socks:v2.5.0
+      fi
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.0)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
