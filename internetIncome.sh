@@ -144,7 +144,8 @@ check_open_ports() {
 
 # Execute docker command
 execute_docker_command() {
-  container_parameters=("$@")  # Store parameters as an array
+  # Store parameters as an array
+  container_parameters=("$@")
   app_name=${container_parameters[0]}
   container_name=${container_parameters[1]}
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
