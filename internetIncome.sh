@@ -157,7 +157,7 @@ execute_docker_command() {
     exit 1
   fi
   # Delay between each container start
-  if [[ $DELAY_BETWEEN_CONTAINER ]]; then
+  if [[ $DELAY_BETWEEN_CONTAINER =~ ^[0-9]+$ ]]; then
     sleep $DELAY_BETWEEN_CONTAINER
   fi
 }
