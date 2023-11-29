@@ -1,4 +1,4 @@
-# :computer:	Internet Income :money_with_wings:	(Multiproxy Support) :european_castle:	
+# :computer:	Internet Income :money_with_wings:	(Multi-Proxy, Multi-Ip, Multi-VPN Support) :european_castle:	
 
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
