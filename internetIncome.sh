@@ -155,6 +155,10 @@ execute_docker_command() {
     echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
     exit 1
   fi
+  # Delay between each container start
+  if [[ $DELAY_BETWEEN_CONTAINER ]]; then
+    sleep $DELAY_BETWEEN_CONTAINER
+  fi
 }
 
 
@@ -251,7 +255,6 @@ start_containers() {
       sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
       sudo docker exec tun$UNIQUE_ID$i sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 8.8.8.8' > /etc/resolv.conf;echo 'nameserver 1.1.1.1' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
     fi
-    sleep 1
   fi
   
   # Starting Mysterium container
