@@ -45,6 +45,7 @@ firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 restart_firefox_file="restartFirefox.sh"
+restart_adnade_firefox_file="restartAdnadeFirefox.sh"
 generate_device_ids_file="generateDeviceIds.sh"
 chrome_data_folder="chromedata"
 adnade_data_folder="adnadedata"
@@ -408,34 +409,64 @@ start_containers() {
     fi
   fi
 
-  # Starting Adnade container
-  if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = false ]]; then
+  # Starting Adnade Firefox container
+  if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = false  ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
+      
+      # Exit, if restart script is missing
+      if [ ! -f "$PWD/$restart_adnade_firefox_file" ];then
+        echo -e "${RED}Adnade Firefox restart script does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi 
+      
+      # Exit, if firefox profile zip file is missing
+      if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
+        echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      # Unzip the file
+      unzip -o $firefox_profile_zipfile
+      
+      # Exit, if firefox profile data is missing
+      if [ ! -d "$PWD/$firefox_profile_data" ];then
+        echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnadeFirefox.sh && while true; do sleep 7200; /firefox/restartAdnadeFirefox.sh; done')
+      execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
         
+    # Create folder and copy files
+    mkdir -p $PWD/$adnade_data_folder/data$i
+    sudo chmod -R 777 $PWD/$firefox_profile_data
+    cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
+    sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
     if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
-         echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Adnade Firefox. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
     
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e WEB_LISTENING_PORT=5900 -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
+    echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Adnade username for firefox is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
-
+  
   # Starting Adnade Chrome container
   if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = true ]]; then
     if [ "$container_pulled" = false ]; then
