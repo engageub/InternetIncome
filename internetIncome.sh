@@ -122,7 +122,7 @@ check_open_ports() {
   open_ports=0
   
   for port in $port_range; do
-    nc -z localhost $port > /dev/null 2>&1
+    { timeout 1 bash -c "echo > /dev/tcp/localhost/$port" > /dev/null; } 2>/dev/null
     if [ $? -eq 0 ]; then
       open_ports=$((open_ports+1))
     fi
@@ -133,7 +133,7 @@ check_open_ports() {
     port_range=$(seq $first_port $((first_port+num_ports-1)))
     open_ports=0
     for port in $port_range; do
-      nc -z localhost $port > /dev/null 2>&1
+      { timeout 1 bash -c "echo > /dev/tcp/localhost/$port" > /dev/null; } 2>/dev/null
       if [ $? -eq 0 ]; then
         open_ports=$((open_ports+1))
       fi
