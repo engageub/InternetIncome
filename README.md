@@ -1,4 +1,4 @@
-# :computer: Internet Income :money_with_wings:	(Multiproxy Support) :european_castle:	
+# 💻 Internet Income 💸 (Multiproxy Support) 🏰	
 
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
@@ -7,7 +7,7 @@ The main advantage of this script is the use of multiple proxies through docker 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
-## :moneybag:	Register with the following links:
+## 💰	Register with the following links:
 | | | |
 | :--- |  :--- | :--- |
 | 1. [EarnApp](https://t.co/k0w7jqLfxq) | 2. [PacketStream](https://t.co/FtklOxS7QN) | 3. [Honeygain](https://t.co/Xo1FwoUJx1)|  
