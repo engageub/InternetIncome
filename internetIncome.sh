@@ -183,7 +183,10 @@ start_containers() {
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
       exit 1
     fi
-    sleep 30
+    # Delay between each container start
+    if [[ $DELAY_BETWEEN_CONTAINER =~ ^[0-9]+$ ]]; then
+      sleep $DELAY_BETWEEN_CONTAINER
+    fi
   fi
   
   # Starting Mysterium container
