@@ -180,7 +180,6 @@ start_containers() {
        socks5_dns_option="--dns direct"
     fi
 
-
     if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.1.12 $socks5_dns_option --proxy $proxy); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
