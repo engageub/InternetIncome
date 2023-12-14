@@ -22,6 +22,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | 28. [Surfe](https://surfe.be/video/1631650)(Browser Extension) | 29. [Slice](https://addslice.com/?crew=S2FLb) (Browser Extension) | |
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 * [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox browser inside the container, so they consume more resources compared to other containers.
+* If you wish to run windows apps on linux vps, please [Get Crossover](https://www.codeweavers.com/store?ad=1034). Single license can be used on muliple machines. 
 ## :judge: Comparison of different apps based on proxy type 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
