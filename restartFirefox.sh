@@ -16,6 +16,7 @@ if [ -d "/firefox/firefoxdata/data" ];then
   cp -r /firefox/$firefox_profile_data/* firefoxdata/data/
   chmod -R 777 /firefox/firefoxdata/data
   docker update --restart=always $container
+  sleep 300
   docker start $container
   exit 1
 fi
@@ -31,6 +32,9 @@ rm -rf /firefox/firefoxdata/data$i/*
 cp -r /firefox/$firefox_profile_data/* firefoxdata/data$i/
 chmod -R 777 /firefox/firefoxdata/data$i
 docker update --restart=always $container
+if [ $i == 1 ];then
+  sleep 300
+fi
 docker start $container
 
 done
