@@ -338,7 +338,7 @@ start_containers() {
     fi
 
     # Setting random window height and width for firefox
-    if [ "$USE_RANDOM_DISPLAY_EBESUCHER" = true ]; then
+    if [ "$EBESUCHER_USE_RANDOM_DISPLAY" = true ]; then
       WINDOW_WIDTH=$((RANDOM % 1920 + 800))
       WINDOW_HEIGHT=$((RANDOM % 1080 + 600))
     fi
