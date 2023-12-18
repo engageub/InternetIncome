@@ -337,9 +337,11 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:5800"
     fi
 
-    # Setting Random Window Height and Width for firefox
-    WINDOW_WIDTH=$((RANDOM % 1920 + 800))
-    WINDOW_HEIGHT=$((RANDOM % 1080 + 600))
+    # Setting random window height and width for firefox
+    if [ "$USE_RANDOM_DISPLAY_EBESUCHER" = true ]; then
+      WINDOW_WIDTH=$((RANDOM % 1920 + 800))
+      WINDOW_HEIGHT=$((RANDOM % 1080 + 600))
+    fi
     
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e DISPLAY_WIDTH=$WINDOW_WIDTH  -e DISPLAY_HEIGHT=$WINDOW_HEIGHT -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox)
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
