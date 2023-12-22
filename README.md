@@ -17,7 +17,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | 13. [Adnade](https://t.co/KthcbzPa08) (Private autosurf) | 14. [EarnFM](https://t.co/SX6ggtooDW)  | 15. [CloudCollab](https://cloudcollab.uk/) (Updated soon) |
 | 16. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon) | 17. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported) | 18. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported) |
 | 19. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported) | 20. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device) | 21. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported) |
-| 22. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported) | 23. [Meson Network](https://dashboard.meson.network/register) (Updated soon) | 24. [Cash Raven](https://cashraven.io/) (Mobile device) |
+| 22. [Speedshare](https://speedshare.app/?ref=engageub1) (Not Supported) | 23. [Meson Network](https://dashboard.meson.network/register) (Updated soon) | 24. [Cash Raven](https://cashraven.io/) (Mobile device) |
 | 25. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported) | 26. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account) | 27. [Addon Money](https://addon.money/p/309409) (Browser Extension)
 | 28. [Surfe](https://surfe.be/video/1631650)(Browser Extension) | 29. [Slice](https://addslice.com/?crew=S2FLb) (Browser Extension) | |
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
