@@ -439,9 +439,9 @@ start_containers() {
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 honeygain/honeygain    
+      sudo docker pull honeygain/honeygain    
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
     else
