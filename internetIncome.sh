@@ -662,9 +662,9 @@ start_containers() {
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 honeygain/honeygain    
+      sudo docker pull honeygain/honeygain    
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --platform=linux/amd64 honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i)
     execute_docker_command "Honeygain" "honey$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
