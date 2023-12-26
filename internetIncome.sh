@@ -40,7 +40,7 @@ adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
 adnade_containers_file="adnadecontainers.txt"
-bitping_folder=".bitping"
+bitping_data_folder="bitping-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
@@ -57,7 +57,7 @@ proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $generate_device_ids_file)
 files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
-folders_to_be_removed=($bitping_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
+folders_to_be_removed=($bitping_data_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
 
@@ -91,19 +91,6 @@ if [ -f "$banner_file" ]; then
   done
   echo -e "${NOCOLOUR}"
 fi
-
-# Login to bitping
-login_bitping() {
-  if [ "$BITPING" = true ]; then
-    if [ ! -d $bitping_folder ]; then
-      echo -e "${GREEN}Enter your bitping email and password below..${NOCOLOUR}"
-      echo -e "${RED}Press CTRL + C after it is connected..${NOCOLOUR}"    
-      mkdir $bitping_folder
-      sleep 5
-      sudo docker run -it --rm --platform=linux/amd64 --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest
-    fi
-  fi
-}
 
 # Generate device Ids
 generate_device_ids() {
@@ -544,11 +531,14 @@ start_containers() {
   fi
   
   # Starting BitPing container
-  if [ "$BITPING" = true ]; then
+  if [[ $BITPING_EMAIL && $BITPING_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 bitping/bitping-node:latest 
+      sudo docker pull mrcolorrain/bitping
     fi 
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN --mount type=bind,source="$PWD/$bitping_folder/",target=/root/.bitping bitping/bitping-node:latest)
+    # Create bitping folder
+    mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
+    sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWD=$BITPING_PASSWORD -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" mrcolorrain/bitping)
     execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
@@ -820,9 +810,6 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${RED}Device Name is not configured. Using default name ${NOCOLOUR}ubuntu"
     DEVICE_NAME=ubuntu
   fi
-  
-  #Login to bitping to set credentials
-  login_bitping
 
   # Use direct Connection
   if [ "$USE_DIRECT_CONNECTION" = true ]; then
