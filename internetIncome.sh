@@ -533,12 +533,14 @@ start_containers() {
   # Starting BitPing container
   if [[ $BITPING_EMAIL && $BITPING_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull mrcolorrain/bitping
+      sudo docker pull bitping/bitpingd:latest
+      # Create bitping data folder
+      mkdir -p $PWD/$bitping_data_folder/data/.bitpingd
+      sudo chmod -R 777 $PWD/$bitping_data_folder/data/.bitpingd
+      # Create bitping login folder
+      sudo docker run --rm -v "$PWD/$bitping_data_folder/data/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi 
-    # Create bitping folder
-    mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
-    sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWD=$BITPING_PASSWORD -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" mrcolorrain/bitping)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v "$PWD/$bitping_data_folder/data/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest)
     execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
