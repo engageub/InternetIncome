@@ -316,12 +316,13 @@ start_containers() {
   if [[ $BITPING_EMAIL && $BITPING_PASSWORD ]]; then
     echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull mrcolorrain/bitping
+      sudo docker pull bitping/bitpingd:latest
     fi 
     # Create bitping folder
     mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWD=$BITPING_PASSWORD -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" mrcolorrain/bitping); then
+    sudo docker run --rm -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file 
     else
