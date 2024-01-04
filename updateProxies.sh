@@ -5,6 +5,7 @@ containers_file="containernames.txt"
 proxies_file="proxies.txt"
 tun_containers_file="tuncontainers.txt"
 updated_proxies_file="updatedproxies.txt"
+properties_file="properties.conf"
 
 if [ -f $tun_containers_file ]; then
   rm $tun_containers_file
@@ -19,10 +20,38 @@ if [ ! -f $containers_file ]; then
   exit 1
 fi
 
+if [ ! -f $properties_file ]; then
+  echo "$properties_file file does not exist. Exiting.."
+  exit 1
+fi
+
 if [ ! -f $proxies_file ]; then
   echo "$proxies_file file does not exist. Exiting.."
   exit 1
 fi
+
+# Remove special character ^M from properties file
+sed -i 's/\r//g' $properties_file
+  
+# Read the properties file and export variables to the current shell
+while IFS= read -r line; do
+  # Ignore lines that start with #
+  if [[ $line != '#'* ]]; then
+      # Split the line at the first occurrence of =
+      key="${line%%=*}"
+      value="${line#*=}"
+      # Trim leading and trailing whitespace from key and value
+      key="${key%"${key##*[![:space:]]}"}"
+      value="${value%"${value##*[![:space:]]}"}"
+      # Ignore lines without a value after =
+      if [[ -n $value ]]; then
+          # Replace variables with their values
+          value=$(eval "echo $value")
+          # Export the key-value pairs as variables
+          export "$key"="$value"
+      fi
+  fi
+done < $properties_file
 
 # Remove special characters ^M from proxies file
 sed -i 's/\r//g' $proxies_file
@@ -63,7 +92,11 @@ while read container_id <&3 && read container_proxy <&4; do
   container_image=`sudo docker inspect --format='{{.Config.Image}}' $container_id`
   if [[ $container_image == "xjasonlyu/tun2socks"* ]]; then
     sudo docker exec $container_id sh -c "sed -i \"\#--proxy#s#.*#    --proxy ${container_proxy//\//\\\\/} \\\\\#\" entrypoint.sh"
-    sudo docker exec $container_id sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 8.8.8.8' > /etc/resolv.conf;echo 'nameserver 1.1.1.1' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
+    if [ "$USE_SOCKS5_DNS" != true ]; then
+      sudo docker exec $container_id sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 1.1.1.1' > /etc/resolv.conf;echo 'nameserver 8.8.8.8' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
+    else
+      sudo docker exec $container_id sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 1.1.1.1' > /etc/resolv.conf;echo 'nameserver 8.8.8.8' >> /etc/resolv.conf;exec tun2socks \\\\\#\" entrypoint.sh"
+    fi
   fi
 done 3<$tun_containers_file 4<$updated_proxies_file
 else
@@ -86,12 +119,5 @@ sleep 5
 echo "Restarting Containers"
 for container in `cat $containers_file`
 do
-if sudo docker inspect $container >/dev/null 2>&1; then
-  status=$(sudo docker inspect -f '{{.State.Status}}' $container)
-  if [ "$status" != "exited" ]; then
-    sudo docker restart $container
-  else
-    sudo docker start $container
-  fi
-fi
+  sudo docker restart $container
 done
