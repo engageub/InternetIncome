@@ -604,8 +604,8 @@ start_containers() {
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
     sequence=$i
-    if [ "USE_DIRECT_CONNECTION" = true ] && [ "$i" ]; then
-      sequence=`expr 1 + $i`
+    if [ "USE_DIRECT_CONNECTION" = true ]; then
+      sequence=$((1 + i))
     fi
     if [ -f $proxyrack_file ] && proxyrack_uuid=$(sed "${sequence}q;d" $proxyrack_file);then
       if [[ $proxyrack_uuid ]];then
@@ -733,8 +733,8 @@ start_containers() {
     mkdir -p $PWD/$earnapp_data_folder/data$i
     sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
     sequence=$i
-    if [ "USE_DIRECT_CONNECTION" = true ] && [ "$i" ]; then
-      sequence=`expr 1 + $i`
+    if [ "USE_DIRECT_CONNECTION" = true ]; then
+      sequence=$((1 + i))
     fi
     if [ -f $earnapp_file ] && uuid=$(sed "${sequence}q;d" $earnapp_file | grep -o 'https[^[:space:]]*'| sed 's/https:\/\/earnapp.com\/r\///g');then
       if [[ $uuid ]];then
