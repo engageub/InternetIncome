@@ -603,6 +603,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
+    sequence=$i
     if [ "USE_DIRECT_CONNECTION" = true ] && [ "$i" ]; then
       sequence=`expr 1 + $i`
     fi
@@ -731,6 +732,7 @@ start_containers() {
     fi
     mkdir -p $PWD/$earnapp_data_folder/data$i
     sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
+    sequence=$i
     if [ "USE_DIRECT_CONNECTION" = true ] && [ "$i" ]; then
       sequence=`expr 1 + $i`
     fi
