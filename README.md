@@ -34,6 +34,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :x: |No limit|1|
+| [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1|
 | [Peer2Profit](https://t.me/peer2profit_app_bot)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit|
 | [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1|
 | [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2|
