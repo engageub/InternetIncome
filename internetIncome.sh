@@ -239,13 +239,15 @@ start_containers() {
       if [ "$container_pulled" = false ]; then
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
-      if [ "$USE_SOCKS5_DNS" != true ]; then
-        EXTRA_COMMANDS='echo "nameserver 1.0.0.1" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
-      else
-        EXTRA_COMMANDS='echo "nameserver 1.0.0.1" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;'
-      fi
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS=$EXTRA_COMMANDS -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+      if [ "$USE_SOCKS5_DNS" != true ]; then
+        sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 1.0.0.1" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+        sudo docker exec tun$UNIQUE_ID$i sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 1.0.0.1' > /etc/resolv.conf;echo 'nameserver 1.1.1.1' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
+      else
+        sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 1.0.0.1" > /etc/resolv.conf;echo "nameserver 1.1.1.1" >> /etc/resolv.conf;'
+        sudo docker exec tun$UNIQUE_ID$i sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 1.0.0.1' > /etc/resolv.conf;echo 'nameserver 1.1.1.1' >> /etc/resolv.conf;exec tun2socks \\\\\#\" entrypoint.sh"
+      fi
     fi
   fi
   
