@@ -682,6 +682,19 @@ start_containers() {
     fi
   fi
 
+  # Starting Speedshare container
+  if [[ $SPEEDSHARE_TOKEN ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull eldavo/speedshare    
+    fi
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -h $DEVICE_NAME -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare)
+    execute_docker_command "Speedshare" "speedshare$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Speedshare Token is not configured. Ignoring Speedshare..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
