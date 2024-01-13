@@ -165,16 +165,14 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks:v2.5.2
     fi
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
+    if [ "$USE_SOCKS5_DNS" != true ]; then
+      EXTRA_COMMANDS='echo -e "nameserver 1.0.0.1\nnameserver 1.1.1.1" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+    else
+      EXTRA_COMMANDS='echo -e "nameserver 1.0.0.1\nnameserver 1.1.1.1" > /etc/resolv.conf;'
+    fi
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
-      if [ "$USE_SOCKS5_DNS" != true ]; then
-        sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 1.1.1.1" > /etc/resolv.conf;echo "nameserver 1.0.0.1" >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
-        sudo docker exec tun$UNIQUE_ID$i sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 1.1.1.1' > /etc/resolv.conf;echo 'nameserver 1.0.0.1' >> /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;exec tun2socks \\\\\#\" entrypoint.sh"
-      else
-        sudo docker exec tun$UNIQUE_ID$i sh -c 'echo "nameserver 1.1.1.1" > /etc/resolv.conf;echo "nameserver 1.0.0.1" >> /etc/resolv.conf;'
-        sudo docker exec tun$UNIQUE_ID$i sh -c "sed -i \"\|exec tun2socks|s#.*#echo 'nameserver 1.1.1.1' > /etc/resolv.conf;echo 'nameserver 1.0.0.1' >> /etc/resolv.conf;exec tun2socks \\\\\#\" entrypoint.sh"
-      fi
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
       exit 1
