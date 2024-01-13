@@ -739,7 +739,7 @@ start_containers() {
     RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
     date_time=`date "+%D %T"`
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
+      sudo docker pull fazalfarhan01/earnapp:lite
     fi
     mkdir -p $PWD/$earnapp_data_folder/data$i
     sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
@@ -760,7 +760,7 @@ start_containers() {
       uuid=sdk-node-$RANDOM_ID
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite)
     execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
