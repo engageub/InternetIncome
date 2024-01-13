@@ -564,7 +564,7 @@ start_containers() {
     RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
     date_time=`date "+%D %T"`
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
+      sudo docker pull fazalfarhan01/earnapp:lite
     fi
     mkdir -p $PWD/$earnapp_data_folder/data$i
     sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
@@ -582,7 +582,7 @@ start_containers() {
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
     
-    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file 
     else
