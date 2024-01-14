@@ -84,7 +84,7 @@ unzip -o main.zip
 cd InternetIncome-main
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
-* If you are using proxies, please set the "USE_PROXIES" value to "true". 
+* If you are using proxies, please set "USE_PROXIES" value to "true". 
 * When setting your email, password, or token, always use double quotes ("") due to special characters. 
 * If you do not wish to use a particular application, leave the default value as it is, and the script will not run for that application.
 ### Update configuration and save
@@ -105,7 +105,7 @@ Note that back up of device Ids and node Ids are present in the same folder of t
 sudo bash internetIncome.sh --delete
 ```
 ### Delete backup files and folders
-To delete the backup files and folders created by the script, use the following command. This will also delete mysterium data, so if you already made payment for the node take a backup before runnning the command.
+To delete the backup files and folders created by the script, use the following command.
 ```
 sudo bash internetIncome.sh --deleteBackup
 ```
