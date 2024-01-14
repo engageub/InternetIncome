@@ -92,7 +92,7 @@ cd InternetIncome-main
 vi properties.conf
 ```
 ## :runner: Run the script
-After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
+After you have followed all the mentioned above steps just run the following command to start and check your income flow to you :money_mouth_face:	.
 ### Start the process
 ```
 sudo bash internetIncome.sh --start
