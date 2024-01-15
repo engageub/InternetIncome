@@ -538,7 +538,7 @@ start_containers() {
       mkdir -p $PWD/$bitping_data_folder/data/.bitpingd
       sudo chmod -R 777 $PWD/$bitping_data_folder/data/.bitpingd
       # Create bitping login folder
-      sudo docker run --rm $NETWORK_TUN -v "$PWD/$bitping_data_folder/data/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+      sudo docker run --rm -v "$PWD/$bitping_data_folder/data/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi 
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v "$PWD/$bitping_data_folder/data/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest)
     execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -687,7 +687,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull eldavo/speedshare    
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -h $DEVICE_NAME$i -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare)
     execute_docker_command "Speedshare" "speedshare$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
