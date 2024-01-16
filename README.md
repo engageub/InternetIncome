@@ -27,7 +27,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
 |  :--- |  :---: |  :---: | :---: | :---: |
-| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 15|1|
+| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1|
 | [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1|
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1|
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|
