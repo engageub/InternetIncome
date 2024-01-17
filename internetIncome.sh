@@ -71,6 +71,7 @@ adnade_first_port=4000
 #Unique Id
 RANDOM=$(date +%s)
 UNIQUE_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
+DEVICE_NAME=`cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | dd bs=1 count=6 2>/dev/null`
 
 # Use banner if exists
 if [ -f "$banner_file" ]; then
