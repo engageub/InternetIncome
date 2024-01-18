@@ -41,6 +41,7 @@ firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
 adnade_containers_file="adnadecontainers.txt"
 bitping_data_folder="bitping-data"
+meson_data_folder="meson-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
@@ -67,6 +68,7 @@ container_pulled=false
 mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
+meson_first_port=9000
 
 #Unique Id
 RANDOM=$(date +%s)
@@ -545,6 +547,33 @@ start_containers() {
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Meson container
+  if [[ $MESON_TOKEN ]]; then
+    meson_first_port=$(check_open_ports $meson_first_port 1)
+    if ! expr "$meson_first_port" : '[[:digit:]]*$' >/dev/null; then
+      echo -e "${RED}Problem assigning port $meson_first_port ..${NOCOLOUR}"
+      echo -e "${RED}Failed to start Meson. Resolve or disable Meson to continue. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+    CPU_ARCH=`uname -m`
+    container_image="--platform=linux/amd64 simeononsecurity/docker-mesonnetwork"
+    if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
+      container_image="simeononsecurity/docker-mesonnetwork:arm64-latest"
+    fi
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull $container_image
+    fi
+    mkdir -p $PWD/$meson_data_folder/data$i
+    sudo chmod -R 777 $PWD/$meson_data_folder/data$i
+    meson_volume="-v $PWD/$meson_data_folder/data$i:/home/docker"
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $meson_volume -p $meson_first_port:$meson_first_port -e https_port=$meson_first_port -e token=$MESON_TOKEN -e cache_size="20" $container_image)
+    execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Meson Token is not configured. Ignoring Meson..${NOCOLOUR}"
     fi
   fi
 
