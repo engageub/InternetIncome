@@ -559,9 +559,9 @@ start_containers() {
       exit 1
     fi
     CPU_ARCH=`uname -m`
-    container_image="--platform=linux/amd64 simeononsecurity/docker-mesonnetwork"
+    container_image="--platform=linux/amd64 jepbura/meson"
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
-      container_image="simeononsecurity/docker-mesonnetwork:arm64-latest"
+      container_image="jepbura/meson:arm64"
     fi
     if [ "$container_pulled" = false ]; then
       sudo docker pull $container_image
@@ -569,7 +569,7 @@ start_containers() {
     mkdir -p $PWD/$meson_data_folder/data$i
     sudo chmod -R 777 $PWD/$meson_data_folder/data$i
     meson_volume="-v $PWD/$meson_data_folder/data$i:/home/docker"
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $meson_volume -p $meson_first_port:$meson_first_port -e https_port=$meson_first_port -e token=$MESON_TOKEN -e cache_size="20" $container_image)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $meson_volume -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN $container_image)
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
