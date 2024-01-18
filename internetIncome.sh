@@ -41,7 +41,6 @@ firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
 adnade_containers_file="adnadecontainers.txt"
 bitping_data_folder="bitping-data"
-meson_data_folder="meson-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
@@ -566,10 +565,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $container_image
     fi
-    mkdir -p $PWD/$meson_data_folder/data$i
-    sudo chmod -R 777 $PWD/$meson_data_folder/data$i
-    meson_volume="-v $PWD/$meson_data_folder/data$i:/home/docker"
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $meson_volume -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN $container_image)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN $container_image)
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
