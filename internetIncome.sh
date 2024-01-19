@@ -66,20 +66,13 @@ UNIQUE_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
 
 # Use banner if exists
 if [ -f "$banner_file" ]; then
-  for count in {1..3}
-  do
-    clear
-    echo -e "${RED}"
-    cat $banner_file
-    sleep 0.5
-    clear
-    echo -e "${GREEN}"
-    cat $banner_file
-    sleep 0.5
-    clear
-    echo -e "${YELLOW}"
-    cat $banner_file
-    sleep 0.5
+  for _ in {1..3}; do
+    for color in "${RED}" "${GREEN}" "${YELLOW}"; do
+      clear
+      echo -e "$color"
+      cat "$banner_file"
+      sleep 0.5
+    done
   done
   echo -e "${NOCOLOUR}"
 fi
@@ -617,17 +610,14 @@ if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
   
   # Check if the required files are present
-  for required_file in "${required_files[@]}"
-  do
+  for required_file in "${required_files[@]}"; do
   if [ ! -f "$required_file" ]; then
     echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
     exit 1
   fi
   done
    
-   
-  for file in "${files_to_be_removed[@]}"
-  do
+  for file in "${files_to_be_removed[@]}"; do
   if [ -f "$file" ]; then
     echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
     echo -e "To stop and delete containers run the following command\n"
@@ -636,8 +626,7 @@ if [[ "$1" == "--start" ]]; then
   fi
   done
   
-  for folder in "${folders_to_be_removed[@]}"
-  do
+  for folder in "${folders_to_be_removed[@]}"; do
   if [ -d "$folder" ]; then
     echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
     echo -e "To stop and delete containers run the following command\n"
@@ -703,8 +692,7 @@ if [[ "$1" == "--delete" ]]; then
   
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
-    for i in `cat $container_names_file`
-    do 
+    for i in `cat $container_names_file`; do 
       # Check if container exists
       if sudo docker inspect $i >/dev/null 2>&1; then
         # Stop and Remove container
@@ -719,8 +707,7 @@ if [[ "$1" == "--delete" ]]; then
   
   # Delete networks
   if [ -f "$networks_file" ]; then
-    for i in `cat $networks_file`
-    do
+    for i in `cat $networks_file`; do
       # Check if network exists and delete
       if sudo docker network inspect $i > /dev/null 2>&1; then
         sudo docker network rm $i
@@ -732,15 +719,13 @@ if [[ "$1" == "--delete" ]]; then
     rm $networks_file
   fi
   
-  for file in "${files_to_be_removed[@]}"
-  do
+  for file in "${files_to_be_removed[@]}"; do
   if [ -f "$file" ]; then
     rm $file
   fi
   done
   
-  for folder in "${folders_to_be_removed[@]}"
-  do
+  for folder in "${folders_to_be_removed[@]}"; do
   if [ -d "$folder" ]; then
     rm -Rf $folder;
   fi
@@ -751,8 +736,7 @@ fi
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
 
-  for file in "${files_to_be_removed[@]}"
-  do
+  for file in "${files_to_be_removed[@]}"; do
   if [ -f "$file" ]; then
     echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
     echo -e "To stop and delete containers run the following command\n"
@@ -761,8 +745,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
   fi
   done
   
-  for folder in "${folders_to_be_removed[@]}"
-  do
+  for folder in "${folders_to_be_removed[@]}"; do
   if [ -d "$folder" ]; then
     echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
     echo -e "To stop and delete containers run the following command\n"
@@ -771,15 +754,13 @@ if [[ "$1" == "--deleteBackup" ]]; then
   fi
   done
     
-  for file in "${back_up_files[@]}"
-  do
+  for file in "${back_up_files[@]}"; do
   if [ -f "$file" ]; then
     rm $file
   fi
   done
   
-  for folder in "${back_up_folders[@]}"
-  do
+  for folder in "${back_up_folders[@]}"; do
   if [ -d "$folder" ]; then
     rm -Rf $folder;
   fi
