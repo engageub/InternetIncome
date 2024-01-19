@@ -554,6 +554,24 @@ start_containers() {
     fi
   fi
 
+  # Starting Speedshare container
+  if [[ $SPEEDSHARE_TOKEN ]]; then
+    echo -e "${GREEN}Starting Speedshare container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull eldavo/speedshare    
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "speedshare$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Speedshare..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Speedshare token is not configured. Ignoring Speedshare..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
     echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
