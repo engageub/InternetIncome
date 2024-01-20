@@ -71,7 +71,7 @@ meson_first_port=9000
 
 #Unique Id
 RANDOM=$(date +%s)
-UNIQUE_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
+UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 DEVICE_NAME=`cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | dd bs=1 count=6 2>/dev/null`
 
 # Use banner if exists
