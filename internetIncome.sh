@@ -59,7 +59,6 @@ mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
 
-
 #Unique Id
 RANDOM=$(date +%s)
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
@@ -142,7 +141,7 @@ start_containers() {
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
 
-     if [[ $ADNADE_USERNAME ]]; then
+    if [[ $ADNADE_USERNAME ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -273,7 +272,6 @@ start_containers() {
       echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
-
 
   # Starting Adnade container
   if [[ $ADNADE_USERNAME ]]; then
@@ -456,7 +454,6 @@ start_containers() {
     fi
   fi
 
-
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
@@ -611,28 +608,28 @@ if [[ "$1" == "--start" ]]; then
   
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
-  if [ ! -f "$required_file" ]; then
-    echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
-    exit 1
-  fi
+    if [ ! -f "$required_file" ]; then
+      echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
+      exit 1
+    fi
   done
    
   for file in "${files_to_be_removed[@]}"; do
-  if [ -f "$file" ]; then
-    echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+    if [ -f "$file" ]; then
+      echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
   
   for folder in "${folders_to_be_removed[@]}"; do
-  if [ -d "$folder" ]; then
-    echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+    if [ -d "$folder" ]; then
+      echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
 
   # Remove special characters ^M from properties file
@@ -720,15 +717,15 @@ if [[ "$1" == "--delete" ]]; then
   fi
   
   for file in "${files_to_be_removed[@]}"; do
-  if [ -f "$file" ]; then
-    rm $file
-  fi
+    if [ -f "$file" ]; then
+      rm $file
+    fi
   done
   
   for folder in "${folders_to_be_removed[@]}"; do
-  if [ -d "$folder" ]; then
-    rm -Rf $folder;
-  fi
+    if [ -d "$folder" ]; then
+      rm -Rf $folder;
+    fi
   done
 
 fi
@@ -737,33 +734,33 @@ if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
 
   for file in "${files_to_be_removed[@]}"; do
-  if [ -f "$file" ]; then
-    echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+    if [ -f "$file" ]; then
+      echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
   
   for folder in "${folders_to_be_removed[@]}"; do
-  if [ -d "$folder" ]; then
-    echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+    if [ -d "$folder" ]; then
+      echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
     
   for file in "${back_up_files[@]}"; do
-  if [ -f "$file" ]; then
-    rm $file
-  fi
+    if [ -f "$file" ]; then
+      rm $file
+    fi
   done
   
   for folder in "${back_up_folders[@]}"; do
-  if [ -d "$folder" ]; then
-    rm -Rf $folder;
-  fi
+    if [ -d "$folder" ]; then
+      rm -Rf $folder;
+    fi
   done
 
 fi
