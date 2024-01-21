@@ -793,6 +793,7 @@ start_containers() {
 
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
+  STATUS=0;
   
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
@@ -851,12 +852,14 @@ if [[ "$1" == "--start" ]]; then
 
   # Use direct Connection
   if [ "$USE_DIRECT_CONNECTION" = true ]; then
+     STATUS=1
      echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}" 
      start_containers
   fi
 
   # Use Vpns
   if [ "$USE_VPNS" = true ]; then
+    STATUS=1
     echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}" 
     if [ ! -f "$vpns_file" ]; then
       echo -e "${RED}Vpns file $vpns_file does not exist, exiting..${NOCOLOUR}"
@@ -877,6 +880,7 @@ if [[ "$1" == "--start" ]]; then
 
   # Use Multi IPs
   if [ "$USE_MULTI_IP" = true ]; then
+    STATUS=1
     echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}" 
     if [ ! -f "$multi_ip_file" ]; then
       echo -e "${RED}Multi IP file $multi_ip_file does not exist, exiting..${NOCOLOUR}"
@@ -897,6 +901,7 @@ if [[ "$1" == "--start" ]]; then
 
   # Use Proxies
   if [ "$USE_PROXIES" = true ]; then
+    STATUS=1
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
     if [ ! -f "$proxies_file" ]; then
       echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
@@ -915,8 +920,14 @@ if [[ "$1" == "--start" ]]; then
     done < $proxies_file 
   fi
 
-  # Generate device Ids
-  generate_device_ids
+  if [[ $STATUS == 1 ]]; then
+    # Generate device Ids
+    generate_device_ids
+  fi
+
+  if [[ $STATUS == 0 ]]; then
+    echo -e "${RED}No Network configuration is specified. Script will not start unless specified in properties.conf ..Exiting..${NOCOLOUR}"
+  fi
   
 fi
 
