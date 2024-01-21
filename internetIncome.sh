@@ -70,7 +70,6 @@ adnade_first_port=4000
 meson_first_port=9000
 
 #Unique Id
-RANDOM=$(date +%s)
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 DEVICE_NAME=`cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | dd bs=1 count=6 2>/dev/null`
 
