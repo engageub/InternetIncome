@@ -60,7 +60,6 @@ ebesucher_first_port=3000
 adnade_first_port=4000
 
 #Unique Id
-RANDOM=$(date +%s)
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 
 # Use banner if exists
@@ -764,7 +763,6 @@ if [[ "$1" == "--deleteBackup" ]]; then
   done
 
 fi
-
 
 if [[ ! "$1" ]]; then
   echo "No option provided. Use --start or --delete to execute"
