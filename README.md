@@ -2,7 +2,7 @@
 
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
-* Disclaimer: This branch is a test branch and it is still being tested or in the development phase. If you are using this branch, please raise an issue or start a discussion for any error messages.
+* Disclaimer: This branch is a test branch and it is still being tested or in the development phase. 
 
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
