@@ -925,7 +925,7 @@ if [[ "$1" == "--start" ]]; then
   if [[ $STATUS == 0 ]]; then
     echo -e "${RED}No Network configuration is specified. Script will not start unless specified in properties.conf ..Exiting..${NOCOLOUR}"
   fi
-  
+  exit 1
 fi
 
 if [[ "$1" == "--delete" ]]; then
@@ -978,7 +978,7 @@ if [[ "$1" == "--delete" ]]; then
       rm -Rf $folder;
     fi
   done
-
+  exit 1
 fi
 
 if [[ "$1" == "--deleteBackup" ]]; then
@@ -1013,8 +1013,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
       rm -Rf $folder;
     fi
   done
+  exit 1
 fi
 
-if [[ ! "$1" ]]; then
-  echo "No option provided. Use --start or --delete to execute"
-fi
+echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}"
