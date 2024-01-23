@@ -681,6 +681,7 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}" 
     start_containers 
   fi
+  exit 1
 fi
 
 if [[ "$1" == "--delete" ]]; then
@@ -726,7 +727,7 @@ if [[ "$1" == "--delete" ]]; then
       rm -Rf $folder;
     fi
   done
-
+  exit 1
 fi
 
 if [[ "$1" == "--deleteBackup" ]]; then
@@ -761,9 +762,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
       rm -Rf $folder;
     fi
   done
-
+  exit 1
 fi
 
-if [[ ! "$1" ]]; then
-  echo "No option provided. Use --start or --delete to execute"
-fi
+echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}"
