@@ -232,9 +232,9 @@ start_containers() {
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
       if [ "$USE_SOCKS5_DNS" != true ]; then
-        EXTRA_COMMANDS='echo -e "nameserver 1.0.0.1\nnameserver 1.1.1.1" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
       else
-        EXTRA_COMMANDS='echo -e "nameserver 1.0.0.1\nnameserver 1.1.1.1" > /etc/resolv.conf;'
+        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;'
       fi
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
