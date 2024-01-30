@@ -23,7 +23,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
 10. [BitPing](https://app.bitping.com/?r=drPpp600)
 11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) 
-12. [Mysterium](https://mystnodes.com/) 
+12. [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) 
 13. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
 14. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
 15. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
@@ -48,7 +48,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 | [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit|
 | [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 | [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
-| [Mysterium](https://mystnodes.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
+| [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 | [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
 
 * The comparison mentioned above was updated on 30-04-2023 and may be subject to change later.
