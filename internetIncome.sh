@@ -36,6 +36,8 @@ mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 adnade_file="adnade.txt"
+adnade_data_folder="adnadedata"
+adnade_containers_file="adnadecontainers.txt"
 firefox_containers_file="firefoxcontainers.txt"
 bitping_data_folder="bitping-data"
 firefox_data_folder="firefoxdata"
@@ -43,9 +45,10 @@ firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 restart_firefox_file="restartFirefox.sh"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file)
-folders_to_be_removed=($bitping_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+restart_adnade_file="restartAdnade.sh"
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file)
+folders_to_be_removed=($bitping_data_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 
@@ -56,32 +59,23 @@ mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
 
-
 #Unique Id
-RANDOM=$(date +%s)
-UNIQUE_ID="$(echo -n "$RANDOM" | md5sum | cut -c1-32)"
+UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 
 # Use banner if exists
 if [ -f "$banner_file" ]; then
-  for count in {1..3}
-  do
-    clear
-    echo -e "${RED}"
-    cat $banner_file
-    sleep 0.5
-    clear
-    echo -e "${GREEN}"
-    cat $banner_file
-    sleep 0.5
-    clear
-    echo -e "${YELLOW}"
-    cat $banner_file
-    sleep 0.5
+  for _ in {1..3}; do
+    for color in "${RED}" "${GREEN}" "${YELLOW}"; do
+      clear
+      echo -e "$color"
+      cat "$banner_file"
+      sleep 0.5
+    done
   done
   echo -e "${NOCOLOUR}"
 fi
 
-# Define a function to check for open ports
+# Check for open ports
 check_open_ports() {
   local first_port=$1
   local num_ports=$2
@@ -146,7 +140,7 @@ start_containers() {
       ebesucher_port="-p $ebesucher_first_port:5800 "
     fi
 
-     if [[ $ADNADE_USERNAME ]]; then
+    if [[ $ADNADE_USERNAME ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -158,6 +152,7 @@ start_containers() {
     
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
     echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
+    
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       sudo docker pull ghcr.io/blechschmidt/tun2proxy:v0.1.12
@@ -178,7 +173,7 @@ start_containers() {
     # Delay between each container start
     if [[ $DELAY_BETWEEN_CONTAINER =~ ^[0-9]+$ ]]; then
       sleep $DELAY_BETWEEN_CONTAINER
-    fi
+    fi   
   fi
   
   # Starting Mysterium container
@@ -235,7 +230,7 @@ start_containers() {
       fi
       
       # Unzip the file
-      unzip $firefox_profile_zipfile
+      unzip -o $firefox_profile_zipfile
       
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
@@ -284,10 +279,48 @@ start_containers() {
 
   # Starting Adnade container
   if [[ $ADNADE_USERNAME ]]; then
+    echo -e "${GREEN}Starting Adnade container..${NOCOLOUR}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
+      
+      # Exit, if restart script is missing
+      if [ ! -f "$PWD/$restart_adnade_file" ];then
+        echo -e "${RED}Adnade restart script does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi 
+      
+      # Exit, if firefox profile zip file is missing
+      if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
+        echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      # Unzip the file
+      unzip -o $firefox_profile_zipfile
+      
+      # Exit, if firefox profile data is missing
+      if [ ! -d "$PWD/$firefox_profile_data" ];then
+        echo -e "${RED}Firefox profile Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnade.sh && while true; do sleep 7200; /firefox/restartAdnade.sh; done'); then
+        echo "Firefox restart container started"
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file 
+      else
+        echo -e "${RED}Failed to start container for adnade firefox restart..${NOCOLOUR}"
+        exit 1
+      fi
     fi
         
+    # Create folder and copy files
+    mkdir -p $PWD/$adnade_data_folder/data$i
+    sudo chmod -R 777 $PWD/$firefox_profile_data
+    cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
+    sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
     if [[  ! $proxy ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -297,11 +330,11 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/ptp/?user=$ADNADE_USERNAME" -e WEB_LISTENING_PORT=5900 -e VNC_LISTENING_PORT=-1 $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file 
-      echo "http://127.0.0.1:$adnade_first_port" | tee -a $adnade_file
+      echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
+      echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
       adnade_first_port=`expr $adnade_first_port + 1`      
     else
       echo -e "${RED}Failed to start container for Adnade..${NOCOLOUR}"
@@ -352,21 +385,21 @@ start_containers() {
     fi
   fi
 
-  # Starting Speedshare container
-  if [[ $SPEEDSHARE_TOKEN ]]; then
-    echo -e "${GREEN}Starting Speedshare container..${NOCOLOUR}"
+  # Starting Earn Fm container
+  if [[ $EARN_FM_API ]]; then
+    echo -e "${GREEN}Starting EarnFm container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull eldavo/speedshare    
+      sudo docker pull earnfm/earnfm-client:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
+    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "speedshare$UNIQUE_ID$i" | tee -a $container_names_file
+      echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Speedshare..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for EarnFm..${NOCOLOUR}"
     fi
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED}Speedshare token is not configured. Ignoring Speedshare..${NOCOLOUR}"
+      echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
     fi
   fi
 
@@ -425,7 +458,6 @@ start_containers() {
     fi
   fi
 
-
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
@@ -466,7 +498,7 @@ start_containers() {
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit    
+      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit        
     fi
     if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
       echo "$CONTAINER_ID" | tee -a $containers_file
@@ -486,7 +518,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -516,21 +548,21 @@ start_containers() {
     fi
   fi
 
-  # Starting Earn Fm container
-  if [[ $EARN_FM_API ]]; then
-    echo -e "${GREEN}Starting EarnFm container..${NOCOLOUR}"
+  # Starting Speedshare container
+  if [[ $SPEEDSHARE_TOKEN ]]; then
+    echo -e "${GREEN}Starting Speedshare container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull earnfm/earnfm-client:latest
+      sudo docker pull eldavo/speedshare    
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
+      echo "speedshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for EarnFm..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Speedshare..${NOCOLOUR}"
     fi
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
+      echo -e "${RED}Speedshare token is not configured. Ignoring Speedshare..${NOCOLOUR}"
     fi
   fi
 
@@ -542,7 +574,7 @@ start_containers() {
     RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
     date_time=`date "+%D %T"`
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 fazalfarhan01/earnapp:lite
+      sudo docker pull fazalfarhan01/earnapp:lite
     fi
     mkdir -p $PWD/$earnapp_data_folder/data$i
     sudo chmod -R 777 $PWD/$earnapp_data_folder/data$i
@@ -560,7 +592,7 @@ start_containers() {
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
     
-    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i --platform=linux/amd64 $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file 
     else
@@ -579,33 +611,29 @@ if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
   
   # Check if the required files are present
-  for required_file in "${required_files[@]}"
-  do
-  if [ ! -f "$required_file" ]; then
-    echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
-    exit 1
-  fi
+  for required_file in "${required_files[@]}"; do
+    if [ ! -f "$required_file" ]; then
+      echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
+      exit 1
+    fi
   done
    
-   
-  for file in "${files_to_be_removed[@]}"
-  do
-  if [ -f "$file" ]; then
-    echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+  for file in "${files_to_be_removed[@]}"; do
+    if [ -f "$file" ]; then
+      echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
   
-  for folder in "${folders_to_be_removed[@]}"
-  do
-  if [ -d "$folder" ]; then
-    echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+  for folder in "${folders_to_be_removed[@]}"; do
+    if [ -d "$folder" ]; then
+      echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
 
   # Remove special characters ^M from properties file
@@ -658,6 +686,7 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}" 
     start_containers 
   fi
+  exit 1
 fi
 
 if [[ "$1" == "--delete" ]]; then
@@ -665,8 +694,7 @@ if [[ "$1" == "--delete" ]]; then
   
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
-    for i in `cat $container_names_file`
-    do 
+    for i in `cat $container_names_file`; do 
       # Check if container exists
       if sudo docker inspect $i >/dev/null 2>&1; then
         # Stop and Remove container
@@ -681,8 +709,7 @@ if [[ "$1" == "--delete" ]]; then
   
   # Delete networks
   if [ -f "$networks_file" ]; then
-    for i in `cat $networks_file`
-    do
+    for i in `cat $networks_file`; do
       # Check if network exists and delete
       if sudo docker network inspect $i > /dev/null 2>&1; then
         sudo docker network rm $i
@@ -694,62 +721,53 @@ if [[ "$1" == "--delete" ]]; then
     rm $networks_file
   fi
   
-  for file in "${files_to_be_removed[@]}"
-  do
-  if [ -f "$file" ]; then
-    rm $file
-  fi
+  for file in "${files_to_be_removed[@]}"; do
+    if [ -f "$file" ]; then
+      rm $file
+    fi
   done
   
-  for folder in "${folders_to_be_removed[@]}"
-  do
-  if [ -d "$folder" ]; then
-    rm -Rf $folder;
-  fi
+  for folder in "${folders_to_be_removed[@]}"; do
+    if [ -d "$folder" ]; then
+      rm -Rf $folder;
+    fi
   done
-
+  exit 1
 fi
 
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
 
-  for file in "${files_to_be_removed[@]}"
-  do
-  if [ -f "$file" ]; then
-    echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+  for file in "${files_to_be_removed[@]}"; do
+    if [ -f "$file" ]; then
+      echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
   
-  for folder in "${folders_to_be_removed[@]}"
-  do
-  if [ -d "$folder" ]; then
-    echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
-    echo -e "To stop and delete containers run the following command\n"
-    echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
-    exit 1
-  fi
+  for folder in "${folders_to_be_removed[@]}"; do
+    if [ -d "$folder" ]; then
+      echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
+      echo -e "To stop and delete containers run the following command\n"
+      echo -e "${YELLOW}sudo bash internetIncome.sh --delete${NOCOLOUR}\n"
+      exit 1
+    fi
   done
     
-  for file in "${back_up_files[@]}"
-  do
-  if [ -f "$file" ]; then
-    rm $file
-  fi
+  for file in "${back_up_files[@]}"; do
+    if [ -f "$file" ]; then
+      rm $file
+    fi
   done
   
-  for folder in "${back_up_folders[@]}"
-  do
-  if [ -d "$folder" ]; then
-    rm -Rf $folder;
-  fi
+  for folder in "${back_up_folders[@]}"; do
+    if [ -d "$folder" ]; then
+      rm -Rf $folder;
+    fi
   done
-
+  exit 1
 fi
 
-
-if [[ ! "$1" ]]; then
-  echo "No option provided. Use --start or --delete to execute"
-fi
+echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}"
