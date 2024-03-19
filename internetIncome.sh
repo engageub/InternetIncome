@@ -231,9 +231,9 @@ start_containers() {
       if [ "$container_pulled" = false ]; then
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
-      if [ "$USE_SOCKS5_DNS" == true ]; then
+      if [ "$USE_SOCKS5_DNS" = true ]; then
         EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;'
-      elif [ "$USE_DNS_OVER_HTTPS" == true ]; then
+      elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         EXTRA_COMMANDS='echo -e "options use-vc\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
       else
         EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
