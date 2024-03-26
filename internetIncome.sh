@@ -347,7 +347,7 @@ start_containers() {
     custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
-      echo -e "${RED} Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
+      echo -e "${RED}Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
     fi
   fi
   
