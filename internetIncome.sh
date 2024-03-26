@@ -36,6 +36,8 @@ networks_file="networks.txt"
 mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
+custom_chrome_file="custom_chrome.txt"
+custom_firefox_file="custom_firefox.txt"
 adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
@@ -56,7 +58,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $generate_device_ids_file)
-files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file)
+files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($bitping_data_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -68,6 +70,8 @@ mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
 meson_first_port=9000
+custom_firefox_first_port=6000
+custom_chrome_first_port=7000
 
 #Unique Id
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
@@ -209,8 +213,28 @@ start_containers() {
           adnade_port="-p $adnade_first_port:5900 "
       fi 
     fi
+
+    if [ "$CUSTOM_FIREFOX" = true ];then
+      custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port 1)
+      if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Custom Firefox. Resolve or disable Custom Firefox to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      custom_firefox_port="-p $custom_firefox_first_port:5911 "
+    fi
+
+    if [ "$CUSTOM_CHROME" = true ];then
+      custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port 1)
+      if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Custom Chrome. Resolve or disable Custom Chrome to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      custom_chrome_port="-p $custom_chrome_first_port:3200 "
+    fi
     
-    combined_ports=$mysterium_port$ebesucher_port$adnade_port
+    combined_ports=$mysterium_port$ebesucher_port$adnade_port$custom_firefox_port$custom_chrome_port
   
     if [ "$vpn_enabled" = true ];then
       # Starting vpn containers
@@ -268,6 +292,62 @@ start_containers() {
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Custom Firefox container
+  if [[ "$CUSTOM_FIREFOX" = true  ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull jlesage/firefox
+    fi  
+     
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+      custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port 1)
+      if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Custom Firefox. Resolve or disable Custom Firefox to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      cf_port="-p $custom_firefox_first_port:5911"
+    fi
+ 
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e VNC_LISTENING_PORT=-1 $cf_port jlesage/firefox)
+    execute_docker_command "CustomFirefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$custom_firefox_first_port" |tee -a $custom_firefox_file
+    custom_firefox_first_port=`expr $custom_firefox_first_port + 1`
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Custom firefox is not configured. Ignoring Custom Firefox..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Custom Chrome container
+  if [[ "$CUSTOM_CHROME" = true ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull lscr.io/linuxserver/chromium:latest
+    fi
+         
+    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+      custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port 1)
+      if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Custom Chrome. Resolve or disable Custom Chrome to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      cc_port="-p $custom_chrome_first_port:3200 "
+    fi
+    
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC  --shm-size="1gb" $cc_port lscr.io/linuxserver/chromium:latest)
+    execute_docker_command "CustomChrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $custom_chrome_file in the same folder${NOCOLOUR}"
+    echo "http://127.0.0.1:$custom_chrome_first_port" |tee -a $custom_chrome_file
+    custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED} Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
     fi
   fi
   
