@@ -37,7 +37,9 @@ mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 custom_chrome_file="custom_chrome.txt"
+custom_chrome_data_folder="custom-chrome-data"
 custom_firefox_file="custom_firefox.txt"
+custom_firefox_data_folder="custom-firefox-data"
 adnade_file="adnade.txt"
 firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
@@ -60,7 +62,7 @@ cloud_collab_file="cloudcollab.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $generate_device_ids_file)
 files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($bitping_data_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
-back_up_folders=( $traffmonetizer_data_folder $mysterium_data_folder)
+back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
 
 container_pulled=false
@@ -310,8 +312,10 @@ start_containers() {
       fi
       cf_port="-p $custom_firefox_first_port:5911"
     fi
- 
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port jlesage/firefox)
+    
+    mkdir -p $PWD/$custom_firefox_data_folder/data$i
+    sudo chmod -R 777 $PWD/$custom_firefox_data_folder/data$i
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox)
     execute_docker_command "CustomFirefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
@@ -339,7 +343,9 @@ start_containers() {
       cc_port="-p $custom_chrome_first_port:3200 "
     fi
     
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC   -e CUSTOM_HTTPS_PORT=3201 -e CUSTOM_PORT=3200 --shm-size="1gb" $cc_port lscr.io/linuxserver/chromium:latest)
+    mkdir -p $PWD/$custom_chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$custom_chrome_data_folder/data$i    
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC   -e CUSTOM_HTTPS_PORT=3201 -e CUSTOM_PORT=3200 --shm-size="1gb" $cc_port -v $PWD/$custom_chrome_data_folder/data$i:/config lscr.io/linuxserver/chromium:latest)
     execute_docker_command "CustomChrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_chrome_file in the same folder${NOCOLOUR}"
