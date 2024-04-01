@@ -56,7 +56,6 @@ files_to_be_removed=($containers_file $container_names_file $networks_file $myst
 folders_to_be_removed=($bitping_data_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
-
 container_pulled=false
 
 # Mysterium and ebesucher first port
@@ -394,7 +393,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
     sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
-    if [[  ! $proxy ]]; then
+    if [[ ! $proxy ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
