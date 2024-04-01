@@ -39,16 +39,21 @@ adnade_file="adnade.txt"
 adnade_data_folder="adnadedata"
 adnade_containers_file="adnadecontainers.txt"
 firefox_containers_file="firefoxcontainers.txt"
+chrome_containers_file="chromecontainers.txt"
 bitping_data_folder="bitping-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
+chrome_data_folder="chromedata"
+chrome_profile_data="chromeprofiledata"
+chrome_profile_zipfile="chromeprofiledata.zip"
+restart_chrome_file="restartChrome.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
 restart_firefox_file="restartFirefox.sh"
 restart_adnade_file="restartAdnade.sh"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file)
-folders_to_be_removed=($bitping_data_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file $chrome_profile_zipfile $restart_chrome_file)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+folders_to_be_removed=($bitping_data_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 
@@ -137,7 +142,11 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ebesucher_port="-p $ebesucher_first_port:5800 "
+      if [ "$EBESUCHER_USE_CHROME" = true ]; then
+          ebesucher_port="-p $ebesucher_first_port:3000 "
+      else
+          ebesucher_port="-p $ebesucher_first_port:5800 "
+      fi
     fi
 
     if [[ $ADNADE_USERNAME ]]; then
@@ -181,7 +190,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
-    if [[  ! $proxy ]]; then
+    if [[ ! $proxy ]]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
@@ -205,9 +214,76 @@ start_containers() {
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
     fi
   fi
+
+  # Starting Ebesucher Chrome container
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = true ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull lscr.io/linuxserver/chromium:latest
+
+      # Exit, if restart script is missing
+      if [ ! -f "$PWD/$restart_chrome_file" ];then
+        echo -e "${RED}Chrome restart script does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+
+      # Exit, if chrome profile zip file is missing
+      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+        echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+
+      # Unzip the file
+      unzip -o $chrome_profile_zipfile
+
+      # Exit, if chrome profile data is missing
+      if [ ! -d "$PWD/$chrome_profile_data" ];then
+        echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restartChrome.sh && while true; do sleep 3600; /chrome/restartChrome.sh; done'); then
+        echo "Chrome restart container started"
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for ebesucher chrome restart..${NOCOLOUR}"
+        exit 1
+      fi
+    fi
+
+    # Create folder and copy files
+    mkdir -p $PWD/$chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_profile_data
+    sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
+
+    if [[ ! $proxy ]]; then
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      eb_port="-p $ebesucher_first_port:3000 "
+    fi
+
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
+      echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
+      ebesucher_first_port=`expr $ebesucher_first_port + 1`
+    else
+      echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+    fi
+  fi
   
   # Starting Ebesucher container
-  if [[ $EBESUCHER_USERNAME ]]; then
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" != true ]]; then
     echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
@@ -250,7 +326,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
-    if [[  ! $proxy ]]; then
+    if [[ ! $proxy ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
