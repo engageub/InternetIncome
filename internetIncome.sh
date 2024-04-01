@@ -274,7 +274,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
@@ -303,7 +303,7 @@ start_containers() {
       sudo docker pull jlesage/firefox
     fi  
      
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port 1)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
@@ -316,7 +316,7 @@ start_containers() {
     mkdir -p $PWD/$custom_firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$custom_firefox_data_folder/data$i
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox)
-    execute_docker_command "CustomFirefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$custom_firefox_first_port" |tee -a $custom_firefox_file
@@ -333,7 +333,7 @@ start_containers() {
       sudo docker pull lscr.io/linuxserver/chromium:latest
     fi
          
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port 1)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
@@ -346,7 +346,7 @@ start_containers() {
     mkdir -p $PWD/$custom_chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$custom_chrome_data_folder/data$i    
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC   -e CUSTOM_HTTPS_PORT=3201 -e CUSTOM_PORT=3200 --shm-size="1gb" $cc_port -v $PWD/$custom_chrome_data_folder/data$i:/config lscr.io/linuxserver/chromium:latest)
-    execute_docker_command "CustomChrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Custom Chrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_chrome_file in the same folder${NOCOLOUR}"
     echo "http://127.0.0.1:$custom_chrome_first_port" |tee -a $custom_chrome_file
@@ -392,7 +392,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -465,7 +465,7 @@ start_containers() {
     sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
     
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -523,7 +523,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
     sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -588,7 +588,7 @@ start_containers() {
     sudo cp -r $PWD/$chrome_profile_data $PWD/$adnade_data_folder/data$i
     sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
     
-    if [[  ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
