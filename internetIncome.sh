@@ -47,11 +47,9 @@ firefox_profile_zipfile="firefoxprofiledata.zip"
 chrome_data_folder="chromedata"
 chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
-restart_chrome_file="restartChrome.sh"
+restart_file="restart.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
-restart_firefox_file="restartFirefox.sh"
-restart_adnade_file="restartAdnade.sh"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file $chrome_profile_zipfile $restart_chrome_file)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($bitping_data_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder)
@@ -219,12 +217,6 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
 
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_chrome_file" ];then
-        echo -e "${RED}Chrome restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
-
       # Exit, if chrome profile zip file is missing
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
@@ -240,7 +232,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restartChrome.sh && while true; do sleep 3600; /chrome/restartChrome.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
         echo "Chrome restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
@@ -288,13 +280,7 @@ start_containers() {
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-      
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_firefox_file" ];then
-        echo -e "${RED}Firefox restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi 
-      
+         
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
@@ -310,7 +296,7 @@ start_containers() {
         exit 1
       fi
       
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file 
@@ -357,12 +343,6 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
       
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_adnade_file" ];then
-        echo -e "${RED}Adnade restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi 
-      
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
@@ -378,7 +358,7 @@ start_containers() {
         exit 1
       fi
       
-      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnade.sh && while true; do sleep 7200; /firefox/restartAdnade.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file 
