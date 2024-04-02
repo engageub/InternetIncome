@@ -48,18 +48,16 @@ bitping_data_folder="bitping-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
-restart_firefox_file="restartFirefox.sh"
-restart_adnade_firefox_file="restartAdnadeFirefox.sh"
+restart_file="restart.sh"
 generate_device_ids_file="generateDeviceIds.sh"
 chrome_data_folder="chromedata"
 adnade_data_folder="adnadedata"
 chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
-restart_chrome_file="restartChrome.sh"
 traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $generate_device_ids_file)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
 files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($bitping_data_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
@@ -362,12 +360,6 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
       
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_firefox_file" ];then
-        echo -e "${RED}Firefox restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi 
-      
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
@@ -383,7 +375,7 @@ start_containers() {
         exit 1
       fi
       
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done')
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
       execute_docker_command "Firefox Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
         
@@ -428,12 +420,6 @@ start_containers() {
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = true ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
-      
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_chrome_file" ];then
-        echo -e "${RED}Chrome restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi 
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
@@ -455,7 +441,7 @@ start_containers() {
         exit 1
       fi
       
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restartChrome.sh && while true; do sleep 3600; /chrome/restartChrome.sh; done')
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
       execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
         
@@ -493,12 +479,6 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
       
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_adnade_firefox_file" ];then
-        echo -e "${RED}Adnade Firefox restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi 
-      
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
@@ -514,7 +494,7 @@ start_containers() {
         exit 1
       fi
       
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnadeFirefox.sh && while true; do sleep 7200; /firefox/restartAdnadeFirefox.sh; done')
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
       execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
         
@@ -550,12 +530,6 @@ start_containers() {
   if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = true ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
-      
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_chrome_file" ];then
-        echo -e "${RED}Chrome restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi 
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
@@ -577,7 +551,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restartAdnade.sh && while true; do sleep 7200; /chrome/restartAdnade.sh; done')
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
       execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "${docker_parameters[@]}"
       
     fi
