@@ -75,7 +75,7 @@ elif [[ "$1" == "--restartAdnadeFirefox" ]]; then
     docker start $container
   done
 
-elif [[ "$1" == "restartChrome" ]]; then
+elif [[ "$1" == "--restartChrome" ]]; then
   chrome_profile_data="chromeprofiledata"
   chrome_data_folder="chromedata"
   i=0
@@ -110,7 +110,7 @@ elif [[ "$1" == "restartChrome" ]]; then
     docker start $container
   done
 
-elif [[ "$1" == "restartFirefox" ]]; then
+elif [[ "$1" == "--restartFirefox" ]]; then
   firefox_profile_data="firefoxprofiledata"
   i=0
   for container in `cat firefoxcontainers.txt`
