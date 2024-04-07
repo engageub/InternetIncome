@@ -162,7 +162,7 @@ For example, if your VPS IP address is 2.4.75.2 and you wish to access your loca
 
 If your VPS IP is not accessible globally, please run the following command to get the corresponsing url.
 ```
-ssh -R 80:localhost:2000 serveo.net
+ssh -R 80:127.0.0.1:2000 serveo.net
 ```
 In the above command 2000 represents the port number of your localhost or 127.0.0.1. For each browser instance, there is a separate port number. Please change the port number accordingly. You will receive an url after running the above command which can be accessed globally. 
 
