@@ -62,7 +62,7 @@ files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $
 folders_to_be_removed=($bitping_data_folder $firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
-
+restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 137 139 143 161 179 389 427 465 512 513 514 515 526 530 531 532 540 548 554 556 563 587 601 636 993 995 1719 1720 1723 2049 3659 4045 5060 5061 6000 6566 6665 6666 6667 6668 6669 6697 10080)
 container_pulled=false
 
 # Mysterium and ebesucher first port
@@ -101,27 +101,24 @@ generate_device_ids() {
 # Check for open ports
 check_open_ports() {
   local first_port=$1
-  local num_ports=$2
-  port_range=$(seq $first_port $((first_port+num_ports-1)))
-  open_ports=0
-  
-  for port in $port_range; do
-    { timeout 1 bash -c "echo > /dev/tcp/localhost/$port" > /dev/null; } 2>/dev/null
-    if [ $? -eq 0 ]; then
-      open_ports=$((open_ports+1))
-    fi
-  done
+  local open_ports=0
 
-  while [ $open_ports -gt 0 ]; do
-    first_port=$((first_port+num_ports))
-    port_range=$(seq $first_port $((first_port+num_ports-1)))
-    open_ports=0
-    for port in $port_range; do
-      { timeout 1 bash -c "echo > /dev/tcp/localhost/$port" > /dev/null; } 2>/dev/null
-      if [ $? -eq 0 ]; then
+  # Check if current port is open
+  port_is_open() {
+    local port_to_check=$1
+    { timeout 1 bash -c "echo > /dev/tcp/localhost/$port_to_check" > /dev/null; } 2>/dev/null
+  }
+
+  # Find the next available port
+  while true; do
+    if [[ ! " ${restricted_ports[@]} " =~ " $first_port " ]]; then
+      if port_is_open "$first_port"; then
         open_ports=$((open_ports+1))
+      else
+        break
       fi
-    done
+    fi
+    first_port=$((first_port+1))
   done
 
   echo $first_port
@@ -177,7 +174,7 @@ start_containers() {
     NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
         
     if [ "$MYSTERIUM" = true ]; then
-      mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
+      mysterium_first_port=$(check_open_ports $mysterium_first_port)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
@@ -187,7 +184,7 @@ start_containers() {
     fi
     
     if [[ $EBESUCHER_USERNAME ]]; then
-      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
@@ -201,7 +198,7 @@ start_containers() {
     fi
 
     if [[ $ADNADE_USERNAME ]]; then
-      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
@@ -215,7 +212,7 @@ start_containers() {
     fi
 
     if [ "$CUSTOM_FIREFOX" = true ];then
-      custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port 1)
+      custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Custom Firefox. Resolve or disable Custom Firefox to continue. Exiting..${NOCOLOUR}"
@@ -225,7 +222,7 @@ start_containers() {
     fi
 
     if [ "$CUSTOM_CHROME" = true ];then
-      custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port 1)
+      custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Custom Chrome. Resolve or disable Custom Chrome to continue. Exiting..${NOCOLOUR}"
@@ -280,7 +277,7 @@ start_containers() {
       sudo docker pull mysteriumnetwork/myst:latest  
     fi
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
+      mysterium_first_port=$(check_open_ports $mysterium_first_port)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
@@ -309,7 +306,7 @@ start_containers() {
     fi  
      
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port 1)
+      custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Custom Firefox. Resolve or disable Custom Firefox to continue. Exiting..${NOCOLOUR}"
@@ -339,7 +336,7 @@ start_containers() {
     fi
          
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port 1)
+      custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Custom Chrome. Resolve or disable Custom Chrome to continue. Exiting..${NOCOLOUR}"
@@ -392,7 +389,7 @@ start_containers() {
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
@@ -459,7 +456,7 @@ start_containers() {
     sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
     
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
@@ -511,7 +508,7 @@ start_containers() {
     cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
     sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Adnade Firefox. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
@@ -570,7 +567,7 @@ start_containers() {
     sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
     
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
-      adnade_first_port=$(check_open_ports $adnade_first_port 1)
+      adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
@@ -611,7 +608,7 @@ start_containers() {
 
   # Starting Meson container
   if [[ $MESON_TOKEN ]]; then
-    meson_first_port=$(check_open_ports $meson_first_port 1)
+    meson_first_port=$(check_open_ports $meson_first_port)
     if ! expr "$meson_first_port" : '[[:digit:]]*$' >/dev/null; then
       echo -e "${RED}Problem assigning port $meson_first_port ..${NOCOLOUR}"
       echo -e "${RED}Failed to start Meson. Resolve or disable Meson to continue. Exiting..${NOCOLOUR}"
