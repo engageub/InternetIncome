@@ -70,7 +70,7 @@ mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
 meson_first_port=9000
-custom_firefox_first_port=6000
+custom_firefox_first_port=5000
 custom_chrome_first_port=7000
 
 #Unique Id
