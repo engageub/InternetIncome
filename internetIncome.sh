@@ -155,7 +155,7 @@ start_containers() {
     
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/blechschmidt/tun2proxy:v0.1.12
+      sudo docker pull ghcr.io/blechschmidt/tun2proxy:v0.2.15
     fi
 
     if [ "$USE_SOCKS5_DNS" = true ]; then
@@ -166,7 +166,7 @@ start_containers() {
        dns_option="--dns virtual"
     fi
 
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.1.12 $dns_option --proxy $proxy); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.2.15 $dns_option --proxy $proxy); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
       sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.4.4" > /etc/resolv.conf;echo "nameserver 8.8.8.8" >> /etc/resolv.conf;'
