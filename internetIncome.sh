@@ -389,6 +389,24 @@ start_containers() {
     fi
   fi
 
+  # Starting Grass container
+  if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
+    echo -e "${GREEN}Starting Grass container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull camislav/grass
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "grass$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Grass..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Earn Fm container
   if [[ $EARN_FM_API ]]; then
     echo -e "${GREEN}Starting EarnFm container..${NOCOLOUR}"
