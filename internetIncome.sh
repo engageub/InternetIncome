@@ -101,9 +101,8 @@ generate_device_ids() {
 # Check for open ports
 check_open_ports() {
   local first_port=$1
-  local open_ports=0
-
-  # Check if current port is open
+  
+  # Check if current Port is open
   port_is_open() {
     local port_to_check=$1
     { timeout 1 bash -c "echo > /dev/tcp/localhost/$port_to_check" > /dev/null; } 2>/dev/null
@@ -113,12 +112,13 @@ check_open_ports() {
   while true; do
     if [[ ! " ${restricted_ports[@]} " =~ " $first_port " ]]; then
       if port_is_open "$first_port"; then
-        open_ports=$((open_ports+1))
+        first_port=$((first_port+1))
       else
         break
       fi
+    else
+      first_port=$((first_port+1))
     fi
-    first_port=$((first_port+1))
   done
 
   echo $first_port
