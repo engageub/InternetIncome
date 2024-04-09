@@ -251,8 +251,33 @@ start_containers() {
         echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}" 
         exit 1
       fi
+    elif [ "$USE_TUN2PROXY" = true ];then
+      # Starting tun2proxy containers
+      if [ "$container_pulled" = false ]; then
+        sudo docker pull ghcr.io/blechschmidt/tun2proxy:v0.2.15
+      fi
+      if [ "$USE_SOCKS5_DNS" = true ]; then
+         dns_option="--dns direct"
+      elif  [ "$USE_DNS_OVER_HTTPS" = true ]; then
+         dns_option="--dns over-tcp"
+      else
+         dns_option="--dns virtual"
+      fi
+      if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
+        echo -e "${GREEN}Creating new network..${NOCOLOUR}"
+        network_name="net$UNIQUE_ID$i"
+        CUSTOM_NETWORK="--network $network_name"
+        if NETWORK_ID=$(sudo docker network create $network_name); then
+          echo "$network_name" | tee -a $networks_file
+        else
+          echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}" 
+          exit 1
+        fi
+      fi
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.2.15 $dns_option --proxy $proxy)
+      execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"   
     else 
-      # Starting tun containers
+      # Starting tun2socks containers
       if [ "$container_pulled" = false ]; then
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
