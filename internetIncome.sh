@@ -244,9 +244,13 @@ start_containers() {
     elif [ "$vpn_enabled" = false ];then
       subnet_number=`expr 32 + $i`
       NETWORK_TUN="--network multi$UNIQUE_ID$i"
-      echo "multi$UNIQUE_ID$i" | tee -a $networks_file
-      sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet 192.168.$subnet_number.0/24
-      sudo iptables -t nat -I POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $proxy
+      if NETWORK_ID=$(sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet 192.168.$subnet_number.0/24); then
+        echo "multi$UNIQUE_ID$i" | tee -a $networks_file
+        sudo iptables -t nat -I POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $proxy
+      else
+        echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}" 
+        exit 1
+      fi
     else 
       # Starting tun containers
       if [ "$container_pulled" = false ]; then
@@ -262,9 +266,13 @@ start_containers() {
       if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
         echo -e "${GREEN}Creating new network..${NOCOLOUR}"
         network_name="net$UNIQUE_ID$i"
-        echo "$network_name" | tee -a "$networks_file"
         CUSTOM_NETWORK="--network $network_name"
-        sudo docker network create "$network_name"
+        if NETWORK_ID=$(sudo docker network create $network_name); then
+          echo "$network_name" | tee -a $networks_file
+        else
+          echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}" 
+          exit 1
+        fi
       fi
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
