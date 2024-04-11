@@ -175,6 +175,8 @@ If you wish to use change proxies for already running container due to bad proxi
 ```
 sudo bash updateProxies.sh
 ```
+### 🤔 How to use it multiple IP or VPN❓
+For advance users who wish to use multiple IP or multiple VPN, please use [test](https://github.com/engageub/InternetIncome/tree/test) branch. 
 
 ## 📇 License:
 * This product is available for free and may be freely copied and distributed in its original form. 
