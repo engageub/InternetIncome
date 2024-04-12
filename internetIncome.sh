@@ -347,10 +347,19 @@ start_containers() {
       fi
       cf_port="-p $custom_firefox_first_port:5911"
     fi
+
+    # Setting random window height and width for firefox
+    if [ "$CUSTOM_FIREFOX_USE_RANDOM_DISPLAY" = true ]; then
+      MIN_WIDTH=1280
+      MIN_HEIGHT=1024
+      WINDOW_WIDTH=$((RANDOM % (1920 - MIN_WIDTH + 1) + MIN_WIDTH))
+      WINDOW_HEIGHT=$((RANDOM % (1080 - MIN_HEIGHT + 1) + MIN_HEIGHT))
+      CUSTOM_FIREFOX_DISPLAY_PARAMETERS="-e DISPLAY_WIDTH=$WINDOW_WIDTH  -e DISPLAY_HEIGHT=$WINDOW_HEIGHT"
+    fi
     
     mkdir -p $PWD/$custom_firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$custom_firefox_data_folder/data$i
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 $CUSTOM_FIREFOX_DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox)
     execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
