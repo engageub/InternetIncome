@@ -499,12 +499,30 @@ start_containers() {
   fi
   
   # Starting Honeygain container
-  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
+  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && !$NETWORK_TUN]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull honeygain/honeygain    
     fi
     if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
+    else
+      echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
+  fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Honeygain container with proxy
+  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && $NETWORK_TUN]]; then
+    echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull --platform=linux/amd64 honeygain/honeygain:0.6.6   
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always honeygain/honeygain:0.6.6 -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
     else
