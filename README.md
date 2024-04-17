@@ -21,7 +21,7 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 | 22. [Speedshare](https://speedshare.app/?ref=engageub1)  | 23. [Meson Network](https://dashboard.meson.network/register) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch) | 24. [Cash Raven](https://cashraven.io/) (Mobile device) |
 | 25. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported) | 26. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account) | 27. [Addon Money](https://addon.money/p/309409) (Browser Extension)
 | 28. [Surfe](https://surfe.be/video/1631650)(Browser Extension) | 29. [Slice](https://addslice.com/?crew=S2FLb) (Browser Extension) | 30. [CloudCollab](https://cloudcollab.uk/) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch)|
-| 31. [Autosurf.tn](https://autosurf.tn/by/engageub) (Not supported)| 32. [Grass](https://t.co/hpl30lW4cP) (Browser Extension) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch)
+| 31. [Grass](https://t.co/hpl30lW4cP) (Browser Extension) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch)
 * Not Supported are the apps which are not available in docker environment, you may use them in windows.
 * [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox browser inside the container, so they consume more resources compared to other containers.
 * If you wish to run windows apps on linux OS (or) Mac OS (or) Chrome OS, please [Get Crossover](https://www.codeweavers.com/store?ad=1034). Single license can be used on multiple machines. 
