@@ -792,7 +792,7 @@ start_containers() {
   fi
   
   # Starting Honeygain container
-  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
+  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && ! $NETWORK_TUN ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull honeygain/honeygain    
     fi
@@ -804,7 +804,19 @@ start_containers() {
     fi
   fi
 
-  
+  # Starting Honeygain container with proxy 
+  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && $NETWORK_TUN ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull --platform=linux/amd64 honeygain/honeygain:0.6.6      
+    fi
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --platform=linux/amd64 honeygain/honeygain:0.6.6 -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i)
+    execute_docker_command "Honeygain" "honey$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Gaganode container
   if [[ $GAGANODE_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
