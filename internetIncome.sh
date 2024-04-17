@@ -499,7 +499,7 @@ start_containers() {
   fi
   
   # Starting Honeygain container
-  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && !$NETWORK_TUN ]]; then
+  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && ! $NETWORK_TUN ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull honeygain/honeygain    
