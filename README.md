@@ -16,8 +16,8 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 | 7. [Repocket](https://link.repocket.co/pV1G)  | 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  | 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  |
 | 10. [BitPing](https://app.bitping.com/?r=drPpp600) | 11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted) |12. [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam)  |
 | 13. [Adnade](https://t.co/KthcbzPa08) (Private autosurf) | 14. [EarnFM](https://t.co/SX6ggtooDW)  | 15. [Bytelixir](https://t.co/MNaVYiALR5) (Windows & Android) |
-| 16. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch) | 17. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported) | 18. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported) |
-| 19. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported) | 20. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device) | 21. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported) |
+| 16. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch) | 17. [Spider Income](https://income.spider.dev/r/engagf7jws) (Windows) | 18. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Windows) |
+| 19. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Windows) | 20. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device) | 21. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported) |
 | 22. [Speedshare](https://speedshare.app/?ref=engageub1)  | 23. [Meson Network](https://dashboard.meson.network/register) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch) | 24. [Cash Raven](https://cashraven.io/) (Mobile device) |
 | 25. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported) | 26. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account) | 27. [Addon Money](https://addon.money/p/309409) (Browser Extension)
 | 28. [Surfe](https://surfe.be/video/1631650)(Browser Extension) | 29. [Slice](https://addslice.com/?crew=S2FLb) (Browser Extension) | 30. [CloudCollab](https://cloudcollab.uk/) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch)|
@@ -27,25 +27,28 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 * If you wish to run windows apps on linux OS (or) Mac OS (or) Chrome OS, please [Get Crossover](https://www.codeweavers.com/store?ad=1034). Single license can be used on multiple machines. 
 ## :judge: Comparison of different apps based on proxy type 
 
-| App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
-|  :--- |  :---: |  :---: | :---: | :---: |
-| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1|
-| [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1|
-| [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1|
-| [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|
-| [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1|
-| [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :x: |No limit|1|
-| [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1|
-| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1|
-| [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
-| [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit|
-| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1|
-| [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2|
-| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit|
-| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
-| [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
-| [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
-| [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|
+| App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
+|  :--- |  :---: |  :---: | :---: | :---: | :---: |
+| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
+| [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
+| [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
+| [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
+| [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
+| [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal| 
+| [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1| GiftCard|
+| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| --- |
+| [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
+| [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
+| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1| Paypal|
+| [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2| Paypal, Wise|
+| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit| Crypto|
+| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| --- |
+| [CloudCollab](https://cloudcollab.uk/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| --- |
+
 
 * [Click here](https://ibb.co/0Yby69T) to view screenshot of the above as some of the browsers don't support checkmarks. 
 * The comparison mentioned above was updated on 30-04-2023 and may be subject to change later.
