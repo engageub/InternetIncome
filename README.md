@@ -9,7 +9,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 Please read the legal terms or FAQ section of the respective apps if you have any queries on the type of traffic sent. 
 
 ## 💰	Register with the following links:
-[Click here to sign up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)
+### <ins>[Click here to Sign Up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)</ins> 
 ## :judge: Comparison of different apps based on proxy type 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
