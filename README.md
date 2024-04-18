@@ -9,22 +9,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 Please read the legal terms or FAQ section of the respective apps if you have any queries on the type of traffic sent. 
 
 ## 💰	Register with the following links:
-| | | |
-| :--- |  :--- | :--- |
-| 1. [EarnApp](https://t.co/k0w7jqLfxq) | 2. [PacketStream](https://t.co/FtklOxS7QN) | 3. [Honeygain](https://t.co/Xo1FwoUJx1)|  
-| 4. [IPRoyal](https://t.co/7hZUclQbCd) |  5. [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a) | 6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  |
-| 7. [Repocket](https://link.repocket.co/pV1G)  | 8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  | 9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  |
-| 10. [BitPing](https://app.bitping.com/?r=drPpp600) | 11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) (Private autosurf with cookies accepted) |12. [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam)  |
-| 13. [Adnade](https://t.co/KthcbzPa08) (Private autosurf) | 14. [EarnFM](https://t.co/SX6ggtooDW)  | 15. [Bytelixir](https://t.co/MNaVYiALR5) (Windows & Android) |
-| 16. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch) | 17. [Spider Income](https://income.spider.dev/r/engagf7jws) (Windows) | 18. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Windows) |
-| 19. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Windows) | 20. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device) | 21. [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) (Not Supported) |
-| 22. [Speedshare](https://speedshare.app/?ref=engageub1)  | 23. [Meson Network](https://dashboard.meson.network/register) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch) | 24. [Cash Raven](https://cashraven.io/) (Mobile device) |
-| 25. [Spide Network](https://spide.network/register.html?ed98b1) (Not Supported) | 26. [Pi](https://minepi.com/engageub) (Docker available in Windows only and only 1 node per account) | 27. [Addon Money](https://addon.money/p/309409) (Browser Extension)
-| 28. [Surfe](https://surfe.be/video/1631650)(Browser Extension) | 29. [Slice](https://addslice.com/?crew=S2FLb) (Browser Extension) | 30. [CloudCollab](https://cloudcollab.uk/) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch)|
-| 31. [Grass](https://t.co/hpl30lW4cP) (Browser Extension) (Available in [test](https://github.com/engageub/InternetIncome/tree/test) branch)
-* Not Supported are the apps which are not available in docker environment, you may use them in windows.
-* [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox browser inside the container, so they consume more resources compared to other containers.
-* If you wish to run windows apps on linux OS (or) Mac OS (or) Chrome OS, please [Get Crossover](https://www.codeweavers.com/store?ad=1034). Single license can be used on multiple machines. 
+[Click here to sign up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)
 ## :judge: Comparison of different apps based on proxy type 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
