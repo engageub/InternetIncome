@@ -656,7 +656,6 @@ start_containers() {
       echo -e "${RED}Failed to start Meson. Resolve or disable Meson to continue. Exiting..${NOCOLOUR}"
       exit 1
     fi
-    CPU_ARCH=`uname -m`
     container_image="--platform=linux/amd64 jepbura/meson"
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
       container_image="jepbura/meson:arm64"
@@ -700,7 +699,6 @@ start_containers() {
 
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
-    CPU_ARCH=`uname -m`
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm64v8"
     elif [ "$CPU_ARCH" == "arm7l" ]; then
@@ -948,6 +946,9 @@ if [[ "$1" == "--start" ]]; then
 
   # Remove special character ^M from properties file
   sed -i 's/\r//g' $properties_file
+
+  # CPU architecture to get docker images
+  CPU_ARCH=`uname -m`
   
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
