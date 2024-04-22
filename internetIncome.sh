@@ -428,7 +428,6 @@ start_containers() {
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
-    CPU_ARCH=`uname -m`
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm64v8"
     elif [ "$CPU_ARCH" == "arm7l" ]; then
@@ -673,6 +672,9 @@ if [[ "$1" == "--start" ]]; then
 
   # Remove special characters ^M from properties file
   sed -i 's/\r//g' $properties_file
+
+  # CPU architecture to get docker images
+  CPU_ARCH=`uname -m`
   
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
