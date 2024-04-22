@@ -793,7 +793,7 @@ start_containers() {
   
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
-    if [[ $$NETWORK_TUN ]]; then
+    if [[ $NETWORK_TUN ]]; then
       honeygain_image="--platform=linux/amd64 honeygain/honeygain:0.6.6"
     else
       honeygain_image="honeygain/honeygain"
