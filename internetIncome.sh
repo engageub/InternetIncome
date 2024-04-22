@@ -428,13 +428,21 @@ start_containers() {
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
+    CPU_ARCH=`uname -m`
+    if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
+      traffmonetizer_image="traffmonetizer/cli_v2:arm64v8"
+    elif [ "$CPU_ARCH" == "arm7l" ]; then
+      traffmonetizer_image="traffmonetizer/cli_v2:arm32v7"
+    else
+      traffmonetizer_image="--platform=linux/amd64 traffmonetizer/cli_v2"
+    fi
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 traffmonetizer/cli_v2
+      sudo docker pull $traffmonetizer_image
     fi
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --platform=linux/amd64 --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume traffmonetizer/cli_v2 start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
