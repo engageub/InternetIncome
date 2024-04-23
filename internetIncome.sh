@@ -538,10 +538,15 @@ start_containers() {
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull honeygain/honeygain    
+    if [[ $NETWORK_TUN ]]; then
+      honeygain_image="--platform=linux/amd64 honeygain/honeygain:0.6.6"
+    else
+      honeygain_image="honeygain/honeygain"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always honeygain/honeygain -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull $honeygain_image   
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
     else
