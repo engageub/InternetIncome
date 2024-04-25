@@ -42,9 +42,11 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 
 
 * [Click here](https://prnt.sc/OebarMcJQ1nz) to view screenshot of the above as some of the browsers don't support checkmarks. 
-* The comparison mentioned above was updated on 25-04-2024 and may be subject to change later.
 * [Adnade](https://t.co/KthcbzPa08), [Ebesucher](https://www.ebesucher.com/?ref=engageub) and [Grass](https://t.co/hpl30lW4cP) use firefox/chrome browser inside the container, so they consume more resources compared to other containers.
 * No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. Try to use 1 device per IP if possible.
+* To convert crypto to other wallets or currencies, you may use [BestChange](https://www.bestchange.com/?p=1252652).
+* The comparison mentioned above was updated on 25-04-2024 and may be subject to change later.
+
 
 ## :house_with_garden:	Prerequisites 	
 Run the following commands to install or update docker.
