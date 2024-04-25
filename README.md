@@ -22,6 +22,7 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 | [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal| 
 | [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1| GiftCard|
 | [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
+| [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) | :heavy_check_mark:	  | :x: |No limit|1| Crypto|
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| --- |
 | [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
 | [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
@@ -40,8 +41,9 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 
 
 
-* [Click here](https://ibb.co/0Yby69T) to view screenshot of the above as some of the browsers don't support checkmarks. 
-* The comparison mentioned above was updated on 30-04-2023 and may be subject to change later.
+* [Click here](https://prnt.sc/OebarMcJQ1nz) to view screenshot of the above as some of the browsers don't support checkmarks. 
+* The comparison mentioned above was updated on 25-04-2024 and may be subject to change later.
+* [Adnade](https://t.co/KthcbzPa08), [Ebesucher](https://www.ebesucher.com/?ref=engageub) and [Grass](https://t.co/hpl30lW4cP) use firefox/chrome browser inside the container, so they consume more resources compared to other containers.
 * No Limit indicates the website has not mentioned any specifics about it and multiproxies were working. Try to use 1 device per IP if possible.
 
 ## :house_with_garden:	Prerequisites 	
