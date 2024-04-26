@@ -425,6 +425,24 @@ start_containers() {
     fi
   fi
 
+  # Starting Gaganode container
+  if [[ $GAGANODE_TOKEN ]]; then
+    echo -e "${GREEN}Starting Gaganode container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull xterna/gaga-node
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
+      echo "$CONTAINER_ID" | tee -a $containers_file 
+      echo "gaganode$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Gaganode..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Gaganode Token is not configured. Ignoring Gaganode..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
