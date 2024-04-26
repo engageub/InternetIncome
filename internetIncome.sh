@@ -813,9 +813,9 @@ start_containers() {
   # Starting Gaganode container
   if [[ $GAGANODE_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 jepbura/gaganode    
+      sudo docker pull xterna/gaga-node 
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --platform=linux/amd64 -e TOKEN=$GAGANODE_TOKEN jepbura/gaganode)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node)
     execute_docker_command "Gaganode" "gaganode$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
