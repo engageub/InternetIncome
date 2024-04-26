@@ -23,7 +23,7 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 | [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1| GiftCard|
 | [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
 | [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) | :heavy_check_mark:	  | :x: |No limit|1| Crypto|
-| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| --- |
+| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
 | [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
 | [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1| Paypal|
@@ -37,7 +37,7 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 | [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 | [Spider Income](https://income.spider.dev/r/engagf7jws) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 | [GagaNode](https://t.co/UO6hnDCv4M) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| --- |
+| [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 
 
 
