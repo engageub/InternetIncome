@@ -180,7 +180,7 @@ start_containers() {
   fi
   
   # Starting Mysterium container
-  if [ "$MYSTERIUM" = true ]; then
+  if [[ "$MYSTERIUM" = true && ! $NETWORK_TUN ]]; then
     echo -e "${GREEN}Starting Mysterium container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
@@ -205,6 +205,10 @@ start_containers() {
       mysterium_first_port=`expr $mysterium_first_port + 1`
     else
       echo -e "${RED}Failed to start container for Mysterium..${NOCOLOUR}"
+    fi
+  elif [[ "$MYSTERIUM" = true && $NETWORK_TUN ]]; then
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Proxy for Mysterium is not supported at the moment due to ongoing issue. Please see https://github.com/xjasonlyu/tun2socks/issues/262 for more details. Ignoring Mysterium..${NOCOLOUR}"
     fi
   else
     if [ "$container_pulled" = false ]; then
