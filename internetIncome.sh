@@ -949,8 +949,9 @@ if [[ "$1" == "--start" ]]; then
     fi
   done
 
-  # Remove special character ^M from properties file
+  # Remove special character ^M and trim space from properties file
   sed -i 's/\r//g' $properties_file
+  sed -i 's/^[ \t]*//;s/[ \t]*$//' $properties_file
 
   # CPU architecture to get docker images
   CPU_ARCH=`uname -m`
@@ -997,8 +998,9 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
 
-    # Remove special character ^M from vpn file
+    # Remove special character ^M and trim space from vpn file
     sed -i 's/\r//g' $vpns_file
+    sed -i 's/^[ \t]*//;s/[ \t]*$//' $vpns_file
     
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
@@ -1018,8 +1020,9 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
 
-    # Remove special character ^M from multi ip file
+    # Remove special character ^M and trim space from multi ip file
     sed -i 's/\r//g' $multi_ip_file
+    sed -i 's/^[ \t]*//;s/[ \t]*$//' $multi_ip_file
     
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
@@ -1039,8 +1042,9 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
 
-    # Remove special character ^M from proxies file
+    # Remove special character ^M and trim space from proxies file
     sed -i 's/\r//g' $proxies_file
+    sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
     
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
