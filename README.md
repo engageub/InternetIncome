@@ -150,7 +150,7 @@ If your proxies are working properly, ensure that your CPU usage remains below 8
 Your DNS requests may also be throttled on the host. Set the value of USE_DNS_OVER_HTTPS to true in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of USE_SOCKS5_DNS to true. 
 ### 🤔 Why is Mysterium node not working❓
 If you are using proxy instead of direct connection, you may see the node online but no earnings. There is an ongoing issue here https://github.com/xjasonlyu/tun2socks/issues/262 . 
-However note that mysterium works with VPN. Please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch if you would like to use multiple VPNs.
+However note that mysterium works with VPN and IP. Please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch if you would like to use multiple VPNs or IPs.
 It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy. When utilizing a direct internet connection, it is imperative to ensure that your firewall is configured to allow UDP traffic.
 
 ### 🤔 Where is Mysterium data stored❓
