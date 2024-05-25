@@ -1119,7 +1119,7 @@ if [[ "$1" == "--delete" ]]; then
 
   # Delete IP tables
   if [ -f "$multi_ip_file" ]; then
-    for ip in `cat $multi_ip_file`; do
+    while IFS= read -r ip || [ -n "$ip" ]; do
       if [[ "$ip" =~ ^[^#].* ]]; then
         # Increment the third octet, and handle overflow
         if [ $third_octet -gt 255 ]; then
@@ -1140,7 +1140,7 @@ if [[ "$1" == "--delete" ]]; then
         sudo iptables -t nat -D POSTROUTING -s $new_subnet -j SNAT --to-source $ip
         ((third_octet++))
       fi
-    done
+    done < $multi_ip_file
   fi
   
   for file in "${files_to_be_removed[@]}"; do
