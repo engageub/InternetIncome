@@ -73,6 +73,11 @@ meson_first_port=9000
 custom_firefox_first_port=5000
 custom_chrome_first_port=7000
 
+# Initial Octet for multi IP
+first_octet=192
+second_octet=168
+third_octet=33
+
 #Unique Id
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 
@@ -247,11 +252,28 @@ start_containers() {
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
     elif [ "$vpn_enabled" = false ];then
-      subnet_number=`expr 32 + $i`
       NETWORK_TUN="--network multi$UNIQUE_ID$i"
-      if NETWORK_ID=$(sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet 192.168.$subnet_number.0/24); then
+      # Increment the third octet, and handle overflow
+      if [ $third_octet -gt 255 ]; then
+        third_octet=0
+        ((second_octet++))
+      fi
+      # Increment the second octet, and handle overflow
+      if [ $second_octet -gt 255 ]; then
+        second_octet=0
+        ((first_octet++))
+      fi
+      # Handle overflow for first octet 
+      if [ $first_octet -gt 255 ]; then
+        echo "Exceeded IP address range"
+        exit 1
+      fi
+      new_subnet="$first_octet.$second_octet.$third_octet.0/24"
+      if NETWORK_ID=$(sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet $new_subnet); then
         echo "multi$UNIQUE_ID$i" | tee -a $networks_file
-        sudo iptables -t nat -I POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $proxy
+        sudo iptables -t nat -I POSTROUTING -s $new_subnet -j SNAT --to-source $proxy
+        # Increment the third octet for the next iteration
+        ((third_octet++))
       else
         echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}" 
         exit 1
@@ -1096,17 +1118,29 @@ if [[ "$1" == "--delete" ]]; then
   fi
 
   # Delete IP tables
-  k=1
-  if [ "$USE_MULTI_IP" = true ]; then
-      if [ -f "$multi_ip_file" ]; then
-        for ip in `cat $multi_ip_file`; do
-          if [[ "$ip" =~ ^[^#].* ]]; then
-            subnet_number=`expr 32 + $k`
-            sudo iptables -t nat -D POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $ip
-            k=`expr $k + 1`
-          fi
-        done
+  if [ -f "$multi_ip_file" ]; then
+    for ip in `cat $multi_ip_file`; do
+      if [[ "$ip" =~ ^[^#].* ]]; then
+        # Increment the third octet, and handle overflow
+        if [ $third_octet -gt 255 ]; then
+          third_octet=0
+          ((second_octet++))
+        fi
+        # Increment the second octet, and handle overflow
+        if [ $second_octet -gt 255 ]; then
+          second_octet=0
+          ((first_octet++))
+        fi
+        # Handle overflow for first octet (although this would exceed private IP range)
+        if [ $first_octet -gt 255 ]; then
+          echo "Exceeded IP address range"
+          exit 1
+        fi
+        new_subnet="$first_octet.$second_octet.$third_octet.0/24"
+        sudo iptables -t nat -D POSTROUTING -s $new_subnet -j SNAT --to-source $ip
+        ((third_octet++))
       fi
+    done
   fi
   
   for file in "${files_to_be_removed[@]}"; do
