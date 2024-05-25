@@ -1098,7 +1098,7 @@ if [[ "$1" == "--delete" ]]; then
   if [ "$USE_MULTI_IP" = true ]; then
       if [ -f "$multi_ip_file" ]; then
         for ip in `cat $multi_ip_file`; do
-          if [[ "$line" =~ ^[^#].* ]]; then
+          if [[ "$ip" =~ ^[^#].* ]]; then
             subnet_number=`expr 32 + $k`
             sudo iptables -t nat -D POSTROUTING -s 192.168.$subnet_number.0/24 -j SNAT --to-source $ip
             k=`expr $k + 1`
