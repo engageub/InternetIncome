@@ -304,11 +304,11 @@ start_containers() {
       if NETWORK_ID=$(sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet $new_subnet); then
         echo "multi$UNIQUE_ID$i" | tee -a $networks_file
         if sudo iptables -t nat -I POSTROUTING -s $new_subnet -j SNAT --to-source $proxy; then
-		  echo "$new_subnet" "$proxy" | tee -a $subnets_file
-		else
+          echo "$new_subnet" "$proxy" | tee -a $subnets_file
+        else
           echo "${RED}The iptables command failed..Exiting..${NOCOLOUR}"
-		  exit 1
-		fi
+          exit 1
+        fi
       else
         echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}" 
         exit 1
@@ -1157,7 +1157,7 @@ if [[ "$1" == "--delete" ]]; then
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
         subnet=`echo $line | awk '{print $1}'`
-	ip=`echo $line | awk '{print $2}'`
+        ip=`echo $line | awk '{print $2}'`
         sudo iptables -t nat -D POSTROUTING -s $subnet -j SNAT --to-source $ip
       fi
     done < $subnets_file
