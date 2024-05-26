@@ -498,7 +498,7 @@ start_containers() {
       proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
-	    
+    
     if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file 
