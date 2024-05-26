@@ -48,8 +48,8 @@ restart_firefox_file="restartFirefox.sh"
 restart_adnade_file="restartAdnade.sh"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file)
-folders_to_be_removed=($bitping_data_folder $adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
-back_up_folders=($traffmonetizer_data_folder $mysterium_data_folder)
+folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 
 container_pulled=false
@@ -362,7 +362,9 @@ start_containers() {
     # Create bitping folder
     mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
-    sudo docker run --rm $NETWORK_TUN -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+    if [ ! -f "$PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
+        sudo docker run --rm $NETWORK_TUN -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+    fi
     if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file 
