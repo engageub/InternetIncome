@@ -52,7 +52,7 @@ Advanced users, please use [test](https://github.com/engageub/InternetIncome/tre
 ## :house_with_garden:	Prerequisites 	
 Run the following commands to install or update docker.
 
-Ubuntu 20.04 is recommended. 
+[Click here to get upto 4 always free instances](https://developer.oracle.com/free.html)
 
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ### Install docker on Linux
