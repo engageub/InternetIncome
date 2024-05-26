@@ -30,6 +30,7 @@ vpns_file="vpns.txt"
 multi_ip_file="multi_ips.txt"
 containers_file="containers.txt"
 container_names_file="containernames.txt"
+subnets_file="subnets.txt"
 earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
@@ -58,7 +59,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($containers_file $container_names_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
+files_to_be_removed=($containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -76,7 +77,7 @@ custom_chrome_first_port=7000
 # Initial Octet for multi IP
 first_octet=192
 second_octet=168
-third_octet=33
+third_octet=32
 
 #Unique Id
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
@@ -127,6 +128,51 @@ check_open_ports() {
   done
 
   echo $first_port
+}
+
+# Check if a subnet is in use
+is_subnet_in_use() {
+  local subnet=$1
+  local tables=("filter" "nat" "mangle" "raw" "security")
+
+  # Iterate over each table and check for the subnet
+  for table in "${tables[@]}"; do
+    if sudo iptables -t "$table" -L -v -n 2>/dev/null | grep -q "$subnet"; then
+      return 0  # Subnet is in use
+    fi
+  done
+
+  return 1  # Subnet is not in use
+}
+
+# Find the next available subnet
+find_next_available_subnet() {
+  while true; do
+
+    # Increment the third octet, and handle overflow
+    ((third_octet++))
+    if [ $third_octet -gt 255 ]; then
+      third_octet=0
+      ((second_octet++))
+    fi
+    # Increment the second octet, and handle overflow
+    if [ $second_octet -gt 255 ]; then
+      second_octet=0
+      ((first_octet++))
+    fi
+    # Handle overflow for first octet
+    if [ $first_octet -gt 255 ]; then
+      echo "Exceeded IP address range"
+      exit 1
+    fi
+
+    next_subnet="$first_octet.$second_octet.$third_octet.0/24"
+    if ! is_subnet_in_use "$next_subnet"; then
+      echo "$next_subnet"
+      return 0
+    fi
+
+  done
 }
 
 # Execute docker command
@@ -253,27 +299,15 @@ start_containers() {
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network multi$UNIQUE_ID$i"
-      # Increment the third octet, and handle overflow
-      if [ $third_octet -gt 255 ]; then
-        third_octet=0
-        ((second_octet++))
-      fi
-      # Increment the second octet, and handle overflow
-      if [ $second_octet -gt 255 ]; then
-        second_octet=0
-        ((first_octet++))
-      fi
-      # Handle overflow for first octet 
-      if [ $first_octet -gt 255 ]; then
-        echo "Exceeded IP address range"
-        exit 1
-      fi
-      new_subnet="$first_octet.$second_octet.$third_octet.0/24"
+      new_subnet=$(find_next_available_subnet)
       if NETWORK_ID=$(sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet $new_subnet); then
         echo "multi$UNIQUE_ID$i" | tee -a $networks_file
-        sudo iptables -t nat -I POSTROUTING -s $new_subnet -j SNAT --to-source $proxy
-        # Increment the third octet for the next iteration
-        ((third_octet++))
+        if sudo iptables -t nat -I POSTROUTING -s $new_subnet -j SNAT --to-source $proxy; then
+		  echo "$new_subnet" "$proxy" | tee -a $subnets_file
+		else
+          echo "${RED}The iptables command failed..Exiting..${NOCOLOUR}"
+		  exit 1
+		fi
       else
         echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}" 
         exit 1
@@ -1118,29 +1152,14 @@ if [[ "$1" == "--delete" ]]; then
   fi
 
   # Delete IP tables
-  if [ -f "$multi_ip_file" ]; then
-    while IFS= read -r ip || [ -n "$ip" ]; do
-      if [[ "$ip" =~ ^[^#].* ]]; then
-        # Increment the third octet, and handle overflow
-        if [ $third_octet -gt 255 ]; then
-          third_octet=0
-          ((second_octet++))
-        fi
-        # Increment the second octet, and handle overflow
-        if [ $second_octet -gt 255 ]; then
-          second_octet=0
-          ((first_octet++))
-        fi
-        # Handle overflow for first octet (although this would exceed private IP range)
-        if [ $first_octet -gt 255 ]; then
-          echo "Exceeded IP address range"
-          exit 1
-        fi
-        new_subnet="$first_octet.$second_octet.$third_octet.0/24"
-        sudo iptables -t nat -D POSTROUTING -s $new_subnet -j SNAT --to-source $ip
-        ((third_octet++))
+  if [ -f "$subnets_file" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+      if [[ "$line" =~ ^[^#].* ]]; then
+        subnet=`echo $line | awk '{print $1}'`
+		ip=`echo $line | awk '{print $2}'`
+        sudo iptables -t nat -D POSTROUTING -s $subnet -j SNAT --to-source $ip
       fi
-    done < $multi_ip_file
+    done < $subnets_file
   fi
   
   for file in "${files_to_be_removed[@]}"; do
