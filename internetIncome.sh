@@ -148,30 +148,31 @@ is_subnet_in_use() {
 # Find the next available subnet
 find_next_available_subnet() {
   while true; do
-
+  
     # Increment the third octet, and handle overflow
     ((third_octet++))
     if [ $third_octet -gt 255 ]; then
       third_octet=0
       ((second_octet++))
     fi
+    
     # Increment the second octet, and handle overflow
     if [ $second_octet -gt 255 ]; then
       second_octet=0
       ((first_octet++))
     fi
+    
     # Handle overflow for first octet
     if [ $first_octet -gt 255 ]; then
       echo "Exceeded IP address range"
       exit 1
     fi
-
+    
     next_subnet="$first_octet.$second_octet.$third_octet.0/24"
     if ! is_subnet_in_use "$next_subnet"; then
       echo "$next_subnet"
       return 0
     fi
-
   done
 }
 
@@ -1156,7 +1157,7 @@ if [[ "$1" == "--delete" ]]; then
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
         subnet=`echo $line | awk '{print $1}'`
-		ip=`echo $line | awk '{print $2}'`
+	ip=`echo $line | awk '{print $2}'`
         sudo iptables -t nat -D POSTROUTING -s $subnet -j SNAT --to-source $ip
       fi
     done < $subnets_file
