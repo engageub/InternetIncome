@@ -179,26 +179,24 @@ find_next_available_subnet() {
 # Execute docker command
 execute_docker_command() {
   # Store parameters as an array
-  container_parameters=("$@")
-  app_name=${container_parameters[0]}
-  container_name=${container_parameters[1]}
+  local container_parameters=("$@")
+  local app_name=${container_parameters[0]}
+  local container_name=${container_parameters[1]}
+  local CONTAINER_ID
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   if [[ "$app_name" == "VPN" ]]; then
-    if CONTAINER_ID=$(eval "sudo docker run -d --name $container_name --restart=always ${container_parameters[@]:2}"); then
-      echo "$container_name" | tee -a $container_names_file
-      echo "$CONTAINER_ID" | tee -a $containers_file
-    else
-      echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
-      exit 1
-    fi
+    CONTAINER_ID=$(eval "sudo docker run -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
-    if CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}"); then
-      echo "$container_name" | tee -a $container_names_file
-      echo "$CONTAINER_ID" | tee -a $containers_file
-    else
-      echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
-      exit 1
-    fi
+    CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}")
+  fi
+  
+  # Check if the container started successfully
+  if [[ -n "$CONTAINER_ID" ]]; then
+    echo "$container_name" | tee -a "$container_names_file"
+    echo "$CONTAINER_ID" | tee -a "$containers_file"
+  else
+    echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
+    exit 1
   fi
   
   # Delay between each container start
