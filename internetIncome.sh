@@ -183,7 +183,7 @@ execute_docker_command() {
   app_name=${container_parameters[0]}
   container_name=${container_parameters[1]}
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
-  if CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}"); then
+  if CONTAINER_ID=$(eval "sudo docker run -d --name $container_name --restart=always ${container_parameters[@]:2}"); then
     echo "$container_name" | tee -a $container_names_file
     echo "$CONTAINER_ID" | tee -a $containers_file
   else
