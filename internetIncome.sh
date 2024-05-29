@@ -208,9 +208,9 @@ execute_docker_command() {
 # Start all containers 
 start_containers() {
 
-  i=$1
-  proxy=$2
-  vpn_enabled=$3
+  local i=$1
+  local proxy=$2
+  local vpn_enabled=$3
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
@@ -1069,8 +1069,9 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from vpn file
     sed -i 's/\r//g' $vpns_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $vpns_file
-    
-    i=0;
+    if [ -z "${i}" ]; then
+      i=0;
+    fi
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
         i=`expr $i + 1`
@@ -1091,8 +1092,9 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from multi ip file
     sed -i 's/\r//g' $multi_ip_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $multi_ip_file
-    
-    i=0;
+    if [ -z "${i}" ]; then
+      i=0;
+    fi
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
         i=`expr $i + 1`
@@ -1113,8 +1115,9 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from proxies file
     sed -i 's/\r//g' $proxies_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
-    
-    i=0;
+    if [ -z "${i}" ]; then
+      i=0;
+    fi
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
         i=`expr $i + 1`
