@@ -15,7 +15,7 @@ Advanced users, please use [test](https://github.com/engageub/InternetIncome/tre
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
+| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 10|1| Paypal, Gift Card |
 | [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
