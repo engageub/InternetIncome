@@ -86,7 +86,7 @@ cd InternetIncome-main
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
 * If you are using proxies, please set "USE_PROXIES" value to "true". 
-* When setting your email, password, or token, always use double quotes ("") due to special characters. 
+* When setting your email, password, or token, always place them between single quotes ('') to consider special characters. 
 * If you do not wish to use a particular application, leave the default value as it is, and the script will not run for that application.
 ### Update configuration and save
 ```
