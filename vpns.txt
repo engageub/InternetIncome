@@ -1,7 +1,9 @@
 # Add all environment variables for each gluetun container. An example below
-# -e VPN_TYPE=openvpn -e OPENVPN_USER="someusername" -e OPENVPN_PASSWORD="somepassword"
-# If a country or value has space in between, please use double quotes to close it. An example below 
-# -e SERVER_COUNTRIES="Isle of Man"
+# -e VPN_TYPE=openvpn -e OPENVPN_USER='someusername' -e OPENVPN_PASSWORD='somepassword'
+# Place the value between single quotes for password as mentioned above for OPENVPN_PASSWORD.
+# Make sure your password does not already contain single or double quotes; otherwise, you will need to use a backslash to escape these characters.
+# If a country or value has space in between, please use single quotes to close it. An example below 
+# -e SERVER_COUNTRIES='Isle of Man'
 # Refer to the following documentation on adding environmental variables. Do not add anything apart from volumes and environment variables in each line.
 # https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers
 # Each line should have configuration for a separate vpn
