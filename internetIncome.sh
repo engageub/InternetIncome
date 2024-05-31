@@ -712,8 +712,6 @@ if [[ "$1" == "--start" ]]; then
         value="${value%"${value##*[![:space:]]}"}"
         # Ignore lines without a value after =
         if [[ -n $value ]]; then
-            # Replace variables with their values
-            value=$(eval "echo $value")
             # Export the key-value pairs as variables
             export "$key"="$value"
         fi
