@@ -149,7 +149,7 @@ sudo docker system prune -f -a
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing. In addition to this, the application website may also be throttling the requests either due to multiple authentication requests in a short period or the request may be timing out, etc. 
 Your DNS requests may also be throttled on the host. Set the value of USE_DNS_OVER_HTTPS to true in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of USE_SOCKS5_DNS to true. 
 ### 🤔 Why is the Mysterium node not working❓
-If you are using a proxy instead of a direct connection, you may see the node online but no earnings. There is an ongoing issue here https://github.com/xjasonlyu/tun2socks/issues/262 . 
+If you are using a proxy instead of a direct connection, you may see the node online but no earnings. There is an ongoing issue here https://github.com/xjasonlyu/tun2socks/issues/262. 
 However, note that Mysterium works with VPN and IP. Please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch if you would like to use multiple VPNs or IPs.
 It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy. When utilizing a direct internet connection, it is imperative to ensure that your firewall is configured to allow UDP traffic.
 
@@ -159,7 +159,7 @@ Therefore, it is imperative to exercise caution and ensure the safety and securi
 
 ### 🤔 How to access 127.0.0.1 URLs for Ebesucher or Mystnodes if GUI is not available in Linux ❓
 If your VPS does not have port restrictions to access your VPS IP globally, you can access your localhost URLs by replacing them with your VPS IP address.
-For example, if your VPS IP address is 2.4.75.2 and you wish to access your localhost URL http://127.0.0.1:2000, then replace the IP with your VPS IP to access it elsewhere. The URL to access directly using VPS IP would be http://2.4.75.2:2000 
+For example, if your VPS IP address is 2.4.75.2 and you wish to access your localhost URL http://127.0.0.1:2000, then replace the IP with your VPS IP to access it elsewhere. The URL to access directly using VPS IP would be http://2.4.75.2:2000.
 
 If your VPS IP is not accessible globally, please run the following command to get the corresponding URL.
 ```
