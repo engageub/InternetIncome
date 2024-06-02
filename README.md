@@ -131,7 +131,7 @@ For any other proxy format, please [click here](https://github.com/engageub/Inte
 
 
 ### 🤔	Can I use without proxies❓		
-**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file. This is the default configuration when you download the script. 
+**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file. This is the default configuration when you download the script from [main](https://github.com/engageub/InternetIncome/tree/test) branch. 
 ### 🤔 How to use multiple accounts❓		
 For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
 ### 🤔 How to auto update containers❓
@@ -175,8 +175,8 @@ If you wish to use change proxies for already running container due to bad proxi
 ```
 sudo bash updateProxies.sh
 ```
-### 🤔 How to use it multiple IP or VPN❓
-For advance users who wish to use multiple IP or multiple VPN, please use [test](https://github.com/engageub/InternetIncome/tree/test) branch. 
+### 🤔 How to use the app with multiple IP or VPN❓
+For advanced users who wish to use multiple IP or multiple VPN, please use [test](https://github.com/engageub/InternetIncome/tree/test) branch. 
 
 ## 📇 License:
 * This product is available for free and may be freely copied and distributed in its original form. 
