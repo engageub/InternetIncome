@@ -985,7 +985,19 @@ start_containers() {
   fi
   
   container_pulled=true
-} 
+}
+
+# Update and Install docker
+if [[ "$1" == "--install" ]]; then
+  sudo apt-get update
+  sudo apt-get -y install docker.io
+  CPU_ARCH=`uname -m`
+  if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
+    sudo docker run --privileged --rm tonistiigi/binfmt --install all
+    sudo apt-get install qemu binfmt-support qemu-user-static
+  fi
+  exit 1
+fi
 
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
