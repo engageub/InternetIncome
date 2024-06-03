@@ -987,6 +987,14 @@ start_containers() {
   container_pulled=true
 }
 
+# Check if docker is installed
+if ! command -v docker &> /dev/null; then
+  echo -e "${RED}Docker is not installed, without which the script cannot start. Exiting..${NOCOLOUR}"
+  echo -e "To install Docker, please run the following command\n"
+  echo -e "${YELLOW}sudo bash internetIncome.sh --install${NOCOLOUR}\n"
+  exit 1
+fi
+
 # Update and Install docker
 if [[ "$1" == "--install" ]]; then
   sudo apt-get update
