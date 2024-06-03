@@ -996,9 +996,17 @@ if [[ "$1" == "--install" ]]; then
     sudo docker run --privileged --rm tonistiigi/binfmt --install all
     sudo apt-get install qemu binfmt-support qemu-user-static
   fi
+  # Check if Docker is installed
+  if command -v docker &> /dev/null; then
+    echo "Docker is installed."
+    docker --version
+  else
+    echo "Docker is not installed. There is a problem installing Docker. Please install Docker manually by following https://docs.docker.com/engine/install/"
+  fi
   exit 1
 fi
 
+# Start the containers
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
   STATUS=0;
@@ -1010,7 +1018,8 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
   done
-   
+
+  # Check if previous files exist
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -1019,7 +1028,8 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
   done
-  
+
+  # Check if previous folders exist
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -1149,6 +1159,7 @@ if [[ "$1" == "--start" ]]; then
   exit 1
 fi
 
+# Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
   
@@ -1186,13 +1197,15 @@ if [[ "$1" == "--delete" ]]; then
       fi
     done < $subnets_file
   fi
-  
+
+  # Delete files
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
   done
-  
+
+  # Delete folders
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
@@ -1201,9 +1214,11 @@ if [[ "$1" == "--delete" ]]; then
   exit 1
 fi
 
+# Delete backup files and folders
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
 
+  # Check if previous files exist
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -1212,7 +1227,8 @@ if [[ "$1" == "--deleteBackup" ]]; then
       exit 1
     fi
   done
-  
+
+  # Check if previous folders exist
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -1221,13 +1237,15 @@ if [[ "$1" == "--deleteBackup" ]]; then
       exit 1
     fi
   done
-    
+
+  # Delete backup files
   for file in "${back_up_files[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
   done
-  
+
+  # Delete backup folders
   for folder in "${back_up_folders[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
