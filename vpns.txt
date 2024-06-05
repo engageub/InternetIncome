@@ -7,3 +7,4 @@
 # Refer to the following documentation on adding environmental variables. Do not add anything apart from volumes and environment variables in each line.
 # https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers
 # Each line should have configuration for a separate vpn
+# Note: HideMyAss dropped support for Linux OpenVPN so this will likely not work anymore. https://github.com/qdm12/gluetun/issues/1498
