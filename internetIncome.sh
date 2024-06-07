@@ -298,7 +298,7 @@ start_containers() {
     if [ "$vpn_enabled" = true ];then
       # Starting vpn containers
       if [ "$container_pulled" = false ]; then
-        sudo docker pull ghcr.io/qdm12/gluetun
+        sudo docker pull qmcgaw/gluetun:v3.37.0
       fi
       if  [ "$USE_DNS_OVER_HTTPS" = true ]; then
          dns_option="-e DOT=on"
@@ -306,7 +306,7 @@ start_containers() {
          dns_option="-e DOT=off"
       fi
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports ghcr.io/qdm12/gluetun)
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports qmcgaw/gluetun:v3.37.0)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network multi$UNIQUE_ID$i"
