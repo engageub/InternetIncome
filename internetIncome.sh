@@ -373,8 +373,7 @@ start_containers() {
             CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
             ;;
           *)
-            echo "Unsupported architecture: $ARCH"
-            echo "Please disable DNS over HTTPS if the problem persists. Exiting.."
+            echo -e "${RED}Unsupported architecture: $ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
             exit 1
             ;;
         esac
@@ -382,7 +381,7 @@ start_containers() {
         wget -O cloudflared $CF_URL
 
         if [ ! -f cloudflared ]; then
-          echo "There is a problem downloading cloudflared. Please disable DNS over HTTPS if the problem persists. Exiting.."
+          echo -e "${RED}There is a problem downloading cloudflared. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
           exit 1;
         fi
         sudo chmod 777 cloudflared
@@ -1057,7 +1056,7 @@ if [[ "$1" == "--start" ]]; then
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
     if [ ! -f "$required_file" ]; then
-      echo -e "${RED}Required file $required_file does not exist, exiting..${NOCOLOUR}"
+      echo -e "${RED}Required file $required_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
     fi
   done
@@ -1127,7 +1126,7 @@ if [[ "$1" == "--start" ]]; then
     STATUS=1
     echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}" 
     if [ ! -f "$vpns_file" ]; then
-      echo -e "${RED}Vpns file $vpns_file does not exist, exiting..${NOCOLOUR}"
+      echo -e "${RED}Vpns file $vpns_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
     fi
 
@@ -1150,7 +1149,7 @@ if [[ "$1" == "--start" ]]; then
     STATUS=1
     echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}" 
     if [ ! -f "$multi_ip_file" ]; then
-      echo -e "${RED}Multi IP file $multi_ip_file does not exist, exiting..${NOCOLOUR}"
+      echo -e "${RED}Multi IP file $multi_ip_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
     fi
 
@@ -1173,7 +1172,7 @@ if [[ "$1" == "--start" ]]; then
     STATUS=1
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
     if [ ! -f "$proxies_file" ]; then
-      echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
+      echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
     fi
 
