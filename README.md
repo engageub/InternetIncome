@@ -13,6 +13,11 @@ Your income depends on the number of proxies used and the location of proxy. If 
 ## 💰	Register with the following links:
 ### <ins>[Click here to Sign Up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)</ins> 
 
+## :judge: Comparison of different apps based on proxy type 
+### <ins>[Click here to view comparison of apps](https://github.com/engageub/InternetIncome/wiki/Comparison-of-different-apps-based-on-proxy-type)</ins> 
+
+
+
 ## :house_with_garden:	Prerequisites 	
 You need to have docker installed in linux machine. If you don't have already, run the following command.  
 
