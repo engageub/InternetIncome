@@ -59,16 +59,7 @@ You need to have docker installed in linux machine. If you don't have already, r
 
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ### Install docker on Linux
-```
-sudo apt-get update
-sudo apt-get -y install docker.io
-```
-If you are using arm or aarch linux OS, you also need to install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your pc.
-### For ARM or AARCH Architectures
-```
-sudo docker run --privileged --rm tonistiigi/binfmt --install all
-sudo apt-get install qemu binfmt-support qemu-user-static
-```
+The script detects automatically and provides instructions to install any dependencies. 
 
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ### Install Docker on Windows
