@@ -10,29 +10,9 @@ The main advantage of this script is the use of multiple proxies through docker 
 This script has been tested in linux amd64, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 
-## :moneybag:	Register with the following links:
+## 💰	Register with the following links:
+### <ins>[Click here to Sign Up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)</ins> 
 
-1. [EarnApp](https://t.co/k0w7jqLfxq)  
-2. [PacketStream](https://packetstream.io/?psr=4tHH)  
-3. [Honeygain](https://honeygain.com/)  
-4. [IPRoyal](https://iproyal.com/pawns?r=170182)  
-5. [Peer2Profit](https://peer2profit.com/r/163956712261b9cf129932a)  
-6. [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  
-7. [Repocket](https://link.repocket.co/pV1G)  
-8. [Traffmonetizer](https://traffmonetizer.com/?aff=4211)  
-9. [ProxyLite](https://proxylite.ru/?r=AXLDPNX5)  
-10. [BitPing](https://app.bitping.com/?r=drPpp600)
-11. [Ebesucher](https://www.ebesucher.com/?ref=engageub) 
-12. [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) 
-13. [GagaNode](https://dashboard.gaganode.com/register?referral_code=kpcnjdxaizdmifk) (Updated soon)
-14. [Spider Income](https://income.spider.dev/r/engagf7jws) (Not Supported)
-15. [Traffic Earn](https://trafficearn.com/r?r=Mzgy) (Not Supported)
-16. [Salad](https://salad.com/) (Use code WM5ZHG for a 2x earning rate bonus!) (Not Supported)
-17. [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) (Mobile device)
-18. [PacketShare](https://www.packetshare.io/) (Not Supported)
-19. [Speedshare](https://speedshare.app/?ref=ec09fd2d21790b90af37) (Not Supported)
-
-* Not Supported are the apps which are not available in docker environment, you may use them in windows.
 ## :judge: Comparison of different apps based on proxy type 
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP|
