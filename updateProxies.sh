@@ -32,7 +32,7 @@ fi
 
 # Remove special character ^M from properties file
 sed -i 's/\r//g' $properties_file
-  
+
 # Read the properties file and export variables to the current shell
 while IFS= read -r line; do
   # Ignore lines that start with #
@@ -85,7 +85,7 @@ if [ ! -f $updated_proxies_file ]; then
   exit 1
 fi
 
-# Match the number of containers with proxies 
+# Match the number of containers with proxies
 if [ `cat $tun_containers_file|wc -l` == `cat $updated_proxies_file|wc -l` ]; then
 echo "Updating Proxies"
 while read container_id <&3 && read container_proxy <&4; do
