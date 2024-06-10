@@ -1040,7 +1040,8 @@ if [[ "$1" == "--install" ]]; then
     echo -e "${GREEN}Docker is installed.${NOCOLOUR}"
     docker --version
   else
-    echo -e "${RED}Docker is not installed. There is a problem installing Docker. Please install Docker manually by following https://docs.docker.com/engine/install/ ${NOCOLOUR}"
+    echo -e "${RED}Docker is not installed. There is a problem installing Docker.${NOCOLOUR}"
+    echo "Please install Docker manually by following https://docs.docker.com/engine/install/"
   fi
   exit 1
 fi
