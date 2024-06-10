@@ -1026,7 +1026,7 @@ start_containers() {
   container_pulled=true
 }
 
-# Update and Install docker
+# Update and Install Docker
 if [[ "$1" == "--install" ]]; then
   sudo apt-get update
   sudo apt-get -y install docker.io
@@ -1037,10 +1037,10 @@ if [[ "$1" == "--install" ]]; then
   fi
   # Check if Docker is installed
   if command -v docker &> /dev/null; then
-    echo "Docker is installed."
+    echo "${GREEN}Docker is installed.${NOCOLOUR}"
     docker --version
   else
-    echo "Docker is not installed. There is a problem installing Docker. Please install Docker manually by following https://docs.docker.com/engine/install/"
+    echo "${RED}Docker is not installed. There is a problem installing Docker. Please install Docker manually by following https://docs.docker.com/engine/install/ ${NOCOLOUR}"
   fi
   exit 1
 fi
@@ -1048,7 +1048,7 @@ fi
 # Start the containers
 if [[ "$1" == "--start" ]]; then
 
-  # Check if docker is installed
+  # Check if Docker is installed
   if ! command -v docker &> /dev/null; then
     echo -e "${RED}Docker is not installed, without which the script cannot start. Exiting..${NOCOLOUR}"
     echo -e "To install Docker, please run the following command\n"
