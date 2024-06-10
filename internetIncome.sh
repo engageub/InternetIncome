@@ -1037,10 +1037,10 @@ if [[ "$1" == "--install" ]]; then
   fi
   # Check if Docker is installed
   if command -v docker &> /dev/null; then
-    echo "${GREEN}Docker is installed.${NOCOLOUR}"
+    echo -e "${GREEN}Docker is installed.${NOCOLOUR}"
     docker --version
   else
-    echo "${RED}Docker is not installed. There is a problem installing Docker. Please install Docker manually by following https://docs.docker.com/engine/install/ ${NOCOLOUR}"
+    echo -e "${RED}Docker is not installed. There is a problem installing Docker. Please install Docker manually by following https://docs.docker.com/engine/install/ ${NOCOLOUR}"
   fi
   exit 1
 fi
