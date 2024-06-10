@@ -4,7 +4,7 @@
 # Author: engageub                                                               #
 # Description: This script lets you earn passive income by sharing your internet #
 # connection. It also supports multiple proxies with multiple accounts.          #
-# Script Name: Internet Income (Supports Proxies)                                # 
+# Script Name: Internet Income (Supports Proxies)                                #
 # Script Link: https://github.com/engageub/InternetIncome                        #
 # DISCLAIMER: This script is provided "as is" and without warranty of any kind.  #
 # The author makes no warranties, express or implied, that this script is free of#
@@ -22,7 +22,7 @@ GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
 NOCOLOUR="\033[0m"
 
-# File names 
+# File names
 properties_file="properties.conf"
 banner_file="banner.jpg"
 proxies_file="proxies.txt"
@@ -108,7 +108,7 @@ generate_device_ids() {
 # Check for open ports
 check_open_ports() {
   local first_port=$1
-  
+
   # Check if current Port is open
   port_is_open() {
     local port_to_check=$1
@@ -155,26 +155,26 @@ is_subnet_in_use() {
 # Find the next available subnet
 find_next_available_subnet() {
   while true; do
-  
+
     # Increment the third octet, and handle overflow
     ((third_octet++))
     if [ $third_octet -gt 255 ]; then
       third_octet=0
       ((second_octet++))
     fi
-    
+
     # Increment the second octet, and handle overflow
     if [ $second_octet -gt 255 ]; then
       second_octet=0
       ((first_octet++))
     fi
-    
+
     # Handle overflow for first octet
     if [ $first_octet -gt 255 ]; then
       echo "Exceeded IP address range"
       exit 1
     fi
-    
+
     next_subnet="$first_octet.$second_octet.$third_octet.0/24"
     if ! is_subnet_in_use "$next_subnet"; then
       echo "$next_subnet"
@@ -196,7 +196,7 @@ execute_docker_command() {
   else
     CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}")
   fi
-  
+
   # Check if the container started successfully
   if [[ -n "$CONTAINER_ID" ]]; then
     echo "$container_name" | tee -a "$container_names_file"
@@ -205,14 +205,14 @@ execute_docker_command() {
     echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
     exit 1
   fi
-  
+
   # Delay between each container start
   if [[ $DELAY_BETWEEN_CONTAINER =~ ^[0-9]+$ ]]; then
     sleep $DELAY_BETWEEN_CONTAINER
   fi
 }
 
-# Start all containers 
+# Start all containers
 start_containers() {
 
   local i=$1
@@ -225,22 +225,22 @@ start_containers() {
   else
     TUN_LOG_PARAM="info"
   fi
-  
+
   if [[ $MAX_MEMORY ]]; then
     MAX_MEMORY_PARAM="-m $MAX_MEMORY"
   fi
-  
+
   if [[ $MEMORY_RESERVATION ]]; then
     MEMORY_RESERVATION_PARAM="--memory-reservation=$MEMORY_RESERVATION"
   fi
-  
+
   if [[ $CPU ]]; then
     CPU_PARAM="--cpus=$CPU"
   fi
 
   if [[ $i && $proxy ]]; then
     NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
-        
+
     if [ "$MYSTERIUM" = true ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -250,7 +250,7 @@ start_containers() {
       fi
       mysterium_port="-p $mysterium_first_port:4449 "
     fi
-    
+
     if [[ $EBESUCHER_USERNAME ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -276,7 +276,7 @@ start_containers() {
           adnade_port="-p $adnade_first_port:3500 "
       else
           adnade_port="-p $adnade_first_port:5900 "
-      fi 
+      fi
     fi
 
     if [ "$CUSTOM_FIREFOX" = true ];then
@@ -298,9 +298,9 @@ start_containers() {
       fi
       custom_chrome_port="-p $custom_chrome_first_port:3200 "
     fi
-    
+
     combined_ports=$mysterium_port$ebesucher_port$adnade_port$custom_firefox_port$custom_chrome_port
-  
+
     if [ "$vpn_enabled" = true ];then
       # Starting vpn containers
       if [ "$container_pulled" = false ]; then
@@ -326,7 +326,7 @@ start_containers() {
           exit 1
         fi
       else
-        echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}" 
+        echo -e "${RED}Failed to create network multi$UNIQUE_ID$i..Exiting..${NOCOLOUR}"
         exit 1
       fi
     elif [ "$USE_TUN2PROXY" = true ];then
@@ -348,13 +348,13 @@ start_containers() {
         if NETWORK_ID=$(sudo docker network create $network_name); then
           echo "$network_name" | tee -a $networks_file
         else
-          echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}" 
+          echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}"
           exit 1
         fi
       fi
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.2.15 $dns_option --proxy $proxy)
-      execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"   
-    else 
+      execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+    else
       # Starting tun2socks containers
       if [ "$container_pulled" = false ]; then
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
@@ -363,7 +363,7 @@ start_containers() {
         EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;'
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         ARCH=`uname -m`
-        
+
         # Set the download URL based on the architecture
         case "$ARCH" in
           x86_64 | amd64)
@@ -373,7 +373,7 @@ start_containers() {
             CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-386"
             ;;
           armv7l | armv6l | armhf)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"  
+            CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
             ;;
           arm64 | aarch64)
             CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
@@ -403,7 +403,7 @@ start_containers() {
         if NETWORK_ID=$(sudo docker network create $network_name); then
           echo "$network_name" | tee -a $networks_file
         else
-          echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}" 
+          echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}"
           exit 1
         fi
       fi
@@ -411,11 +411,11 @@ start_containers() {
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
   fi
-  
+
   # Starting Mysterium container
   if [ "$MYSTERIUM" = true ]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull mysteriumnetwork/myst:latest  
+      sudo docker pull mysteriumnetwork/myst:latest
     fi
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port)
@@ -444,8 +444,8 @@ start_containers() {
   if [[ "$CUSTOM_FIREFOX" = true  ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-    fi  
-     
+    fi
+
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -464,7 +464,7 @@ start_containers() {
       WINDOW_HEIGHT=$((RANDOM % (1080 - MIN_HEIGHT + 1) + MIN_HEIGHT))
       CUSTOM_FIREFOX_DISPLAY_PARAMETERS="-e DISPLAY_WIDTH=$WINDOW_WIDTH  -e DISPLAY_HEIGHT=$WINDOW_HEIGHT"
     fi
-    
+
     mkdir -p $PWD/$custom_firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$custom_firefox_data_folder/data$i
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 $CUSTOM_FIREFOX_DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox)
@@ -484,7 +484,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
     fi
-         
+
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -494,9 +494,9 @@ start_containers() {
       fi
       cc_port="-p $custom_chrome_first_port:3200 "
     fi
-    
+
     mkdir -p $PWD/$custom_chrome_data_folder/data$i
-    sudo chown -R 911:911 $PWD/$custom_chrome_data_folder/data$i    
+    sudo chown -R 911:911 $PWD/$custom_chrome_data_folder/data$i
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC   -e CUSTOM_HTTPS_PORT=3201 -e CUSTOM_PORT=3200 --shm-size="1gb" $cc_port -v $PWD/$custom_chrome_data_folder/data$i:/config lscr.io/linuxserver/chromium:latest)
     execute_docker_command "Custom Chrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
@@ -508,31 +508,31 @@ start_containers() {
       echo -e "${RED}Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting Ebesucher Firefox container
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = false  ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-      
+
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       # Unzip the file
       unzip -o $firefox_profile_zipfile
-      
+
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
       execute_docker_command "Firefox Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
-        
+
     # Create folder and copy files
     mkdir -p $PWD/$firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$firefox_profile_data
@@ -556,7 +556,7 @@ start_containers() {
       WINDOW_HEIGHT=$((RANDOM % (1080 - MIN_HEIGHT + 1) + MIN_HEIGHT))
       DISPLAY_PARAMETERS="-e DISPLAY_WIDTH=$WINDOW_WIDTH  -e DISPLAY_HEIGHT=$WINDOW_HEIGHT"
     fi
-    
+
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" $DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox)
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
@@ -577,34 +577,34 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip     
+        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
       fi
-      
+
       # Exit, if chrome profile zip file is missing
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       # Unzip the file
       unzip -o $chrome_profile_zipfile
-      
+
       # Exit, if chrome profile data is missing
       if [ ! -d "$PWD/$chrome_profile_data" ];then
         echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
       execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
-        
+
     # Create folder and copy files
     mkdir -p $PWD/$chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_profile_data
     sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
-    
+
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -614,7 +614,7 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:3000 "
     fi
-    
+
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest)
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
@@ -632,26 +632,26 @@ start_containers() {
   if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = false  ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-      
+
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       # Unzip the file
       unzip -o $firefox_profile_zipfile
-      
+
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
       execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
-        
+
     # Create folder and copy files
     mkdir -p $PWD/$adnade_data_folder/data$i
     sudo chmod -R 777 $PWD/$firefox_profile_data
@@ -666,7 +666,7 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-    
+
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
@@ -679,7 +679,7 @@ start_containers() {
       echo -e "${RED}Adnade username for firefox is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting Adnade Chrome container
   if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = true ]]; then
     if [ "$container_pulled" = false ]; then
@@ -687,18 +687,18 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip     
+        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
       fi
-      
+
       # Exit, if chrome profile zip file is missing
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       # Unzip the file
       unzip -o $chrome_profile_zipfile
-      
+
       # Exit, if chrome profile data is missing
       if [ ! -d "$PWD/$chrome_profile_data" ];then
         echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
@@ -707,15 +707,15 @@ start_containers() {
 
       docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
       execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "${docker_parameters[@]}"
-      
+
     fi
-        
+
     # Create folder and copy files
     mkdir -p $PWD/$adnade_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_profile_data
     sudo cp -r $PWD/$chrome_profile_data $PWD/$adnade_data_folder/data$i
     sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
-    
+
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -725,7 +725,7 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:3500 "
     fi
-    
+
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CUSTOM_HTTPS_PORT=3501 -e CUSTOM_PORT=3500 -e CHROME_CLI="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -v $PWD/$adnade_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $ad_port lscr.io/linuxserver/chromium:latest)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
@@ -738,7 +738,7 @@ start_containers() {
       echo -e "${RED}Adnade username for chrome is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting BitPing container
   if [[ $BITPING_EMAIL && $BITPING_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
@@ -895,13 +895,13 @@ start_containers() {
       sudo docker pull iproyal/pawns-cli:latest
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos)
-    execute_docker_command "IPRoyals" "pawns$UNIQUE_ID$i" "${docker_parameters[@]}"  
+    execute_docker_command "IPRoyals" "pawns$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     if [[ $NETWORK_TUN ]]; then
@@ -923,7 +923,7 @@ start_containers() {
   # Starting Gaganode container
   if [[ $GAGANODE_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xterna/gaga-node 
+      sudo docker pull xterna/gaga-node
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node)
     execute_docker_command "Gaganode" "gaganode$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -936,7 +936,7 @@ start_containers() {
   # Starting Speedshare container
   if [[ $SPEEDSHARE_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull eldavo/speedshare    
+      sudo docker pull eldavo/speedshare
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare)
     execute_docker_command "Speedshare" "speedshare$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -949,7 +949,7 @@ start_containers() {
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit   
+      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit
     fi
     docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit)
     execute_docker_command "Peer2Profit" "peer2profit$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -962,7 +962,7 @@ start_containers() {
   # Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull packetstream/psclient:latest     
+      sudo docker pull packetstream/psclient:latest
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest)
     execute_docker_command "PacketStream" "packetstream$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -975,7 +975,7 @@ start_containers() {
   # Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull proxylite/proxyservice     
+      sudo docker pull proxylite/proxyservice
     fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice)
     execute_docker_command "Proxylite" "proxylite$UNIQUE_ID$i" "${docker_parameters[@]}"
@@ -1022,7 +1022,7 @@ start_containers() {
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
     fi
   fi
-  
+
   container_pulled=true
 }
 
@@ -1056,10 +1056,10 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${YELLOW}sudo bash internetIncome.sh --install${NOCOLOUR}\n"
     exit 1
   fi
-  
+
   echo -e "\n\nStarting.."
   STATUS=0;
-  
+
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
     if [ ! -f "$required_file" ]; then
@@ -1094,7 +1094,7 @@ if [[ "$1" == "--start" ]]; then
 
   # CPU architecture to get docker images
   CPU_ARCH=`uname -m`
-  
+
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
     # Ignore lines that start with #
@@ -1124,14 +1124,14 @@ if [[ "$1" == "--start" ]]; then
   # Use direct Connection
   if [ "$USE_DIRECT_CONNECTION" = true ]; then
      STATUS=1
-     echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}" 
+     echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}"
      start_containers
   fi
 
   # Use Vpns
   if [ "$USE_VPNS" = true ]; then
     STATUS=1
-    echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}" 
+    echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}"
     if [ ! -f "$vpns_file" ]; then
       echo -e "${RED}Vpns file $vpns_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
@@ -1154,7 +1154,7 @@ if [[ "$1" == "--start" ]]; then
   # Use Multi IPs
   if [ "$USE_MULTI_IP" = true ]; then
     STATUS=1
-    echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}" 
+    echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}"
     if [ ! -f "$multi_ip_file" ]; then
       echo -e "${RED}Multi IP file $multi_ip_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
@@ -1177,7 +1177,7 @@ if [[ "$1" == "--start" ]]; then
   # Use Proxies
   if [ "$USE_PROXIES" = true ]; then
     STATUS=1
-    echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
+    echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}"
     if [ ! -f "$proxies_file" ]; then
       echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
       exit 1
@@ -1194,7 +1194,7 @@ if [[ "$1" == "--start" ]]; then
         i=`expr $i + 1`
         start_containers "$i" "$line"
       fi
-    done < $proxies_file 
+    done < $proxies_file
   fi
 
   if [[ $STATUS == 1 ]]; then
@@ -1211,10 +1211,10 @@ fi
 # Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
-  
+
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
-    for i in `cat $container_names_file`; do 
+    for i in `cat $container_names_file`; do
       # Check if container exists
       if sudo docker inspect $i >/dev/null 2>&1; then
         # Stop and Remove container
@@ -1226,7 +1226,7 @@ if [[ "$1" == "--delete" ]]; then
     # Delete the container file
     rm $container_names_file
   fi
-  
+
   # Delete networks
   if [ -f "$networks_file" ]; then
     for i in `cat $networks_file`; do
