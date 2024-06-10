@@ -113,13 +113,13 @@ check_open_ports() {
   port_is_open() {
     local port_to_check=$1
     if command -v lsof &>/dev/null; then
-        sudo lsof -i :$port_to_check >/dev/null 2>&1
+      sudo lsof -i :$port_to_check >/dev/null 2>&1
     elif [ -e /dev/tcp/localhost ]; then
-        { timeout 1 bash -c "echo > /dev/tcp/localhost/$port_to_check" > /dev/null; } 2>/dev/null
+      { timeout 1 bash -c "echo > /dev/tcp/localhost/$port_to_check" > /dev/null; } 2>/dev/null
     else
-        nc -z localhost $port_to_check  > /dev/null 2>&1
+      nc -z localhost $port_to_check  > /dev/null 2>&1
     fi
-}
+  }
 
   # Find the next available port
   while true; do
