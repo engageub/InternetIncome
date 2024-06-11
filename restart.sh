@@ -147,7 +147,7 @@ elif [[ "$1" == "--restartFirefox" ]]; then
   done
 
 elif [[ "$1" == "--restartEarnapp" ]]; then
-  for container in `cat containernames.txt | grep earnapp | grep -v dind`
+  for container in `cat containernames.txt | grep ^earnapp | grep -v dind`
   do
     docker restart $container
   done
