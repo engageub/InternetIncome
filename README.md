@@ -147,7 +147,16 @@ sudo docker system prune -f -a
 ```
 ### 🤔 Why are some of the containers for the same application offline❓
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing. In addition to this, the application website may also be throttling the requests either due to multiple authentication requests in a short period or the request may be timing out, etc. 
-Your DNS requests may also be throttled on the host. Set the value of USE_DNS_OVER_HTTPS to true in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of USE_SOCKS5_DNS to true. 
+Your DNS requests may also be throttled on the host. Set the value of USE_DNS_OVER_HTTPS to true in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of USE_SOCKS5_DNS to true. To confirm if the issue is related to DNS queries, please run the following command to get the recent logs.
+
+```
+sudo journalctl -u docker.service --no-pager | tail -n 100
+```
+To view the docker service logs, please run the following command.
+```
+sudo journalctl -u docker.service --no-pager | less
+```
+
 ### 🤔 Why is the Mysterium node not working❓
 If you are using a proxy instead of a direct connection, you may see the node online but no earnings. There is an ongoing issue here https://github.com/xjasonlyu/tun2socks/issues/262. 
 However, note that Mysterium works with VPN and IP. Please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch if you would like to use multiple VPNs or IPs.
