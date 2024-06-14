@@ -23,7 +23,7 @@ You need to have docker installed in linux machine. If you don't have already, r
 
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ### Install docker on Linux
-The script detects automatically and provides instructions to install any dependencies. 
+The script automatically detects and provides instructions to install any dependencies.
 
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ### Install Docker on Windows
