@@ -156,6 +156,8 @@ To view the docker service logs, please run the following command.
 ```
 sudo journalctl -u docker.service --no-pager | less
 ```
+If the issue is related to DNS queries and you are using proxies, then please please use [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled.
+
 
 ### 🤔 Why is the Mysterium node not working❓
 If you are using a proxy instead of a direct connection, you may see the node online but no earnings. There is an ongoing issue here https://github.com/xjasonlyu/tun2socks/issues/262. 
