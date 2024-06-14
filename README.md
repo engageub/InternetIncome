@@ -85,7 +85,7 @@ unzip -o main.zip
 cd InternetIncome-main
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
-* If you are using proxies, please set the "USE_PROXIES" value to "true". 
+* If you are using proxies, please set the `USE_PROXIES` value to `true`. 
 * When setting your email, password, or token, always place them between single quotes ('') to consider special characters. 
 * If you do not wish to use a particular application, leave the default value as it is, and the script will not run for that application.
 ### Update configuration and save
@@ -116,7 +116,7 @@ sudo bash internetIncome.sh --deleteBackup
 
 ## :grey_question: FAQ
 ### 🤔	How to use residential proxies❓	
-If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
+If you wish to use proxies, you need to set the value of variable `USE_PROXIES` to `true` in properties.conf file.
 Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
 Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
 Example proxies.txt file below. 
@@ -131,7 +131,7 @@ For any other proxy format, please [click here](https://github.com/engageub/Inte
 
 
 ### 🤔	Can I use without proxies❓		
-**Yes**:exclamation: You can use the script with a direct internet connection by setting the variable USE_PROXIES to false in properties.conf file. This is the default configuration when you download the script from the [main](https://github.com/engageub/InternetIncome/tree/test) branch. 
+**Yes**:exclamation: You can use the script with a direct internet connection by setting the variable `USE_PROXIES` to `false` in properties.conf file. This is the default configuration when you download the script from the [main](https://github.com/engageub/InternetIncome/tree/test) branch. 
 ### 🤔 How to use multiple accounts❓		
 For multiple users to use the same host, simply create different folders, download the script in each folder, and set the configuration. It is recommended not to create multiple accounts for yourself. 
 ### 🤔 How to auto-update containers❓
@@ -147,7 +147,7 @@ sudo docker system prune -f -a
 ```
 ### 🤔 Why are some of the containers for the same application offline❓
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing. In addition to this, the application website may also be throttling the requests either due to multiple authentication requests in a short period or the request may be timing out, etc. 
-Your DNS requests may also be throttled on the host. Set the value of USE_DNS_OVER_HTTPS to true in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of USE_SOCKS5_DNS to true. To confirm if the issue is related to DNS queries, please run the following command to get the recent logs.
+Your DNS requests may also be throttled on the host. Set the value of `USE_DNS_OVER_HTTPS` to `true` in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of `USE_SOCKS5_DNS` to `true`. To confirm if the issue is related to DNS queries, please run the following command to get the recent logs.
 
 ```
 sudo journalctl -u docker.service --no-pager | tail -n 100
@@ -188,6 +188,11 @@ sudo bash updateProxies.sh
 ```
 ### 🤔 How to use the app with multiple IP or VPN❓
 For advanced users who wish to use multiple IPs or multiple VPNs, please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch. 
+
+### 🤔 How to run new apps with browser extensions❓
+To utilize applications that involve installing browser extensions, use the [test](https://github.com/engageub/InternetIncome/tree/test) branch and set the `CUSTOM_CHROME` property to `true` in the properties.conf file.
+This configuration will launch a browser with a new profile, allowing you to install extensions just as you would in a standard browser. You can also create multiple instances of the Chrome browser, each with different proxies. However, please note that managing credentials and installing extensions must be done manually.
+
 
 ## 📇 License:
 * This product is available for free and may be freely copied and distributed in its original form. 
