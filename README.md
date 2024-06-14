@@ -156,7 +156,7 @@ To view the docker service logs, please run the following command.
 ```
 sudo journalctl -u docker.service --no-pager | less
 ```
-If the issue is related to DNS queries and you are using proxies, then please please use [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled.
+If the issue is related to DNS queries and you are using proxies, then please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled.
 
 
 ### 🤔 Why is the Mysterium node not working❓
