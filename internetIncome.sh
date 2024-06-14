@@ -360,7 +360,7 @@ start_containers() {
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
       if [ "$USE_SOCKS5_DNS" = true ]; then
-        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;'
+        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf;'
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         ARCH=`uname -m`
 
@@ -394,7 +394,7 @@ start_containers() {
         cloudflare_volume="-v $PWD/cloudflared:/cloudflare/cloudflared"
         EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main; echo "nameserver 127.0.0.1" > /etc/resolv.conf; chmod +x /cloudflare/cloudflared;/cloudflare/cloudflared proxy-dns --upstream "https://dns.google/dns-query" --upstream "https://1.1.1.1/dns-query" --upstream "https://1.0.0.1/dns-query" --max-upstream-conns 0 &'
       else
-        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
       fi
       if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
         echo -e "${GREEN}Creating new network..${NOCOLOUR}"
