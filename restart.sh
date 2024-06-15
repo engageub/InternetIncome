@@ -147,7 +147,9 @@ elif [[ "$1" == "--restartFirefox" ]]; then
   done
 
 elif [[ "$1" == "--restartEarnapp" ]]; then
-  for container in `cat containernames.txt | grep ^earnapp | grep -v dind`
+  # Truncate log files before restarting
+  find earnappdata -type f -name "*.log" -exec truncate -s 0 {} +
+  for container in `cat containernames.txt | grep ^earnapp`
   do
     docker restart $container
   done
