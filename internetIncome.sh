@@ -920,6 +920,19 @@ start_containers() {
     fi
   fi
 
+  # Starting Honeygain Pot container
+  if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && "$HONEYGAIN_POT" = true ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull xterna/honeygain-pot
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$HONEYGAIN_EMAIL -e PASSWORD=$HONEYGAIN_PASSWORD xterna/honeygain-pot)
+      execute_docker_command "HoneygainPot" "honeygainpot$UNIQUE_ID$i" "${docker_parameters[@]}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}Honeygain Pot is not enabled. Ignoring Honeygain Pot..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Gaganode container
   if [[ $GAGANODE_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
