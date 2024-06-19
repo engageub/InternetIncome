@@ -780,7 +780,11 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $container_image
     fi
-    echo "$proxy" ":" "$meson_first_port" | tee -a $meson_file
+    if [ $proxy ]; then
+      echo "$proxy"":""$meson_first_port" | tee -a $meson_file
+    else
+      echo "127.0.0.1"":""$meson_first_port" | tee -a $meson_file
+    fi
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN $container_image)
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}You will find meson port numbers in the file $meson_file in the same folder${NOCOLOUR}"
