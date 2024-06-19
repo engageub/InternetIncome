@@ -762,7 +762,7 @@ start_containers() {
 
   # Starting Meson container
   if [[ $MESON_TOKEN ]]; then
-    if [[ $NETWORK_TUN == "tun"* || $NETWORK_TUN == "gluetun"* ]]; then
+    if [[ $NETWORK_TUN == "--network=container:tun"* || $NETWORK_TUN == "--network=container:gluetun"* ]]; then
       echo -e "${RED}Meson network with proxies or VPNs is not supported now as port has to be opened on specific IP address..${NOCOLOUR}"
       echo "You may either use it with Direct Connection or Multi IPs with Port Forwarding enabled. Exiting.."
       exit 1
