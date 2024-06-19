@@ -35,6 +35,7 @@ earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
+meson_file="meson.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 custom_chrome_file="custom_chrome.txt"
@@ -60,7 +61,7 @@ proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
+files_to_be_removed=($meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -218,6 +219,7 @@ start_containers() {
   local i=$1
   local proxy=$2
   local vpn_enabled=$3
+  local NETWORK_TUN
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
@@ -760,6 +762,11 @@ start_containers() {
 
   # Starting Meson container
   if [[ $MESON_TOKEN ]]; then
+    if [[ $NETWORK_TUN == "tun"* || $NETWORK_TUN == "gluetun"* ]]; then
+      echo -e "${RED}Meson network with proxies or VPNs is not supported now as port has to be opened on specific IP address..${NOCOLOUR}"
+      echo "You may either use it with Direct Connection or Multi IPs with Port Forwarding enabled. Exiting.."
+      exit 1
+    fi
     meson_first_port=$(check_open_ports $meson_first_port)
     if ! expr "$meson_first_port" : '[[:digit:]]*$' >/dev/null; then
       echo -e "${RED}Problem assigning port $meson_first_port ..${NOCOLOUR}"
@@ -773,8 +780,10 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $container_image
     fi
+    echo "$proxy" ":" "$meson_first_port" | tee -a $meson_file
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN $container_image)
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}You will find meson port numbers in the file $meson_file in the same folder${NOCOLOUR}"
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Meson Token is not configured. Ignoring Meson..${NOCOLOUR}"
