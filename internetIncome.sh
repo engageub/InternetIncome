@@ -761,7 +761,7 @@ start_containers() {
   fi
 
   # Starting Meson container
-  if [[ $MESON_TOKEN ]]; then
+  if [[ $MESON_TOKEN && $MESON_CACHE_SIZE ]]; then
     if [[ $NETWORK_TUN == "--network=container:tun"* || $NETWORK_TUN == "--network=container:gluetun"* ]]; then
       echo -e "${RED}Meson network with proxies or VPNs is not supported now as port has to be opened on specific IP address..${NOCOLOUR}"
       echo "You may either use it with Direct Connection or Multi IPs with Port Forwarding enabled. Exiting.."
@@ -785,7 +785,7 @@ start_containers() {
     else
       echo "127.0.0.1"":""$meson_first_port" | tee -a $meson_file
     fi
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN $container_image)
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN -e CACHE_SIZE=$MESON_CACHE_SIZE $container_image)
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}You will find meson port numbers in the file $meson_file in the same folder${NOCOLOUR}"
   else
