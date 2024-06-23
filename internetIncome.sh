@@ -220,7 +220,7 @@ start_containers() {
   local proxy=$2
   local vpn_enabled=$3
   local NETWORK_TUN
-  local localhost_address="127.0.0.1:"
+  local localhost_address="127.0.0.1"
   local local_IP_address
 
   if [[ "$ENABLE_LOGS" = false ]]; then
@@ -418,8 +418,8 @@ start_containers() {
 
   # Assign IP address for multi IP
   if [[ $NETWORK_TUN == "--network=multi"* ]]; then
-    local_IP_address="$proxy:"
-    localhost_address="$proxy:"
+    local_IP_address="$proxy"
+    localhost_address="$proxy"
   fi
 
   # Starting Mysterium container
@@ -434,7 +434,7 @@ start_containers() {
          echo -e "${RED}Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      myst_port="-p $local_IP_address$mysterium_first_port:4449"
+      myst_port="-p $local_IP_address:$mysterium_first_port:4449"
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
@@ -442,7 +442,7 @@ start_containers() {
     execute_docker_command "Mysterium" "myst$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$mysterium_first_port" |tee -a $mysterium_file
+    echo "http://$localhost_address:$mysterium_first_port" |tee -a $mysterium_file
     mysterium_first_port=`expr $mysterium_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
@@ -463,7 +463,7 @@ start_containers() {
          echo -e "${RED}Failed to start Custom Firefox. Resolve or disable Custom Firefox to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      cf_port="-p $local_IP_address$custom_firefox_first_port:5911"
+      cf_port="-p $local_IP_address:$custom_firefox_first_port:5911"
     fi
 
     # Setting random window height and width for firefox
@@ -481,7 +481,7 @@ start_containers() {
     execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$custom_firefox_first_port" |tee -a $custom_firefox_file
+    echo "http://$localhost_address:$custom_firefox_first_port" |tee -a $custom_firefox_file
     custom_firefox_first_port=`expr $custom_firefox_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
@@ -502,7 +502,7 @@ start_containers() {
          echo -e "${RED}Failed to start Custom Chrome. Resolve or disable Custom Chrome to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      cc_port="-p $local_IP_address$custom_chrome_first_port:3200 "
+      cc_port="-p $local_IP_address:$custom_chrome_first_port:3200 "
     fi
 
     mkdir -p $PWD/$custom_chrome_data_folder/data$i
@@ -511,7 +511,7 @@ start_containers() {
     execute_docker_command "Custom Chrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_chrome_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$custom_chrome_first_port" |tee -a $custom_chrome_file
+    echo "http://$localhost_address:$custom_chrome_first_port" |tee -a $custom_chrome_file
     custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
   else
     if [ "$container_pulled" = false ]; then
@@ -555,7 +555,7 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      eb_port="-p $local_IP_address$ebesucher_first_port:5800"
+      eb_port="-p $local_IP_address:$ebesucher_first_port:5800"
     fi
 
     # Setting random window height and width for firefox
@@ -571,7 +571,7 @@ start_containers() {
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$ebesucher_first_port" |tee -a $ebesucher_file
+    echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
     echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
     ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
@@ -622,14 +622,14 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      eb_port="-p $local_IP_address$ebesucher_first_port:3000 "
+      eb_port="-p $local_IP_address:$ebesucher_first_port:3000 "
     fi
 
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest)
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$ebesucher_first_port" |tee -a $ebesucher_file
+    echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
     echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
     ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
@@ -674,14 +674,14 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade Firefox. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ad_port="-p $local_IP_address$adnade_first_port:5900"
+      ad_port="-p $local_IP_address:$adnade_first_port:5900"
     fi
 
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$adnade_first_port" |tee -a $adnade_file
+    echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
@@ -733,14 +733,14 @@ start_containers() {
          echo -e "${RED}Failed to start Adnade. Resolve or disable Adnade to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ad_port="-p $local_IP_address$adnade_first_port:3500 "
+      ad_port="-p $local_IP_address:$adnade_first_port:3500 "
     fi
 
     docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CUSTOM_HTTPS_PORT=3501 -e CUSTOM_PORT=3500 -e CHROME_CLI="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -v $PWD/$adnade_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $ad_port lscr.io/linuxserver/chromium:latest)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address$adnade_first_port" |tee -a $adnade_file
+    echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
@@ -788,8 +788,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $container_image
     fi
-    echo "$localhost_address$meson_first_port" | tee -a $meson_file
-    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $local_IP_address$meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN -e CACHE_SIZE=$MESON_CACHE_SIZE $container_image)
+    echo "$localhost_address:$meson_first_port" | tee -a $meson_file
+    docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $local_IP_address:$meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN -e CACHE_SIZE=$MESON_CACHE_SIZE $container_image)
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}You will find meson port numbers in the file $meson_file in the same folder${NOCOLOUR}"
   else
