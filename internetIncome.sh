@@ -193,7 +193,7 @@ execute_docker_command() {
   local CONTAINER_ID
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   if [[ "$app_name" == "VPN" ]]; then
-    CONTAINER_ID=$(eval "sudo docker run -d --name $container_name --restart=always ${container_parameters[@]:2}")
+    CONTAINER_ID=$(eval "sudo docker run -d --no-healthcheck --name $container_name --restart=always ${container_parameters[@]:2}")
   else
     CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}")
   fi
