@@ -193,7 +193,7 @@ execute_docker_command() {
   local CONTAINER_ID
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   if [[ "$app_name" == "VPN" ]]; then
-    CONTAINER_ID=$(eval "sudo docker run -d --no-healthcheck --name $container_name --restart=always ${container_parameters[@]:2}")
+    CONTAINER_ID=$(eval "sudo docker run -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
     CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}")
   fi
@@ -316,7 +316,7 @@ start_containers() {
          dns_option="-e DOT=off"
       fi
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports qmcgaw/gluetun:v3.37.0)
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports --no-healthcheck qmcgaw/gluetun:v3.37.0)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network=multi$UNIQUE_ID$i"
