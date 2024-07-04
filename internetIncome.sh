@@ -223,7 +223,7 @@ start_containers() {
   local NETWORK_TUN
   local localhost_address="127.0.0.1"
   local local_IP_address
-  local DNS_VOLUME="-v $PWD/resolv.conf:/etc/resolv.conf:ro"
+  local DNS_VOLUME="-v $PWD/$dns_resolver_file:/etc/resolv.conf:ro"
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
