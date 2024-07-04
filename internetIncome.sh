@@ -224,6 +224,7 @@ start_containers() {
   local localhost_address="127.0.0.1"
   local local_IP_address
   local DNS_VOLUME="-v $PWD/$dns_resolver_file:/etc/resolv.conf:ro"
+  local TUN_DNS_VOLUME
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
@@ -362,7 +363,6 @@ start_containers() {
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
-      local TUN_DNS_VOLUME
       if [ "$container_pulled" = false ]; then
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
