@@ -125,64 +125,7 @@ sudo bash internetIncome.sh --deleteBackup
 [Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
 
 ## :grey_question: FAQ
-### :thinking:	How to use residential proxies:question:	
-If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
-Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
-Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
-Example proxies.txt file below. Use your own proxies. 
-### Proxy list example format
-```
-socks5://username:password@12.4.5.2:7874
-http://username:password@1.23.5.2:7878
-socks5://15.4.5.2:7875
-http://13.23.5.2:7872
-```
-For any other proxy format, please [click here](https://github.com/engageub/InternetIncome/wiki/Formatting-proxies-to-user:password@ip:port) to format proxies.  
-
-
-### :thinking:	Can I use without proxies:question:		
-**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_PROXIES to false in properties.conf file. This is the default configuration when you download the script. 
-### :thinking: How to use multiple accounts:question:		
-For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
-### :thinking: How to auto update containers:question:
-To auto update all containers on the host, run the following command.
-```
-sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
-```
-### :thinking: How to clean up all docker containers on the host:question:
-Please run the following command to delete all the running and stale containers on your host. The commands also delete stale docker images.
-```
-sudo docker container ls -a | awk '{print $1}' | xargs sudo docker rm -f
-sudo docker system prune -f -a
-```
-### :thinking: Why are some of the containers for the same application offline:question:
-If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing. In addition to this, the application website may also be throttling the requests either due to multiple authentication requests in a short span of time or the request may be timing out etc. For example in case of iproyals pawns website this happens very frequently when multiple devices are added. Giving a delay between startup of instances is not always a solution for this, since it worked without any delay sometimes. Restarting the instance multiple times always worked. This is something intermittent and related to the application that is being used. You will need to restart containers manually for those instances where proxies are offline.
-### :thinking: Why is Mysterium node not working:question:
-If you are using proxy instead of direct connection, you may see the node online but no earnings. There is an ongoing issue here https://github.com/xjasonlyu/tun2socks/issues/262 . 
-It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy. When utilizing a direct internet connection, it is imperative to ensure that your firewall is configured to allow UDP traffic.
-
-### :thinking: Where is Mysterium data stored:question:
-The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
-Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
-
-### :thinking: How to access 127.0.0.1 urls for ebesucher or mystnodes if GUI is not available in linux:question:
-If your VPS does not have port restrictions to access your VPS IP globally, you can access your localhost urls by replacing it with your VPS IP address.
-For example, if your VPS IP address is 2.4.75.2 and you wish to access your localhost url http://127.0.0.1:2000 ,then replace the IP with your VPS IP to access it elsewhere. The url to access directly using VPS IP would be http://2.4.75.2:2000 
-
-If your VPS IP is not accessible globally, please run the following command to get the corresponsing url.
-```
-ssh -R 80:localhost:2000 serveo.net
-```
-In the above command 2000 represents the port number of your localhost or 127.0.0.1. For each browser instance, there is a separate port number. Please change the port number accordingly. You will receive an url after running the above command which can be accessed globally. 
-
-### :thinking: Where are earnapp node urls stored and how to restore them:question:
-The UUID or node IDs are required to identify your unique nodes in earnapp dashboard. These nodes are stored in earnapp.txt file and are not deleted. The same node Ids will be used when you start the application again. You do not need to delete existing nodes in dashboard and add them again when you use --delete option.  If you already have an existing node and would like to use it via the script you may add them in earnapp.txt file in the same format as the existing file.
-
-### :thinking: How to replace proxies for already running containers:question:
-If you wish to use change proxies for already running container due to bad proxies or proxies being offline, update them in proxies.txt and remove your old proxies. Make sure you have the same number of proxies as you had earlier in proxies.txt file. Then run the following command.
-```
-sudo bash updateProxies.sh
-```
+### <ins>[Click here to view Frequently Asked Questions](https://github.com/engageub/InternetIncome/wiki/Frequently-Asked-Questions)</ins> 
 
 ## :card_index: License:
 * This product is available for free and may be freely copied and distributed in its original form. 
