@@ -46,7 +46,8 @@ firefox_profile_zipfile="firefoxprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 restart_firefox_file="restartFirefox.sh"
 restart_adnade_file="restartAdnade.sh"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file)
+dns_resolver_file="resolv.conf"
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file $dns_resolver_file)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
@@ -109,6 +110,7 @@ start_containers() {
 
   i=$1
   proxy=$2
+  local DNS_VOLUME="-v $PWD/resolv.conf:/etc/resolv.conf:ro"
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
@@ -199,7 +201,7 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "myst$UNIQUE_ID$i" | tee -a $container_names_file 
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
@@ -246,7 +248,7 @@ start_containers() {
         exit 1
       fi
       
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file 
@@ -270,7 +272,7 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file 
       echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
@@ -314,7 +316,7 @@ start_containers() {
         exit 1
       fi
       
-      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnade.sh && while true; do sleep 7200; /firefox/restartAdnade.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnade.sh && while true; do sleep 7200; /firefox/restartAdnade.sh; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file 
@@ -338,7 +340,7 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file 
       echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
@@ -365,7 +367,7 @@ start_containers() {
     if [ ! -f "$PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
         sudo docker run --rm $NETWORK_TUN -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file 
     else
@@ -383,7 +385,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
+    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -401,7 +403,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull camislav/grass
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass); then
+    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "grass$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -419,7 +421,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/earnfm-client:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -437,7 +439,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xterna/gaga-node
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
+    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "gaganode$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -465,7 +467,7 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -499,7 +501,7 @@ start_containers() {
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
     
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file 
     else
@@ -517,7 +519,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
+    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file 
     else
@@ -540,7 +542,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $honeygain_image   
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
     else
@@ -558,7 +560,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 enwaiax/peer2profit        
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "peer2profit$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -576,7 +578,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest     
     fi    
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -594,7 +596,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice     
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "proxylite$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -612,7 +614,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull eldavo/speedshare    
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
+    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "speedshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -650,7 +652,7 @@ start_containers() {
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
     
-    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" | tee -a $containers_file 
       echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file 
     else
