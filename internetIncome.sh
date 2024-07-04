@@ -368,10 +368,9 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf;'
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-        ARCH=`uname -m`
-
+      
         # Set the download URL based on the architecture
-        case "$ARCH" in
+        case "$CPU_ARCH" in
           x86_64 | amd64)
             CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
             ;;
@@ -385,7 +384,7 @@ start_containers() {
             CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
             ;;
           *)
-            echo -e "${RED}Unsupported architecture: $ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+            echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
             exit 1
             ;;
         esac
