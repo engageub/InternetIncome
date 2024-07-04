@@ -79,28 +79,7 @@ To stop and delete all the containers started with the script. Run the following
 sudo bash internetIncome.sh --delete
 ```
 ## :grey_question: FAQ
-### :thinking:	Can I use without proxies:question:		
-**Yes**:exclamation: You can use the script with direct internet connection by setting the variable USE_DIRECT_CONNECTION to true in properties.conf file.
-### :thinking: How to use multiple accounts:question:		
-For multiple users to use the same host, simply create different folders and download the script in each folder and set the configuration. It is recommended not to create multilple accounts for yourself. 
-### :thinking: How to auto update containers:question:
-To auto update all containers on the host, run the following command.
-```
-sudo docker run --detach --name watchtower --restart always --volume /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
-```
-### :thinking: Why are some of the containers for the same application offline:question:
-If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing.
-### :thinking: Why is Mysterium node not working:question:
-It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy. When utilizing a direct internet connection, it is imperative to ensure that your firewall is configured to allow UDP traffic.
-
-### :thinking: Where is Mysterium data stored:question:
-The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
-Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
-### :thinking: How to replace proxies for already running containers:question:
-If you wish to use change proxies for already running container due to bad proxies or proxies being offline, update them in proxies.txt and remove your old proxies. Make sure you have the same number of proxies as you had earlier in proxies.txt file. Then run the following command.
-```
-sudo bash updateProxies.sh
-```
+### <ins>[Click here to view Frequently Asked Questions](https://github.com/engageub/InternetIncome/wiki/Frequently-Asked-Questions)</ins> 
 
 ## :card_index: License:
 * This product is available for free and may be freely copied and distributed in its original form. 
