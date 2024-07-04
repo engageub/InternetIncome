@@ -362,11 +362,12 @@ start_containers() {
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
+      local TUN_DNS_VOLUME
       if [ "$container_pulled" = false ]; then
         sudo docker pull xjasonlyu/tun2socks:v2.5.2
       fi
       if [ "$USE_SOCKS5_DNS" = true ]; then
-        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf;'
+        TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
       
         # Set the download URL based on the architecture
@@ -399,7 +400,8 @@ start_containers() {
         cloudflare_volume="-v $PWD/cloudflared:/cloudflare/cloudflared"
         EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main; echo "nameserver 127.0.0.1" > /etc/resolv.conf; chmod +x /cloudflare/cloudflared;/cloudflare/cloudflared proxy-dns --upstream "https://dns.google/dns-query" --upstream "https://1.1.1.1/dns-query" --upstream "https://1.0.0.1/dns-query" --max-upstream-conns 0 &'
       else
-        EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+        TUN_DNS_VOLUME="$DNS_VOLUME"
+        EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
       fi
       if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
         echo -e "${GREEN}Creating new network..${NOCOLOUR}"
@@ -412,7 +414,7 @@ start_containers() {
           exit 1
         fi
       fi
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
+      docker_parameters=($LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
   fi
