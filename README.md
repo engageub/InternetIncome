@@ -50,22 +50,6 @@ cd InternetIncome-test
 ```
 vi properties.conf
 ```
-
-## :thinking:	How to use residential proxies:question:	
-
-If you wish to use direct connection, you may skip this section and move on to running the script.
-If you wish to use proxies, you need to set the value of variable USE_PROXIES to true in properties.conf file.
-Then, create a file name proxies.txt in the same folder you have internetIncome.sh file.
-Add your proxies in each line in the format protocol://user:pass@ip:port or protocol://ip:port
-Example proxies.txt file below. Use your own proxies. 
-### Proxy list example format
-```
-socks5://username:password@12.4.5.2:7874
-http://username:password@1.23.5.2:7878
-socks5://15.4.5.2:7875
-http://13.23.5.2:7872
-```
-
 ## :runner: Run the script
 After you have followed all the mentioned above steps just run the following command to start and check your income flow to you:money_mouth_face:	.
 ### Start the process
@@ -73,10 +57,16 @@ After you have followed all the mentioned above steps just run the following com
 sudo bash internetIncome.sh --start
 ```
 ## :stop_sign: Stop and Delete containers
-To stop and delete all the containers started with the script. Run the following command.
-### Stop process and delete data
+To stop and delete all the containers started with the script. Run the following command.  Note that for Earnapp, Proxyrack, Traffmonetizer, and mysterium the data is not deleted and the same IDs will be used on delete and start since it is required to do a manual setup each time you start. Delete them or use a different folder to download the script if you want to change the node IDs.
+### Delete containers
+Note that the backup of device IDs and node IDs are present in the same folder of the script. 
 ```
 sudo bash internetIncome.sh --delete
+```
+### Delete backup files and folders
+To delete the backup files and folders created by the script, use the following command.
+```
+sudo bash internetIncome.sh --deleteBackup
 ```
 ## :grey_question: FAQ
 ### <ins>[Click here to view Frequently Asked Questions](https://github.com/engageub/InternetIncome/wiki/Frequently-Asked-Questions)</ins> 
