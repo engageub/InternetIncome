@@ -831,7 +831,7 @@ start_containers() {
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm64v8"
-    elif [ "$CPU_ARCH" == "arm7l" ]; then
+    elif [ "$CPU_ARCH" == "armv7l" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm32v7"
     else
       traffmonetizer_image="--platform=linux/amd64 traffmonetizer/cli_v2"
