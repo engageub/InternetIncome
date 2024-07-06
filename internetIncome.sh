@@ -4,7 +4,7 @@
 # Author: engageub                                                               #
 # Description: This script lets you earn passive income by sharing your internet #
 # connection. It also supports multiple proxies with multiple accounts.          #
-# Script Name: Internet Income (Supports Proxies)                                # 
+# Script Name: Internet Income (Supports Proxies)                                #
 # Script Link: https://github.com/engageub/InternetIncome                        #
 # DISCLAIMER: This script is provided "as is" and without warranty of any kind.  #
 # The author makes no warranties, express or implied, that this script is free of#
@@ -22,7 +22,7 @@ GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
 NOCOLOUR="\033[0m"
 
-# File names 
+# File names
 properties_file="properties.conf"
 banner_file="banner.jpg"
 proxies_file="proxies.txt"
@@ -48,8 +48,9 @@ chrome_data_folder="chromedata"
 chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 restart_file="restart.sh"
+dns_resolver_file="resolv.conf"
 traffmonetizer_data_folder="traffmonetizerdata"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile $dns_resolver_file)
 files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
@@ -83,7 +84,7 @@ check_open_ports() {
   local num_ports=$2
   port_range=$(seq $first_port $((first_port+num_ports-1)))
   open_ports=0
-  
+
   for port in $port_range; do
     nc -z localhost $port > /dev/null 2>&1
     if [ $? -eq 0 ]; then
@@ -106,11 +107,13 @@ check_open_ports() {
   echo $first_port
 }
 
-# Start all containers 
+# Start all containers
 start_containers() {
 
-  i=$1
-  proxy=$2
+  local i=$1
+  local proxy=$2
+  local DNS_VOLUME="-v $PWD/$dns_resolver_file:/etc/resolv.conf:ro"
+  local TUN_DNS_VOLUME
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
@@ -121,7 +124,7 @@ start_containers() {
 
   if [[ $i && $proxy ]]; then
     NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
-        
+
     if [ "$MYSTERIUM" = true ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -131,7 +134,7 @@ start_containers() {
       fi
       mysterium_port="-p $mysterium_first_port:4449 "
     fi
-    
+
     if [[ $EBESUCHER_USERNAME ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -155,7 +158,7 @@ start_containers() {
       fi
       adnade_port="-p $adnade_first_port:5900 "
     fi
-    
+
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
     echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
@@ -163,13 +166,14 @@ start_containers() {
       sudo docker pull xjasonlyu/tun2socks:v2.5.2
     fi
     if [ "$USE_SOCKS5_DNS" = true ]; then
-      EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;'
+      TUN_DNS_VOLUME="$DNS_VOLUME"
     elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
       EXTRA_COMMANDS='echo -e "options use-vc\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     else
-      EXTRA_COMMANDS='echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+      TUN_DNS_VOLUME="$DNS_VOLUME"
+      EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
     fi
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -178,14 +182,14 @@ start_containers() {
     fi
     sleep 1
   fi
-  
+
   # Starting Mysterium container
   if [[ "$MYSTERIUM" = true && ! $NETWORK_TUN ]]; then
     echo -e "${GREEN}Starting Mysterium container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull mysteriumnetwork/myst:latest  
+      sudo docker pull mysteriumnetwork/myst:latest
     fi
     if [[ ! $proxy ]]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
@@ -198,9 +202,9 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v $PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "myst$UNIQUE_ID$i" | tee -a $container_names_file 
+      echo "myst$UNIQUE_ID$i" | tee -a $container_names_file
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
     else
@@ -236,7 +240,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
         echo "Chrome restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
@@ -262,7 +266,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:3000 "
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
@@ -276,7 +280,7 @@ start_containers() {
       echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting Ebesucher container
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" != true ]]; then
     echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
@@ -284,32 +288,32 @@ start_containers() {
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-         
+
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       # Unzip the file
       unzip -o $firefox_profile_zipfile
-      
+
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
+
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file 
+        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
       else
         echo -e "${RED}Failed to start container for ebesucher firefox restart..${NOCOLOUR}"
         exit 1
       fi
     fi
-        
+
     # Create folder and copy files
     mkdir -p $PWD/$firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$firefox_profile_data
@@ -324,12 +328,12 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file 
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
       echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
-      ebesucher_first_port=`expr $ebesucher_first_port + 1`      
+      ebesucher_first_port=`expr $ebesucher_first_port + 1`
     else
       echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
     fi
@@ -346,32 +350,32 @@ start_containers() {
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-      
+
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       # Unzip the file
       unzip -o $firefox_profile_zipfile
-      
+
       # Exit, if firefox profile data is missing
       if [ ! -d "$PWD/$firefox_profile_data" ];then
         echo -e "${RED}Firefox profile Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
-      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
+
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file 
+        echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file
       else
         echo -e "${RED}Failed to start container for adnade firefox restart..${NOCOLOUR}"
         exit 1
       fi
     fi
-        
+
     # Create folder and copy files
     mkdir -p $PWD/$adnade_data_folder/data$i
     sudo chmod -R 777 $PWD/$firefox_profile_data
@@ -386,12 +390,12 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file 
+      echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file
       echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
       echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
-      adnade_first_port=`expr $adnade_first_port + 1`      
+      adnade_first_port=`expr $adnade_first_port + 1`
     else
       echo -e "${RED}Failed to start container for Adnade..${NOCOLOUR}"
     fi
@@ -400,22 +404,22 @@ start_containers() {
       echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting BitPing container
   if [[ $BITPING_EMAIL && $BITPING_PASSWORD ]]; then
     echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull bitping/bitpingd:latest
-    fi 
+    fi
     # Create bitping folder
     mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
     if [ ! -f "$PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
         sudo docker run --rm $NETWORK_TUN -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file 
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for BitPing..${NOCOLOUR}"
     fi
@@ -431,8 +435,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull camislav/grass
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "grass$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Grass..${NOCOLOUR}"
@@ -449,8 +453,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
@@ -467,8 +471,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/earnfm-client:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for EarnFm..${NOCOLOUR}"
@@ -485,8 +489,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xterna/gaga-node
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "gaganode$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Gaganode..${NOCOLOUR}"
@@ -502,7 +506,7 @@ start_containers() {
     echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm64v8"
-    elif [ "$CPU_ARCH" == "arm7l" ]; then
+    elif [ "$CPU_ARCH" == "armv7l" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm32v7"
     else
       traffmonetizer_image="--platform=linux/amd64 traffmonetizer/cli_v2"
@@ -513,8 +517,8 @@ start_containers() {
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="-v $PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
@@ -546,13 +550,13 @@ start_containers() {
       proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
-	    
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file 
+
+    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Proxyrack..${NOCOLOUR}"
-    fi  
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Proxyrack is not enabled. Ignoring Proxyrack..${NOCOLOUR}"
@@ -565,18 +569,18 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file 
+    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for IPRoyals..${NOCOLOUR}"
-    fi   
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
     fi
   fi
-  
+
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
@@ -586,11 +590,11 @@ start_containers() {
       honeygain_image="honeygain/honeygain"
     fi
     if [ "$container_pulled" = false ]; then
-      sudo docker pull $honeygain_image   
+      sudo docker pull $honeygain_image
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "honey$UNIQUE_ID$i" | tee -a $container_names_file 
+    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "honey$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
   fi
@@ -604,14 +608,14 @@ start_containers() {
   if [[ $PEER2PROFIT_EMAIL ]]; then
     echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit        
+      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "peer2profit$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
-    fi   
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
@@ -622,14 +626,14 @@ start_containers() {
   if [[ $PACKETSTREAM_CID ]]; then
     echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull packetstream/psclient:latest     
-    fi    
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+      sudo docker pull packetstream/psclient:latest
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
-    fi   
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
@@ -640,14 +644,14 @@ start_containers() {
   if [[ $PROXYLITE_USER_ID ]]; then
     echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull proxylite/proxyservice     
+      sudo docker pull proxylite/proxyservice
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxylite$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
-    fi 
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
@@ -658,10 +662,10 @@ start_containers() {
   if [[ $SPEEDSHARE_TOKEN ]]; then
     echo -e "${GREEN}Starting Speedshare container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull eldavo/speedshare    
+      sudo docker pull eldavo/speedshare
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
+    if CONTAINER_ID=$(sudo docker run -d --name speedshare$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
       echo "speedshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Speedshare..${NOCOLOUR}"
@@ -697,25 +701,25 @@ start_containers() {
       uuid=sdk-node-$RANDOM_ID
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
-    
-    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i $LOGS_PARAM --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
-      echo "$CONTAINER_ID" | tee -a $containers_file 
-      echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file 
+
+    if CONTAINER_ID=$(sudo docker run -d --name earnapp$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file
     else
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
-    fi  
+    fi
   else
     if [ "$container_pulled" = false ]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
     fi
   fi
-  
+
   container_pulled=true
-} 
+}
 
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
-  
+
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
     if [ ! -f "$required_file" ]; then
@@ -723,7 +727,7 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
   done
-   
+
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -732,7 +736,7 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
   done
-  
+
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -747,7 +751,7 @@ if [[ "$1" == "--start" ]]; then
 
   # CPU architecture to get docker images
   CPU_ARCH=`uname -m`
-  
+
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
     # Ignore lines that start with #
@@ -775,7 +779,7 @@ if [[ "$1" == "--start" ]]; then
   fi
 
   if [ "$USE_PROXIES" = true ]; then
-    echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}" 
+    echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}"
     if [ ! -f "$proxies_file" ]; then
       echo -e "${RED}Proxies file $proxies_file does not exist, exiting..${NOCOLOUR}"
       exit 1
@@ -783,7 +787,7 @@ if [[ "$1" == "--start" ]]; then
 
     # Remove special characters ^M from proxies file
     sed -i 's/\r//g' $proxies_file
-    
+
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
@@ -792,18 +796,18 @@ if [[ "$1" == "--start" ]]; then
       fi
     done < $proxies_file
   else
-    echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}" 
-    start_containers 
+    echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}"
+    start_containers
   fi
   exit 1
 fi
 
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
-  
+
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
-    for i in `cat $container_names_file`; do 
+    for i in `cat $container_names_file`; do
       # Check if container exists
       if sudo docker inspect $i >/dev/null 2>&1; then
         # Stop and Remove container
@@ -815,7 +819,7 @@ if [[ "$1" == "--delete" ]]; then
     # Delete the container file
     rm $container_names_file
   fi
-  
+
   # Delete networks
   if [ -f "$networks_file" ]; then
     for i in `cat $networks_file`; do
@@ -829,13 +833,13 @@ if [[ "$1" == "--delete" ]]; then
     # Delete network file
     rm $networks_file
   fi
-  
+
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
   done
-  
+
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
@@ -855,7 +859,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
       exit 1
     fi
   done
-  
+
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -864,13 +868,13 @@ if [[ "$1" == "--deleteBackup" ]]; then
       exit 1
     fi
   done
-    
+
   for file in "${back_up_files[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
   done
-  
+
   for folder in "${back_up_folders[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
