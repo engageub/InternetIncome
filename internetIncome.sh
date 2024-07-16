@@ -229,7 +229,7 @@ start_containers() {
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
-    sudo docker run --rm -v $PWD:/output ubuntu:20.04 sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9' > /output/$dns_resolver_file; fi"
+    sudo docker run --rm -v $PWD:/output ubuntu:20.04 sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; fi"
   fi
 
   if [[ "$ENABLE_LOGS" = false ]]; then
