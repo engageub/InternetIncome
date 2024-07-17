@@ -115,7 +115,7 @@ start_containers() {
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; fi"
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker in Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your main docker is installed.\nPlease delete the files and folders manually on the parent host after using --delete command.\n'; fi"
   fi
 
   if [[ "$ENABLE_LOGS" = false ]]; then
