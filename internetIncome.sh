@@ -1291,6 +1291,8 @@ if [[ "$1" == "--delete" ]]; then
     if [ -f "$file" ]; then
       rm $file
     fi
+    # For Docker in Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
 
   # Delete folders
@@ -1298,6 +1300,8 @@ if [[ "$1" == "--delete" ]]; then
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
+    # For Docker in Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
   exit 1
 fi
@@ -1331,6 +1335,8 @@ if [[ "$1" == "--deleteBackup" ]]; then
     if [ -f "$file" ]; then
       rm $file
     fi
+    # For Docker in Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
 
   # Delete backup folders
@@ -1338,6 +1344,8 @@ if [[ "$1" == "--deleteBackup" ]]; then
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
+    # For Docker in Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
   exit 1
 fi
