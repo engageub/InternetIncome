@@ -13,10 +13,10 @@ Advanced users, please use [test] branch.
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| [EarnApp][(https://earnapp.com/i/JAegLixz))  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
-| [PacketStream]((https://packetstream.io/?psr=6Ic6))  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
+| [EarnApp] [(https://earnapp.com/i/JAegLixz))  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
+| [PacketStream] https://packetstream.io/?psr=6Ic6 | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | [Honeygain] https://r.honeygain.me/MADDYB570E | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
-| [IPRoyal]  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
+| [IPRoyal] https://pawns.app/?r=4640575 | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
 | [Adnade] https://adnade.net/?ref=dylaaann | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal| 
 | [Bytelixir] https://bytelixir.com/r/WCCLWVKNOAF6 | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Salad] CODE 2x Earnings: Join me on Salad and use code TU1QW7 for a 2x earning rate bonus! https://salad.com | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
