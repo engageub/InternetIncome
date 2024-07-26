@@ -4,13 +4,12 @@
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
 The main advantage of this script is the use of multiple proxies through docker containers. 
-This script has been tested in linux amd64, armv7, arm64 or aarch64 platforms. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 Please read the legal terms or FAQ section of the respective apps if you have any queries on the type of traffic sent. 
-Advanced users, please use [test] branch.
+Advanced users, use [test] branch.
 
 ## 💰	Register with the following links:
-
+(Affiliate Links)
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
 | [EarnApp] [(https://earnapp.com/i/JAegLixz))  | :heavy_check_mark:	  | :x: | 15|1| Paypal, Gift Card |
@@ -163,3 +162,4 @@ For advance users who wish to use multiple IP or multiple VPN, please use [test]
 This script is provided "as is" and without warranty of any kind.  
 The author makes no warranties, express or implied, that this script is free of errors, defects, or suitable for any particular purpose.  
 The author shall not  be liable for any damages suffered by any user of this script, whether direct, indirect, incidental, consequential, or special, arising from the use of or inability to use this script or its documentation, even if the author has been advised of the possibility of such damages.  
+This script is a for educational purposes only; and not intended to be used to actually earn Income from these apps. Rather, provide educational scripts that users can LEARN from.
