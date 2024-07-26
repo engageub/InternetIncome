@@ -1,13 +1,13 @@
 # 💻 Internet Income 💸 (Multiproxy Support) 🏰	
 
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
-
+⚽
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
 The main advantage of this script is the use of multiple proxies through docker containers. 
 Your income depends on the number of proxies used and the location of proxy. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 Please read the legal terms or FAQ section of the respective apps if you have any queries on the type of traffic sent. 
 Advanced users, use [test] branch.
-
+⚽
 ## 💰	Register with the following links:
 (Affiliate Links) ⭐⭐⭐
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
