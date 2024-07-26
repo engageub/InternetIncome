@@ -1,4 +1,4 @@
-# 💻 Internet Income 💸 (Multiproxy Support) 🏰	
+# 💻 Internet Income 💸 (Multiproxy Support) ⚽	
 
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
@@ -9,16 +9,16 @@ Please read the legal terms or FAQ section of the respective apps if you have an
 Advanced users, use [test] branch.
 
 ## 💰	Register with the following links:
-(Affiliate Links) ⭐⭐⭐
+(Affiliate Links) ⚽⚽⚽
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| ⭐⭐⭐[EarnApp] [(https://earnapp.com/i/JAegLixz))  | :heavy_check_mark:	  | :x: | 15|1| Paypal, Gift Card |
-| ⭐⭐[PacketStream] https://packetstream.io/?psr=6Ic6 | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
-| ⭐⭐[Honeygain] https://r.honeygain.me/MADDYB570E | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
-| ⭐⭐[IPRoyal] https://pawns.app/?r=4640575 | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
-| ⭐⭐⭐[Adnade] https://adnade.net/?ref=dylaaann | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal| 
-| ⭐⭐⭐[Bytelixir] https://bytelixir.com/r/WCCLWVKNOAF6 | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| ⭐⭐[Salad] CODE 2x Earnings: Join me on Salad and use code TU1QW7 for a 2x earning rate bonus! https://salad.com | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
+| ⚽⚽⚽[EarnApp] [(https://earnapp.com/i/JAegLixz))  | :heavy_check_mark:	  | :x: | 15|1| Paypal, Gift Card |
+| ⚽⚽[PacketStream] https://packetstream.io/?psr=6Ic6 | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
+| ⚽⚽⚽[Honeygain] https://r.honeygain.me/MADDYB570E | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
+| ⚽⚽[IPRoyal] https://pawns.app/?r=4640575 | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
+| ⚽⚽[Adnade] https://adnade.net/?ref=dylaaann | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal| 
+| ⚽⚽⚽[Bytelixir] https://bytelixir.com/r/WCCLWVKNOAF6 | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| ⚽⚽[Salad] CODE 2x Earnings: Join me on Salad and use code TU1QW7 for a 2x earning rate bonus! https://salad.com | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 
 
 *
