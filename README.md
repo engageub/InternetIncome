@@ -86,8 +86,6 @@ To delete the backup files and folders created by the script, use the following 
 sudo bash internetIncome.sh --deleteBackup
 ```
 
-## :department_store:	Proxies or Hosting Providers
-[Click here to get proxies or hosting providers with free credits.]
 
 ## :grey_question: FAQ
 ### 🤔	How to use residential proxies❓	
@@ -123,18 +121,6 @@ sudo docker system prune -f -a
 ### 🤔 Why are some of the containers for the same application offline❓
 If your proxies are working properly, ensure that your CPU usage remains below 80% and that you have enough available RAM. Otherwise, high CPU usage or insufficient RAM could cause the issue you are experiencing. In addition to this, the application website may also be throttling the requests either due to multiple authentication requests in a short span of time or the request may be timing out etc. 
 Your DNS requests may also be throttled on the host. Set the value of USE_DNS_OVER_HTTPS to true in properties.conf to see if this resolves the issue. If you are using socks5 proxies that support DNS requests, set the value of USE_SOCKS5_DNS to true. 
-### 🤔 Why is Mysterium node not working❓
-If you are using proxy instead of direct connection, you may see the node online but no earnings. 
-However note that mysterium works with VPN. Please use the  branch if you would like to use multiple VPNs.
-It is crucial to understand that the Mysterium node operates differently from other applications, as it necessitates the enabling of UDP (User Datagram Protocol). This protocol is essential for the proper functioning of the Mysterium node. In the case of utilizing SOCKS5 proxies, it is imperative to confirm with your provider whether UDP is enabled for your specific SOCKS5 proxy. When utilizing a direct internet connection, it is imperative to ensure that your firewall is configured to allow UDP traffic.
-
-### 🤔 Where is Mysterium data stored❓
-The data pertaining to your Mysterium keys is stored in the designated "mysterium-data" folder, located in the same directory as the script. It is crucial to note that the script does not remove or delete this folder, as it contains your private keys. Losing these keys would necessitate the payment for a new Mysterium node.
-Therefore, it is imperative to exercise caution and ensure the safety and security of the "mysterium-data" folder, as it contains sensitive and valuable information. By taking appropriate measures to preserve and back up this data, you can mitigate the risk of potential loss and subsequent financial implications.
-
-### 🤔 How to access 127.0.0.1 urls for ebesucher or mystnodes if GUI is not available in linux❓
-If your VPS does not have port restrictions to access your VPS IP globally, you can access your localhost urls by replacing it with your VPS IP address.
-For example, if your VPS IP address is 2.4.75.2 and you wish to access your localhost url http://127.0.0.1:2000 ,then replace the IP with your VPS IP to access it elsewhere. The url to access directly using VPS IP would be http://2.4.75.2:2000 
 
 If your VPS IP is not accessible globally, please run the following command to get the corresponsing url.
 ```
@@ -150,8 +136,6 @@ If you wish to use change proxies for already running container due to bad proxi
 ```
 sudo bash updateProxies.sh
 ```
-### 🤔 How to use it multiple IP or VPN❓
-For advance users who wish to use multiple IP or multiple VPN, please use [test] branch. 
 
 ## 📇 License:
 * This product is available for free and may be freely copied and distributed in its original form. 
