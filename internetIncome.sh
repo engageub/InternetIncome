@@ -50,12 +50,13 @@ chrome_profile_zipfile="chromeprofiledata.zip"
 restart_file="restart.sh"
 dns_resolver_file="resolv.conf"
 traffmonetizer_data_folder="traffmonetizerdata"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile $dns_resolver_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
+files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 container_pulled=false
+docker_in_docker_detected=false
 
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
@@ -118,7 +119,15 @@ start_containers() {
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker in Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your main docker is installed.\nPlease delete the files and folders manually on the parent host after using --delete command.\n'; fi"
+    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > $dns_resolver_file;
+    if [ ! -f $dns_resolver_file ]; then
+      echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
+      exit 1;
+    fi
+    if sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
+      docker_in_docker_detected=true
+    fi
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
   fi
 
   if [[ "$ENABLE_LOGS" = false ]]; then
@@ -228,6 +237,10 @@ start_containers() {
 
   # Starting Ebesucher Chrome container
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = true ]]; then
+    if [ "$docker_in_docker_detected" = true ]; then
+      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
+      exit 1
+    fi
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
 
@@ -289,6 +302,10 @@ start_containers() {
 
   # Starting Ebesucher container
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" != true ]]; then
+    if [ "$docker_in_docker_detected" = true ]; then
+      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
+      exit 1
+    fi
     echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
@@ -351,6 +368,10 @@ start_containers() {
 
   # Starting Adnade container
   if [[ $ADNADE_USERNAME ]]; then
+    if [ "$docker_in_docker_detected" = true ]; then
+      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
+      exit 1
+    fi
     echo -e "${GREEN}Starting Adnade container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
@@ -723,6 +744,34 @@ start_containers() {
   container_pulled=true
 }
 
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+  echo -e "${RED}Docker is not installed, without which the script cannot start. Exiting..${NOCOLOUR}"
+  echo -e "To install Docker and its dependencies, please run the following command\n"
+  echo -e "${YELLOW}sudo bash internetIncome.sh --install${NOCOLOUR}\n"
+  exit 1
+fi
+
+# Update and Install Docker
+if [[ "$1" == "--install" ]]; then
+  sudo apt-get update
+  sudo apt-get -y install docker.io
+  CPU_ARCH=`uname -m`
+  if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
+    sudo docker run --privileged --rm tonistiigi/binfmt --install all
+    sudo apt-get install qemu binfmt-support qemu-user-static
+  fi
+  # Check if Docker is installed
+  if command -v docker &> /dev/null; then
+    echo -e "${GREEN}Docker is installed.${NOCOLOUR}"
+    docker --version
+  else
+    echo -e "${RED}Docker is not installed. There is a problem installing Docker.${NOCOLOUR}"
+    echo "Please install Docker manually by following https://docs.docker.com/engine/install/"
+  fi
+  exit 1
+fi
+
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
 
@@ -808,6 +857,7 @@ if [[ "$1" == "--start" ]]; then
   exit 1
 fi
 
+# Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
 
@@ -840,23 +890,31 @@ if [[ "$1" == "--delete" ]]; then
     rm $networks_file
   fi
 
+  # Delete files
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
 
+  # Delete folders
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
   exit 1
 fi
 
+# Delete backup files and folders
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
 
+  # Check if previous files exist
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -866,6 +924,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
     fi
   done
 
+  # Check if previous folders exist
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -875,16 +934,22 @@ if [[ "$1" == "--deleteBackup" ]]; then
     fi
   done
 
+  # Delete backup files
   for file in "${back_up_files[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
 
+  # Delete backup folders
   for folder in "${back_up_folders[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
   exit 1
 fi
