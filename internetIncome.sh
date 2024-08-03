@@ -61,8 +61,8 @@ proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $dns_resolver_file)
-files_to_be_removed=($meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
+files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -230,6 +230,11 @@ start_containers() {
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
+    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > $dns_resolver_file;
+    if [ ! -f $dns_resolver_file ]; then
+      echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
+      exit 1;
+    fi
     if sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
       docker_in_docker_detected=true
     fi
