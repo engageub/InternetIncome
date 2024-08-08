@@ -881,6 +881,19 @@ start_containers() {
     fi
   fi
 
+  # Starting PacketShare container
+  if [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull packetshare/packetshare
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetshare/packetshare -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD)
+    execute_docker_command "PacketShare" "packetshare$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Earn Fm container
   if [[ $EARN_FM_API ]]; then
     if [ "$container_pulled" = false ]; then
