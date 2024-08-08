@@ -608,6 +608,24 @@ start_containers() {
     fi
   fi
 
+  # Starting PacketShare container
+  if [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]]; then
+    echo -e "${GREEN}Starting PacketShare container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull packetshare/packetshare
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name packetshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN packetshare/packetshare -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "packetshare$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for PacketShare..${NOCOLOUR}"
+    fi
+  else
+    if [ "$container_pulled" = false ]; then
+      echo -e "${RED}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
