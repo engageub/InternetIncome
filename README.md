@@ -12,7 +12,7 @@ Advanced users, use [test] branch.
 (Affiliate Links) ⚽⚽⚽
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| ⚽⚽⚽[EarnApp] [(https://earnapp.com/i/JAegLixz))  | :heavy_check_mark:	  | :x: | 15|1| Paypal, Gift Card |
+| ⚽⚽⚽[EarnApp] https://earnapp.com/i/JAegLixz  | :heavy_check_mark:	  | :x: | 15|1| Paypal, Gift Card |
 | ⚽⚽[PacketStream] https://packetstream.io/?psr=6Ic6 | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | ⚽⚽⚽[Honeygain] https://r.honeygain.me/MADDYB570E | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
 | ⚽⚽[IPRoyal] https://pawns.app/?r=4640575 | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
