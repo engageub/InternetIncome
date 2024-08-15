@@ -220,7 +220,7 @@ start_containers() {
       echo -e "${RED}Proxy for Mysterium is not supported at the moment due to ongoing issue. Please see https://github.com/xjasonlyu/tun2socks/issues/262 for more details. Ignoring Mysterium..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
     fi
   fi
@@ -288,7 +288,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
@@ -356,7 +356,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Adnade..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
@@ -380,7 +380,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for BitPing..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
     fi
   fi
@@ -398,7 +398,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
     fi
   fi
@@ -416,7 +416,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Grass..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
     fi
   fi
@@ -434,7 +434,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for EarnFm..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
     fi
   fi
@@ -452,7 +452,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Gaganode..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Gaganode Token is not configured. Ignoring Gaganode..${NOCOLOUR}"
     fi
   fi
@@ -480,7 +480,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
     fi
   fi
@@ -514,7 +514,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Proxyrack..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Proxyrack is not enabled. Ignoring Proxyrack..${NOCOLOUR}"
     fi
   fi
@@ -532,7 +532,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for IPRoyals..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
     fi
   fi
@@ -550,7 +550,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for PacketShare..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
     fi
   fi
@@ -573,7 +573,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
   fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
     fi
   fi
@@ -591,7 +591,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
     fi
   fi
@@ -609,7 +609,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
     fi
   fi
@@ -627,7 +627,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
     fi
   fi
@@ -645,7 +645,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Speedshare..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Speedshare token is not configured. Ignoring Speedshare..${NOCOLOUR}"
     fi
   fi
@@ -683,7 +683,7 @@ start_containers() {
       echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
     fi
   fi
