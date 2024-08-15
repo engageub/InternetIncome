@@ -463,7 +463,7 @@ start_containers() {
     echo "http://$localhost_address:$mysterium_first_port" |tee -a $mysterium_file
     mysterium_first_port=`expr $mysterium_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
     fi
   fi
@@ -502,7 +502,7 @@ start_containers() {
     echo "http://$localhost_address:$custom_firefox_first_port" |tee -a $custom_firefox_file
     custom_firefox_first_port=`expr $custom_firefox_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Custom firefox is not configured. Ignoring Custom Firefox..${NOCOLOUR}"
     fi
   fi
@@ -532,7 +532,7 @@ start_containers() {
     echo "http://$localhost_address:$custom_chrome_first_port" |tee -a $custom_chrome_file
     custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
     fi
   fi
@@ -597,7 +597,7 @@ start_containers() {
     echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
     ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Ebesucher username for firefox is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
@@ -659,7 +659,7 @@ start_containers() {
     echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
     ebesucher_first_port=`expr $ebesucher_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
@@ -715,7 +715,7 @@ start_containers() {
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Adnade username for firefox is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
@@ -778,7 +778,7 @@ start_containers() {
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
     adnade_first_port=`expr $adnade_first_port + 1`
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Adnade username for chrome is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
@@ -797,7 +797,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v "$PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" bitping/bitpingd:latest)
     execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
     fi
   fi
@@ -827,7 +827,7 @@ start_containers() {
     execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}You will find meson port numbers in the file $meson_file in the same folder${NOCOLOUR}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Meson Token is not configured. Ignoring Meson..${NOCOLOUR}"
     fi
   fi
@@ -840,7 +840,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket)
     execute_docker_command "Repocket" "repocket$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
     fi
   fi
@@ -853,7 +853,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass)
     execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
     fi
   fi
@@ -876,7 +876,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN)
     execute_docker_command "Traffmonetizer" "traffmon$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
     fi
   fi
@@ -889,7 +889,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetshare/packetshare -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD)
     execute_docker_command "PacketShare" "packetshare$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
     fi
   fi
@@ -902,7 +902,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest)
     execute_docker_command "EarnFm" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
     fi
   fi
@@ -934,7 +934,7 @@ start_containers() {
     echo -e "${GREEN}Copy the node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
     fi
   fi
@@ -948,7 +948,7 @@ start_containers() {
     execute_docker_command "CloudCollab" "cloudcollab$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}You will find the device ids in the file $cloud_collab_file in the same folder${NOCOLOUR}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}CloudCollab is not enabled. Ignoring CloudCollab..${NOCOLOUR}"
     fi
   fi
@@ -961,7 +961,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos)
     execute_docker_command "IPRoyals" "pawns$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
     fi
   fi
@@ -979,7 +979,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i)
     execute_docker_command "Honeygain" "honey$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
     fi
   fi
@@ -992,7 +992,7 @@ start_containers() {
       execute_docker_command "HoneygainPot" "honeygainpot$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Honeygain Pot is not enabled. Ignoring Honeygain Pot..${NOCOLOUR}"
     fi
   fi
@@ -1005,7 +1005,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node)
     execute_docker_command "Gaganode" "gaganode$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Gaganode Token is not configured. Ignoring Gaganode..${NOCOLOUR}"
     fi
   fi
@@ -1018,7 +1018,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare)
     execute_docker_command "Speedshare" "speedshare$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Speedshare Token is not configured. Ignoring Speedshare..${NOCOLOUR}"
     fi
   fi
@@ -1031,7 +1031,7 @@ start_containers() {
     docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit)
     execute_docker_command "Peer2Profit" "peer2profit$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
     fi
   fi
@@ -1044,7 +1044,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest)
     execute_docker_command "PacketStream" "packetstream$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
     fi
   fi
@@ -1057,7 +1057,7 @@ start_containers() {
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice)
     execute_docker_command "Proxylite" "proxylite$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
     fi
   fi
@@ -1095,7 +1095,7 @@ start_containers() {
     echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
   else
-    if [ "$container_pulled" = false ]; then
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
     fi
   fi
