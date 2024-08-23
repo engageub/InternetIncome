@@ -33,7 +33,7 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 | [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
 | [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
 | [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| [CloudCollab](https://cloudcollab.uk/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| [BearShare](https://app.bearshare.app/register?ref=770048aacaab7ecf1ca1c97492de831d17a3ab559d4a1f8b735) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 | [Spider Income](https://income.spider.dev/r/engagf7jws) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
