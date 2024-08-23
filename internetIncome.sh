@@ -537,6 +537,24 @@ start_containers() {
     fi
   fi
 
+  # Starting Bearshare container
+  if [[ $BEARSHARE_EMAIL && $BEARSHARE_PASSWORD ]]; then
+    echo -e "${GREEN}Starting Bearshare container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull bearshare/bearshare:latest
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name bearshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN bearshare/bearshare:latest ./cli -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "bearshare$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Bearshare..${NOCOLOUR}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Bearshare Email or Password is not configured. Ignoring Bearshare..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting PacketShare container
   if [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]]; then
     echo -e "${GREEN}Starting PacketShare container..${NOCOLOUR}"
