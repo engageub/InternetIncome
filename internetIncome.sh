@@ -1108,7 +1108,11 @@ start_containers() {
       uuid=sdk-node-$RANDOM_ID
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid --no-healthcheck fazalfarhan01/earnapp:lite)
+    local EARNAPP_PRIVILEGED
+    if [[ "$USE_EARNAPP_PRIVILEGED" = true ]]; then
+      EARNAPP_PRIVILEGED="--privileged"
+    fi
+    docker_parameters=($EARNAPP_PRIVILEGED $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v $PWD/$earnapp_data_folder/data$i:/etc/earnapp -e EARNAPP_UUID=$uuid --no-healthcheck fazalfarhan01/earnapp:lite)
     execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
