@@ -1356,6 +1356,44 @@ if [[ "$1" == "--delete" ]]; then
   exit 1
 fi
 
+# Stop containers
+if [[ "$1" == "--stop" ]]; then
+  echo -e "\n\nStopping Containers.."
+
+  # Stop containers by container names
+  if [ -f "$container_names_file" ]; then
+    for i in `cat $container_names_file`; do
+      # Check if container exists
+      if sudo docker inspect $i >/dev/null 2>&1; then
+        # Stop container
+        sudo docker stop $i
+      else
+        echo "Container $i does not exist"
+      fi
+    done
+  fi
+  exit 1
+fi
+
+# Restart containers
+if [[ "$1" == "--restart" ]]; then
+  echo -e "\n\nRestarting Containers.."
+
+  # Restart containers by container names
+  if [ -f "$container_names_file" ]; then
+    for i in `cat $container_names_file`; do
+      # Check if container exists
+      if sudo docker inspect $i >/dev/null 2>&1; then
+        # Restart container
+        sudo docker restart $i
+      else
+        echo "Container $i does not exist"
+      fi
+    done
+  fi
+  exit 1
+fi
+
 # Delete backup files and folders
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
@@ -1400,4 +1438,4 @@ if [[ "$1" == "--deleteBackup" ]]; then
   exit 1
 fi
 
-echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}"
+echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}, ${RED}--stop${NOCOLOUR}, ${RED}--restart${NOCOLOUR}"
