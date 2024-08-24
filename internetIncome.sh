@@ -193,11 +193,16 @@ execute_docker_command() {
   local app_name=${container_parameters[0]}
   local container_name=${container_parameters[1]}
   local CONTAINER_ID
+  local DOCKER_INIT
+  if [[ "$USE_DOCKER_INIT" = true ]]; then
+    DOCKER_INIT="--init"
+  fi
+  
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   if [[ "$app_name" == "VPN" ]]; then
-    CONTAINER_ID=$(eval "sudo docker run -d --name $container_name --restart=always ${container_parameters[@]:2}")
+    CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
-    CONTAINER_ID=$(sudo docker run -d --name $container_name --restart=always "${container_parameters[@]:2}")
+    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d --name $container_name --restart=always "${container_parameters[@]:2}")
   fi
 
   # Check if the container started successfully
@@ -241,7 +246,7 @@ start_containers() {
     sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
   fi
 
-  if [[ "$ENABLE_LOGS" = false ]]; then
+  if [[ "$ENABLE_LOGS" != true ]]; then
     LOGS_PARAM="--log-driver none"
     TUN_LOG_PARAM="silent"
   else
@@ -538,7 +543,7 @@ start_containers() {
   fi
 
   # Starting Ebesucher Firefox container
-  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = false  ]]; then
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" != true  ]]; then
     if [ "$docker_in_docker_detected" = true ]; then
       echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Kindly use custom chrome or custom firefox and login manually. Exiting..${NOCOLOUR}";
       exit 1
@@ -665,7 +670,7 @@ start_containers() {
   fi
 
   # Starting Adnade Firefox container
-  if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" = false  ]]; then
+  if [[ $ADNADE_USERNAME && "$ADNADE_USE_CHROME" != true  ]]; then
     if [ "$docker_in_docker_detected" = true ]; then
       echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Kindly use custom chrome or custom firefox and login manually. Exiting..${NOCOLOUR}";
       exit 1
