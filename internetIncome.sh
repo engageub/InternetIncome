@@ -39,21 +39,24 @@ adnade_file="adnade.txt"
 adnade_data_folder="adnadedata"
 adnade_containers_file="adnadecontainers.txt"
 firefox_containers_file="firefoxcontainers.txt"
+chrome_containers_file="chromecontainers.txt"
 bitping_data_folder="bitping-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
-traffmonetizer_data_folder="traffmonetizerdata"
-restart_firefox_file="restartFirefox.sh"
-restart_adnade_file="restartAdnade.sh"
+chrome_data_folder="chromedata"
+chrome_profile_data="chromeprofiledata"
+chrome_profile_zipfile="chromeprofiledata.zip"
+restart_file="restart.sh"
 dns_resolver_file="resolv.conf"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_firefox_file $restart_adnade_file $dns_resolver_file)
-files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file)
-folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder)
+traffmonetizer_data_folder="traffmonetizerdata"
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
+files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
-
 container_pulled=false
+docker_in_docker_detected=false
 
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
@@ -108,14 +111,23 @@ check_open_ports() {
 # Start all containers
 start_containers() {
 
-  i=$1
-  proxy=$2
-  local DNS_VOLUME="-v $PWD/resolv.conf:/etc/resolv.conf:ro"
+  local i=$1
+  local proxy=$2
+  local DNS_VOLUME="-v $PWD/$dns_resolver_file:/etc/resolv.conf:ro"
+  local TUN_DNS_VOLUME
 
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker in Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your main docker is installed.\nPlease delete the files and folders manually on the parent host after using --delete command.\n'; fi"
+    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > $dns_resolver_file;
+    if [ ! -f $dns_resolver_file ]; then
+      echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
+      exit 1;
+    fi
+    if sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
+      docker_in_docker_detected=true
+    fi
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
   fi
 
   if [[ "$ENABLE_LOGS" = false ]]; then
@@ -145,7 +157,11 @@ start_containers() {
          echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
          exit 1
       fi
-      ebesucher_port="-p $ebesucher_first_port:5800 "
+      if [ "$EBESUCHER_USE_CHROME" = true ]; then
+          ebesucher_port="-p $ebesucher_first_port:3000 "
+      else
+          ebesucher_port="-p $ebesucher_first_port:5800 "
+      fi
     fi
 
     if [[ $ADNADE_USERNAME ]]; then
@@ -172,12 +188,12 @@ start_containers() {
        dns_option="--dns over-tcp"
     else
        dns_option="--dns virtual"
+       TUN_DNS_VOLUME="$DNS_VOLUME"
     fi
 
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.2.15 $dns_option --proxy $proxy); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.2.15 $dns_option --proxy $proxy); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
-      sudo docker exec $CONTAINER_ID sh -c 'echo "nameserver 8.8.4.4" > /etc/resolv.conf;echo "nameserver 8.8.8.8" >> /etc/resolv.conf;'
     else
       echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
       exit 1
@@ -196,7 +212,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull mysteriumnetwork/myst:latest
     fi
-    if [[  ! $proxy ]]; then
+    if [[ ! $proxy ]]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port 1)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
@@ -225,19 +241,82 @@ start_containers() {
     fi
   fi
 
+  # Starting Ebesucher Chrome container
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = true ]]; then
+    if [ "$docker_in_docker_detected" = true ]; then
+      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
+      exit 1
+    fi
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull lscr.io/linuxserver/chromium:latest
+
+      # Exit, if chrome profile zip file is missing
+      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+        echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+
+      # Unzip the file
+      unzip -o $chrome_profile_zipfile
+
+      # Exit, if chrome profile data is missing
+      if [ ! -d "$PWD/$chrome_profile_data" ];then
+        echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
+        echo "Chrome restart container started"
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for ebesucher chrome restart..${NOCOLOUR}"
+        exit 1
+      fi
+    fi
+
+    # Create folder and copy files
+    mkdir -p $PWD/$chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_profile_data
+    sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
+    sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
+
+    if [[ ! $proxy ]]; then
+      ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
+      if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Ebesucher. Resolve or disable Ebesucher to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      eb_port="-p $ebesucher_first_port:3000 "
+    fi
+
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
+      echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
+      echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
+      ebesucher_first_port=`expr $ebesucher_first_port + 1`
+    else
+      echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Ebesucher container
-  if [[ $EBESUCHER_USERNAME ]]; then
+  if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" != true ]]; then
+    if [ "$docker_in_docker_detected" = true ]; then
+      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
+      exit 1
+    fi
     echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_firefox_file" ];then
-        echo -e "${RED}Firefox restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
 
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
@@ -254,7 +333,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartFirefox.sh && while true; do sleep 3600; /firefox/restartFirefox.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
@@ -269,7 +348,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
-    if [[  ! $proxy ]]; then
+    if [[ ! $proxy ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -295,17 +374,15 @@ start_containers() {
 
   # Starting Adnade container
   if [[ $ADNADE_USERNAME ]]; then
+    if [ "$docker_in_docker_detected" = true ]; then
+      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
+      exit 1
+    fi
     echo -e "${GREEN}Starting Adnade container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
-
-      # Exit, if restart script is missing
-      if [ ! -f "$PWD/$restart_adnade_file" ];then
-        echo -e "${RED}Adnade restart script does not exist. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
 
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
@@ -322,7 +399,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restartAdnade.sh && while true; do sleep 7200; /firefox/restartAdnade.sh; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file
@@ -337,7 +414,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
     sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
-    if [[  ! $proxy ]]; then
+    if [[ ! $proxy ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -385,24 +462,6 @@ start_containers() {
     fi
   fi
 
-  # Starting Repocket container
-  if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
-    echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull repocket/repocket
-    fi
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Grass container
   if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
     echo -e "${GREEN}Starting Grass container..${NOCOLOUR}"
@@ -418,6 +477,24 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Repocket container
+  if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
+    echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull repocket/repocket
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
     fi
   fi
 
@@ -709,6 +786,34 @@ start_containers() {
   container_pulled=true
 }
 
+# Update and Install Docker
+if [[ "$1" == "--install" ]]; then
+  sudo apt-get update
+  sudo apt-get -y install docker.io
+  CPU_ARCH=`uname -m`
+  if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
+    sudo docker run --privileged --rm tonistiigi/binfmt --install all
+    sudo apt-get install qemu binfmt-support qemu-user-static
+  fi
+  # Check if Docker is installed
+  if command -v docker &> /dev/null; then
+    echo -e "${GREEN}Docker is installed.${NOCOLOUR}"
+    docker --version
+  else
+    echo -e "${RED}Docker is not installed. There is a problem installing Docker.${NOCOLOUR}"
+    echo "Please install Docker manually by following https://docs.docker.com/engine/install/"
+  fi
+  exit 1
+fi
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+  echo -e "${RED}Docker is not installed, without which the script cannot start. Exiting..${NOCOLOUR}"
+  echo -e "To install Docker and its dependencies, please run the following command\n"
+  echo -e "${YELLOW}sudo bash internetIncome.sh --install${NOCOLOUR}\n"
+  exit 1
+fi
+
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
 
@@ -794,6 +899,7 @@ if [[ "$1" == "--start" ]]; then
   exit 1
 fi
 
+# Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
 
@@ -826,23 +932,31 @@ if [[ "$1" == "--delete" ]]; then
     rm $networks_file
   fi
 
+  # Delete files
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
 
+  # Delete folders
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
   exit 1
 fi
 
+# Delete backup files and folders
 if [[ "$1" == "--deleteBackup" ]]; then
   echo -e "\n\nDeleting backup folders and files.."
 
+  # Check if previous files exist
   for file in "${files_to_be_removed[@]}"; do
     if [ -f "$file" ]; then
       echo -e "${RED}File $file still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -852,6 +966,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
     fi
   done
 
+  # Check if previous folders exist
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       echo -e "${RED}Folder $folder still exists, there might be containers still running. Please stop them and delete before running the script. Exiting..${NOCOLOUR}"
@@ -861,16 +976,22 @@ if [[ "$1" == "--deleteBackup" ]]; then
     fi
   done
 
+  # Delete backup files
   for file in "${back_up_files[@]}"; do
     if [ -f "$file" ]; then
       rm $file
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
 
+  # Delete backup folders
   for folder in "${back_up_folders[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
+    # For Docker-in-Docker
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
   exit 1
 fi
