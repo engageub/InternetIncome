@@ -976,7 +976,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull bearshare/bearshare:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN bearshare/bearshare:latest ./cli -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN bearshare/bearshare:latest -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD)
     execute_docker_command "Bearshare" "bearshare$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
