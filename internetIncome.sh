@@ -614,7 +614,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull bearshare/bearshare:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bearshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN bearshare/bearshare:latest ./cli -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD); then
+    if CONTAINER_ID=$(sudo docker run -d --name bearshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN bearshare/bearshare:latest -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bearshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
