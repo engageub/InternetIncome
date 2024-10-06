@@ -654,7 +654,11 @@ start_containers() {
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
     if [[ $NETWORK_TUN ]]; then
-      honeygain_image="--platform=linux/amd64 honeygain/honeygain:0.6.6"
+      if [ "$CPU_ARCH" == "x86_64" ] || [ "$CPU_ARCH" == "amd64" ]; then
+        honeygain_image="honeygain/honeygain:0.6.6"
+      else
+        honeygain_image="honeygain/honeygain"
+      fi
     else
       honeygain_image="honeygain/honeygain"
     fi
