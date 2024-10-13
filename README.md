@@ -23,8 +23,8 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 | [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1| GiftCard|
 | [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
 | [CryptoProxy](https://cryptoproxy.page.link/3J4ASzZ2tf58M77dA) | :heavy_check_mark:	  | :x: |No limit|1| Crypto|
-| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| [BearShare](https://app.bearshare.app/register?ref=770048aacaab7ecf1ca1c97492de831d17a3ab559d4a1f8b735) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
+| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| [BearShare](https://app.bearshare.app/register?ref=770048aacaab7ecf1ca1c97492de831d17a3ab559d4a1f8b735) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
 | [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
 | [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
@@ -43,7 +43,7 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 
 
 * [Click here](https://prnt.sc/OebarMcJQ1nz) to view the screenshot above as some browsers don't support checkmarks. 
-* [Adnade](https://t.co/KthcbzPa08), [Ebesucher](https://www.ebesucher.com/?ref=engageub), and [Grass](https://t.co/hpl30lW4cP) use firefox/chrome browser inside the container, so they consume more resources compared to other containers.
+* [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox/chrome browser inside the container, so they consume more resources compared to other containers.
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
 * To convert crypto to other wallets or currencies, you may use [BestChange](https://www.bestchange.com/?p=1252652).
 * The comparison mentioned above was updated on 25-04-2024 and may be subject to change later.
