@@ -466,9 +466,9 @@ start_containers() {
   if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
     echo -e "${GREEN}Starting Grass container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull camislav/grass
+      sudo docker --platform=linux/amd64 trangoul/grass-desktop:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass); then
+    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --platform=linux/amd64 --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "grass$UNIQUE_ID$i" | tee -a $container_names_file
     else
