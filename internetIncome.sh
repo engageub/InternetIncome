@@ -853,9 +853,9 @@ start_containers() {
   # Starting Grass container
   if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull camislav/grass
+      sudo docker pull trangoul/grass-desktop:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e GRASS_USER=$GRASS_USERNAME -e GRASS_PASS=$GRASS_PASSWORD -e ALLOW_DEBUG=False camislav/grass)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest)
     execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
