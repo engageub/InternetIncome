@@ -31,6 +31,8 @@ container_names_file="containernames.txt"
 earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
 proxyrack_file="proxyrack.txt"
+spide_machine_file="spide-machine.txt"
+spide_device_file="spide-device.txt"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
 mysterium_data_folder="mysterium-data"
@@ -54,7 +56,7 @@ required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_
 files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($earnapp_file $proxyrack_file)
+back_up_files=($earnapp_file $proxyrack_file $spide_machine_file $spide_device_file)
 container_pulled=false
 docker_in_docker_detected=false
 
@@ -577,6 +579,55 @@ start_containers() {
       proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
+
+  # Starting Spide container
+  if [ "$SPIDE" = true ]; then
+    echo -e "${GREEN}Starting Spide container..${NOCOLOUR}"
+    echo -e "${GREEN}Copy the following node Device Key and paste in your spide dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the Device Keys in the file $spide_device_file in the same folder${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull xterna/spide-network
+    fi
+    if [ -f $spide_machine_file ] && spide_uuid=$(sed -n "${i} s/.*Machine ID:\s*\([^ ]*\).*/\1/p" $spide_machine_file);then
+      if [[ $spide_uuid ]];then
+        echo $spide_uuid
+        if CONTAINER_ID=$(sudo docker run -d --name spide$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e ID=$spide_uuid xterna/spide-network); then
+          echo "$CONTAINER_ID" | tee -a $containers_file
+          echo "spide$UNIQUE_ID$i" | tee -a $container_names_file
+        else
+          echo -e "${RED}Failed to start container for Spide..${NOCOLOUR}"
+        fi
+      else
+        echo "Spide UUID does not exist, starting without to create new UUID"
+        if CONTAINER_ID=$(sudo docker run -d --name spide$UNIQUE_ID$i $NETWORK_TUN $DNS_VOLUME --restart=always xterna/spide-network); then
+          spide_uuid=`sudo docker logs spide$UNIQUE_ID$i 2>&1 | grep "Machine ID"`
+          printf "%s\n" "$spide_uuid" | tee -a $spide_machine_file
+          spide_key=`sudo docker logs spide$UNIQUE_ID$i 2>&1 | grep "Device Key"`
+          printf "%s\n" "$spide_key" | tee -a $spide_device_file
+          echo "spide$UNIQUE_ID$i" | tee -a $container_names_file
+          echo "$CONTAINER_ID" | tee -a $containers_file
+        else
+          echo -e "${RED}Failed to start container for Spide..${NOCOLOUR}"
+        fi
+      fi
+    else
+      echo "Spide UUID does not exist, starting without to create new UUID"
+      if CONTAINER_ID=$(sudo docker run -d --name spide$UNIQUE_ID$i $NETWORK_TUN $DNS_VOLUME --restart=always xterna/spide-network); then
+        spide_uuid=`sudo docker logs spide$UNIQUE_ID$i 2>&1 | grep "Machine ID"`
+        printf "%s\n" "$spide_uuid" | tee -a $spide_machine_file
+        spide_key=`sudo docker logs spide$UNIQUE_ID$i 2>&1 | grep "Device Key"`
+        printf "%s\n" "$spide_key" | tee -a $spide_device_file
+        echo "spide$UNIQUE_ID$i" | tee -a $container_names_file
+        echo "$CONTAINER_ID" | tee -a $containers_file
+      else
+        echo -e "${RED}Failed to start container for Spide..${NOCOLOUR}"
+      fi
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Spide is not enabled. Ignoring Spide..${NOCOLOUR}"
+    fi
+  fi
 
     if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
       echo "$CONTAINER_ID" | tee -a $containers_file
