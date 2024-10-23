@@ -232,6 +232,10 @@ start_containers() {
   local DNS_VOLUME="-v $PWD/$dns_resolver_file:/etc/resolv.conf:ro"
   local TUN_DNS_VOLUME
 
+  if [[ "$USE_DOCKER_EMBEDDED_DNS" = true ]]; then
+    DNS_VOLUME="";
+  fi
+
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
