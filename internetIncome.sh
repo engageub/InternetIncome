@@ -61,7 +61,8 @@ proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
+grass_start_file="grass_start.sh"
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $grass_start_file)
 files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
@@ -859,7 +860,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 trangoul/grass-desktop:latest
     fi
-    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest)
+    sudo chmod 777 $grass_start_file
+    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v "$PWD/$grass_start_file":/home/grass/start.sh -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest)
     execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
