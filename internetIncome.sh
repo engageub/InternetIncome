@@ -179,7 +179,7 @@ start_containers() {
 
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/blechschmidt/tun2proxy:v0.2.15
+      sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.6.4
     fi
 
     if [ "$USE_SOCKS5_DNS" = true ]; then
@@ -191,7 +191,7 @@ start_containers() {
        TUN_DNS_VOLUME="$DNS_VOLUME"
     fi
 
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/blechschmidt/tun2proxy:v0.2.15 $dns_option --proxy $proxy); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.6.4 $dns_option --proxy $proxy); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
     else
