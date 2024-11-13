@@ -861,6 +861,8 @@ start_containers() {
     fi
     docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest)
     execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo "Waiting for 60 seconds for grass container to login.."
+    sleep 60
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
