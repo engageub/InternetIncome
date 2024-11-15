@@ -132,9 +132,9 @@ start_containers() {
 
   if [[ "$ENABLE_LOGS" = false ]]; then
     LOGS_PARAM="--log-driver none"
-    TUN_LOG_PARAM="silent"
+    TUN_LOG_PARAM="off"
   else
-    TUN_LOG_PARAM="info"
+    TUN_LOG_PARAM="trace"
   fi
 
   if [[ $i && $proxy ]]; then
@@ -191,7 +191,7 @@ start_containers() {
        TUN_DNS_VOLUME="$DNS_VOLUME"
     fi
 
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -e LOGLEVEL=$TUN_LOG_PARAM --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.6.4 $dns_option --proxy $proxy); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --sysctl net.ipv6.conf.default.disable_ipv6=0 -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.6.4 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
     else
