@@ -130,7 +130,7 @@ start_containers() {
     sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
   fi
 
-  if [[ "$ENABLE_LOGS" = false ]]; then
+  if [[ "$ENABLE_LOGS" != true ]]; then
     LOGS_PARAM="--log-driver none"
     TUN_LOG_PARAM="off"
   else
