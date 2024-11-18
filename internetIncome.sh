@@ -229,7 +229,8 @@ start_containers() {
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
     else
-      echo -e "${RED}Failed to start container for Mysterium..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Mysterium. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   elif [[ "$MYSTERIUM" = true && $NETWORK_TUN ]]; then
     if [ "$container_pulled" = false ]; then
@@ -270,7 +271,7 @@ start_containers() {
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
       else
-        echo -e "${RED}Failed to start container for ebesucher chrome restart..${NOCOLOUR}"
+        echo -e "${RED}Failed to start container for ebesucher chrome restart. Exiting..${NOCOLOUR}"
         exit 1
       fi
     fi
@@ -298,7 +299,8 @@ start_containers() {
       echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
       ebesucher_first_port=`expr $ebesucher_first_port + 1`
     else
-      echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Ebesucher. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -338,7 +340,7 @@ start_containers() {
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
       else
-        echo -e "${RED}Failed to start container for ebesucher firefox restart..${NOCOLOUR}"
+        echo -e "${RED}Failed to start container for ebesucher firefox restart. Exiting..${NOCOLOUR}"
         exit 1
       fi
     fi
@@ -364,7 +366,8 @@ start_containers() {
       echo "http://127.0.0.1:$ebesucher_first_port" |tee -a $ebesucher_file
       ebesucher_first_port=`expr $ebesucher_first_port + 1`
     else
-      echo -e "${RED}Failed to start container for Ebesucher..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Ebesucher. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -404,7 +407,7 @@ start_containers() {
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file
       else
-        echo -e "${RED}Failed to start container for adnade firefox restart..${NOCOLOUR}"
+        echo -e "${RED}Failed to start container for adnade firefox restart. Exiting..${NOCOLOUR}"
         exit 1
       fi
     fi
@@ -430,7 +433,8 @@ start_containers() {
       echo "http://127.0.0.1:$adnade_first_port" |tee -a $adnade_file
       adnade_first_port=`expr $adnade_first_port + 1`
     else
-      echo -e "${RED}Failed to start container for Adnade..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Adnade. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -454,7 +458,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for BitPing..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for BitPing. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -474,7 +479,8 @@ start_containers() {
       echo "Waiting for 60 seconds for grass container to login.."
       sleep 60
     else
-      echo -e "${RED}Failed to start container for Grass..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Grass. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -492,7 +498,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Repocket..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Repocket. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -510,7 +517,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for EarnFm..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for EarnFm. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -528,7 +536,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "gaganode$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Gaganode..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Gaganode. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -556,7 +565,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Traffmonetizer..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Traffmonetizer. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -590,7 +600,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Proxyrack..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Proxyrack. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -608,7 +619,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for IPRoyals..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for IPRoyals. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -626,7 +638,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bearshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Bearshare..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Bearshare. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -644,7 +657,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for PacketShare..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for PacketShare. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -671,7 +685,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "honey$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Honeygain..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Honeygain. Exiting..${NOCOLOUR}"
+      exit 1
   fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -689,7 +704,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "peer2profit$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Peer2Profit..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Peer2Profit. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -707,7 +723,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for PacketStream..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for PacketStream. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -725,7 +742,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxylite$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Proxylite..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Proxylite. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -743,7 +761,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "speedshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Speedshare..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Speedshare. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -765,7 +784,7 @@ start_containers() {
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dindearnapp$UNIQUE_ID$i" | tee -a $container_names_file
       else
-        echo -e "${RED}Failed to start container for earnapp restart..${NOCOLOUR}"
+        echo -e "${RED}Failed to start container for earnapp restart. Exiting..${NOCOLOUR}"
         exit 1
       fi
     fi
@@ -789,7 +808,8 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Earnapp..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Earnapp. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
