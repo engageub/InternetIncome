@@ -3,7 +3,7 @@
 ##################################################################################
 # Author: engageub                                                               #
 # Description: This script lets you earn passive income by sharing your internet #
-# connection. It also supports multiple proxies with multiple accounts.          #
+# connection. It also supports multiple proxies, multiple IPs and multiple VPNs. #
 # Script Name: Internet Income (Supports Proxies)                                #
 # Script Link: https://github.com/engageub/InternetIncome                        #
 # DISCLAIMER: This script is provided "as is" and without warranty of any kind.  #
