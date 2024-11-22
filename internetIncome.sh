@@ -666,6 +666,25 @@ start_containers() {
     fi
   fi
 
+  # Starting Gradient Network container
+  if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
+    echo -e "${GREEN}Starting Gradient Network container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull overtrue/gradient-bot
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name gradient$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e APP_USER=$GRADIENT_EMAIL -e APP_PASS=$GRADIENT_PASSWORD overtrue/gradient-bot); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "gradient$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Gradient Network. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Gradient Network Email or Password is not configured. Ignoring Gradient Network..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
