@@ -254,7 +254,7 @@ start_containers() {
     LOGS_PARAM="--log-driver none"
     TUN_LOG_PARAM="silent"
   else
-    TUN_LOG_PARAM="info"
+    TUN_LOG_PARAM="debug"
   fi
 
   if [[ $MAX_MEMORY ]]; then
