@@ -910,6 +910,19 @@ start_containers() {
     fi
   fi
 
+  # Starting Gradient Network container
+  if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull overtrue/gradient-bot
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e APP_USER=$GRADIENT_EMAIL -e APP_PASS=$GRADIENT_PASSWORD overtrue/gradient-bot)
+    execute_docker_command "Gradient Network" "gradient$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Gradient Network Email or Password is not configured. Ignoring Gradient Network..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Earn Fm container
   if [[ $EARN_FM_API ]]; then
     if [ "$container_pulled" = false ]; then
@@ -952,20 +965,6 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
-    fi
-  fi
-
-  # Starting CloudCollab container
-  if [ "$CLOUDCOLLAB" = true ]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 cloudcollabapp/peer:x64
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN cloudcollabapp/peer:x64)
-    execute_docker_command "CloudCollab" "cloudcollab$UNIQUE_ID$i" "${docker_parameters[@]}"
-    echo -e "${GREEN}You will find the device ids in the file $cloud_collab_file in the same folder${NOCOLOUR}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}CloudCollab is not enabled. Ignoring CloudCollab..${NOCOLOUR}"
     fi
   fi
 
