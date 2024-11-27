@@ -47,7 +47,7 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 
 
 
-* [Click here](https://prnt.sc/OebarMcJQ1nz) to view the screenshot above as some browsers don't support checkmarks. 
+* [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox/chrome browser inside the container, so they consume more resources compared to other containers.
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
 * To convert crypto to other wallets or currencies, you may use [BestChange](https://www.bestchange.com/?p=1252652).
