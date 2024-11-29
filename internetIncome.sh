@@ -134,6 +134,7 @@ start_containers() {
     LOGS_PARAM="--log-driver none"
     TUN_LOG_PARAM="off"
   else
+    LOGS_PARAM="--log-driver=json-file --log-opt max-size=100k"
     TUN_LOG_PARAM="trace"
   fi
 
