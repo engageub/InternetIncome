@@ -864,6 +864,8 @@ start_containers() {
   if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 trangoul/grass-desktop:latest
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/grassnode docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /grassnode && chmod +x /grassnode/restart.sh && while true; do sleep 7200; /grassnode/restart.sh --restartGrassNode; done')
+      execute_docker_command "GrassNode Restart" "dindgrassnode$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
     docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest)
     execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
