@@ -13,3 +13,6 @@ contact_links:
   - name: Hosts, Proxy and VPN Providers
     url: https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers
     about: List of Providers
+  - name: Wiki
+    url: https://github.com/engageub/InternetIncome/wiki
+    about: Official Wiki Page of Internet Income
