@@ -11,8 +11,8 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 
 ### **Special Offer** on [Ashburn Proxies](https://ashburnproxies.com/)
 
-- Use code **InternetIncome** to get 50% off our Residential Plans.
-- Use code **InternetIncome10** to get 10% off our ISP Plans.
+- Use code **InternetIncome** to get 50% off on Residential Plans.
+- Use code **InternetIncome10** to get 10% on ISP Plans.
   
 ## 💰	Register with the following links:
 ### <ins>[Click here to Sign Up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)</ins> 
