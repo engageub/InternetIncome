@@ -9,8 +9,11 @@ Your income depends on the number of proxies used and the proxy location. If you
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
 
-[Get Proxies at $1.5 per IP by clicking here](https://t.co/MBW7AlhT1Z)
+### **Special Offer** on [Ashburn Proxies](https://ashburnproxies.com/)
 
+- Use code **InternetIncome** to get 50% off our Residential Plans.
+- Use code **InternetIncome10** to get 10% off our ISP Plans.
+  
 ## 💰	Register with the following links:
 ### <ins>[Click here to Sign Up now](https://github.com/engageub/InternetIncome/wiki/Registration-Links)</ins> 
 ## :judge: Comparison of different apps based on proxy type 
