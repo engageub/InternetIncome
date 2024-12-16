@@ -877,7 +877,7 @@ start_containers() {
     fi
   fi
 
-    # Starting Grass Chrome Extension Node container
+  # Starting Grass Chrome Extension Node container
   if [[ $GRASS_USERNAME && $GRASS_PASSWORD  && $USE_GRASS_DESKTOP != true ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull mrcolorrain/grass-node
