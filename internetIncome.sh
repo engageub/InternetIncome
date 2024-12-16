@@ -860,8 +860,8 @@ start_containers() {
     fi
   fi
 
-  # Starting Grass container
-  if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
+  # Starting Grass Desktop container
+  if [[ $GRASS_USERNAME && $GRASS_PASSWORD  && $USE_GRASS_DESKTOP == true ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 trangoul/grass-desktop:latest
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/grassnode docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /grassnode && chmod +x /grassnode/restart.sh && while true; do sleep 7200; /grassnode/restart.sh --restartGrassNode; done')
@@ -873,7 +873,20 @@ start_containers() {
     sleep 60
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
+      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass Desktop..${NOCOLOUR}"
+    fi
+  fi
+
+    # Starting Grass Chrome Extension Node container
+  if [[ $GRASS_USERNAME && $GRASS_PASSWORD  && $USE_GRASS_DESKTOP != true ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull mrcolorrain/grass-node
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e USER_EMAIL=$GRASS_USERNAME -e USER_PASSWORD=$GRASS_PASSWORD mrcolorrain/grass-node)
+    execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass Chrome Extension Node..${NOCOLOUR}"
     fi
   fi
 
