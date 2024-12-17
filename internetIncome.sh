@@ -1071,6 +1071,19 @@ start_containers() {
     fi
   fi
 
+  # Starting Network3 container
+  if [[ $NETWORK3_EMAIL ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull aron666/network3-ai
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN --cap-add NET_ADMIN --device /dev/net/tun -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai)
+    execute_docker_command "Network3" "network3$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Network3 Email is not configured. Ignoring Network3..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
