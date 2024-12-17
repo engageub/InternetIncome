@@ -50,10 +50,11 @@ chrome_profile_zipfile="chromeprofiledata.zip"
 restart_file="restart.sh"
 dns_resolver_file="resolv.conf"
 traffmonetizer_data_folder="traffmonetizerdata"
+network3_data_folder="network3-data"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
 files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
-back_up_folders=($bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
+back_up_folders=($network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
@@ -781,6 +782,27 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Speedshare token is not configured. Ignoring Speedshare..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Network3 container
+  if [[ $NETWORK3_EMAIL ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull aron666/network3-ai
+    fi
+    mkdir -p $PWD/$network3_data_folder/data$i
+    sudo chmod -R 777 $PWD/$network3_data_folder/data$i
+    network3_volume="-v $PWD/$network3_data_folder/data$i:/usr/local/etc/wireguard"
+    if CONTAINER_ID=$(sudo docker run -d --name network3$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME $network3_volume --cap-add NET_ADMIN --device /dev/net/tun -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "network3$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Network3. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Network3 Email is not configured. Ignoring Network3..${NOCOLOUR}"
     fi
   fi
 
