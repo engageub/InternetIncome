@@ -58,6 +58,7 @@ chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
+titan_data_folder="titan-data"
 proxyrack_file="proxyrack.txt"
 cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
@@ -65,7 +66,7 @@ dns_resolver_file="resolv.conf"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
 files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
-back_up_folders=($network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
+back_up_folders=($titan_network_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
 restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 137 139 143 161 179 389 427 465 512 513 514 515 526 530 531 532 540 548 554 556 563 587 601 636 993 995 1719 1720 1723 2049 3659 4045 5060 5061 6000 6566 6665 6666 6667 6668 6669 6697 10080)
 container_pulled=false
@@ -198,7 +199,7 @@ execute_docker_command() {
   if [[ "$USE_DOCKER_INIT" = true ]]; then
     DOCKER_INIT="--init"
   fi
-  
+
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   if [[ "$app_name" == "VPN" ]]; then
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
@@ -366,7 +367,7 @@ start_containers() {
       # Starting tun2proxy containers
       if [ "$container_pulled" = false ]; then
         sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.6.4
-      fi 
+      fi
       if [[ "$ENABLE_LOGS" != true ]]; then
         TUN_LOG_PARAM="off"
       else
@@ -400,7 +401,7 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-      
+
         # Set the download URL based on the architecture
         case "$CPU_ARCH" in
           x86_64 | amd64)
@@ -1085,6 +1086,24 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Network3 Email is not configured. Ignoring Network3..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Titan Network container
+  if [[ $TITAN_HASH ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull nezha123/titan-edge
+      mkdir -p $PWD/$titan_data_folder/data$i
+      sudo chmod -R 777 $PWD/$titan_data_folder/data$i
+      titan_volume="-v $PWD/$titan_data_folder/data$i:/root/.titanedge"
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $titan_volume nezha123/titan-edge)
+      execute_docker_command "TitanNetwork" "titan$UNIQUE_ID$i" "${docker_parameters[@]}"
+      sudo docker run --rm -it $titan_volume nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
+      echo -e "${GREEN}The current script is designed to support only a single device for the Titan Network. Please create a new folder, download the InternetIncome script, and add the appropriate hash for the new device.${NOCOLOUR}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Titan Network Hash is not configured. Ignoring Titan Network..${NOCOLOUR}"
     fi
   fi
 
