@@ -50,13 +50,14 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [GagaNode](https://t.co/UO6hnDCv4M) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 
-
-
 * [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * [Adnade](https://t.co/KthcbzPa08) and [Ebesucher](https://www.ebesucher.com/?ref=engageub) use firefox/chrome browser inside the container, so they consume more resources compared to other containers.
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
 * To convert crypto to other wallets or currencies, you may use [BestChange](https://www.bestchange.com/?p=1252652).
 * The comparison mentioned above was updated on 25-04-2024 and may be subject to change later.
+
+### <ins>[Click here view Browser Extension Based Apps](https://github.com/engageub/InternetIncome/wiki/Registration-Links)</ins> 
+
 
 
 ## :house_with_garden:	Prerequisites 	
