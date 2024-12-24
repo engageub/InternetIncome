@@ -51,10 +51,11 @@ restart_file="restart.sh"
 dns_resolver_file="resolv.conf"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
+titan_data_folder="titan-data"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
 files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
-back_up_folders=($network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
+back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
@@ -809,6 +810,29 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Network3 Email is not configured. Ignoring Network3..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Titan Network container
+  if [[ $TITAN_HASH ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull nezha123/titan-edge
+      mkdir -p $PWD/$titan_data_folder/data$i
+      sudo chmod -R 777 $PWD/$titan_data_folder/data$i
+      titan_volume="-v $PWD/$titan_data_folder/data$i:/root/.titanedge"
+      if CONTAINER_ID=$(sudo  docker run -d --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $titan_volume nezha123/titan-edge); then
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "titan$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for Titan Network. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      sudo docker run --rm -it $titan_volume nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
+      echo -e "${GREEN}The current script is designed to support only a single device for the Titan Network. Please create a new folder, download the InternetIncome script, and add the appropriate hash for the new device.${NOCOLOUR}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Titan Network Hash is not configured. Ignoring Titan Network..${NOCOLOUR}"
     fi
   fi
 
