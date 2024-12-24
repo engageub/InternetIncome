@@ -827,6 +827,7 @@ start_containers() {
         echo -e "${RED}Failed to start container for Titan Network. Exiting..${NOCOLOUR}"
         exit 1
       fi
+      sleep 5
       sudo docker run --rm -it $titan_volume nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
       echo -e "${GREEN}The current script is designed to support only a single device for the Titan Network. Please create a new folder, download the InternetIncome script, and add the appropriate hash for the new device.${NOCOLOUR}"
     fi
