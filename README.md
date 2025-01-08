@@ -14,6 +14,8 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 - Use code **InternetIncome** to get 50% off on Residential Plans.
 - Use code **InternetIncome10** to get 10% on ISP Plans.
 
+[Get Static Residential Proxies starting at $1.5 by clicking here](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
+
 File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
 ## 💰	Register with the following links:
