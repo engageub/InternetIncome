@@ -16,7 +16,7 @@ Your income depends on the number of proxies used and the location of proxy. If 
 ## :judge: Comparison of different apps based on proxy type 
 ### <ins>[Click here to view comparison of apps](https://github.com/engageub/InternetIncome/wiki/Comparison-of-different-apps-based-on-proxy-type)</ins> 
 
-### <ins>[Click here view Browser Extension Based Apps](https://github.com/engageub/InternetIncome/wiki/Browser-Extension-Based-Apps)</ins> 
+### <ins>[Click here to view Browser Extension Based Apps](https://github.com/engageub/InternetIncome/wiki/Browser-Extension-Based-Apps)</ins> 
 
 
 ## :house_with_garden:	Prerequisites 	
