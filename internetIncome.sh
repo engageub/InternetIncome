@@ -60,10 +60,11 @@ traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 proxyrack_file="proxyrack.txt"
+proxyrack_script="proxyrack.sh"
 cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
+required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $proxyrack_script)
 files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
@@ -955,7 +956,7 @@ start_containers() {
   fi
 
   # Starting ProxyRack container
-  if [ "$PROXYRACK" = true ]; then
+  if [[ $PROXYRACK_API ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
@@ -976,10 +977,10 @@ start_containers() {
       proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid proxyrack/pop)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid -v $PWD/$proxyrack_script:/app/run.sh -e device_name=$DEVICE_NAME$i -e api_key=$PROXYRACK_API proxyrack/pop)
     execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "${docker_parameters[@]}"
-    echo -e "${GREEN}Copy the node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
+    echo -e "${GREEN}Device is automatically addded to your proxyrack dashboard after 5 minutes${NOCOLOUR}"
+    echo -e "${GREEN}You will find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
