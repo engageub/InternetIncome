@@ -1,6 +1,6 @@
 #!/bin/bash
 #Copyright (c) 2023 Woshishee
-#Updated Code to Automatically Add Device ID to dashboard
+#Updated Code to Automatically Add Device ID to Dashboard (Modifications made)
 
 # Check if UUID environment variable is set
 if [ -z "$UUID" ]; then
@@ -50,7 +50,7 @@ function add_device() {
 
 echo "Using provided UUID: $UUID"
 echo "Using provided api_key: $api_key"
-echo "using provided device_name: $device_name"
+echo "Using provided device_name: $device_name"
 start_proxyrack &
 add_device &
 
