@@ -470,7 +470,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 trangoul/grass-desktop:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --platform=linux/amd64 --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --platform=linux/amd64 --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e VNC_PASSWORD=mypasswd -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "grass$UNIQUE_ID$i" | tee -a $container_names_file
       echo "Waiting for 60 seconds for grass container to login.."
