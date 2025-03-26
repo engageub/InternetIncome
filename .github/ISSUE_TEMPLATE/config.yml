@@ -16,3 +16,7 @@ contact_links:
   - name: Wiki
     url: https://github.com/engageub/InternetIncome/wiki
     about: Official Wiki Page of Internet Income
+  - name: Known Issues
+    url: https://github.com/engageub/InternetIncome/wiki/Known-Issues
+    about: List of currently identified issues
+
