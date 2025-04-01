@@ -19,4 +19,7 @@ contact_links:
   - name: Known Issues
     url: https://github.com/engageub/InternetIncome/wiki/Known-Issues
     about: List of currently identified issues
+  - name: Steps to debug if the application is not running
+    url: https://github.com/engageub/InternetIncome/wiki/Steps-to-Debug-if-the-Application-is-Not-Running
+    about: Debugging Steps for Application Issues
 
