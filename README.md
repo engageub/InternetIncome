@@ -9,10 +9,10 @@ Your income depends on the number of proxies used and the proxy location. If you
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
 
-### **Special Offer** on [Ashburn Proxies](https://ashburnproxies.com/)
+### **Special Offer** on [Ashburn Proxies](https://ashburnproxies.com/?via=internetincome)
 
-- Use code **InternetIncome** to get 50% off on Residential Plans.
-- Use code **InternetIncome10** to get 10% on ISP Plans.
+- Use code **RESI2025** to get 50% off on Residential Plans.
+- Use code **ASHBURN2025** to get 50% on ISP Plans.
 
 ### <ins> [Click here to get Static Residential Proxies starting at $1.50](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
 
@@ -29,7 +29,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
-| [Speedshare](https://speedshare.app/?ref=engageub1) | :heavy_check_mark:	  | :x: |No limit|1| GiftCard|
 | [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
@@ -50,7 +49,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
 | [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
-| [Spider Income](https://income.spider.dev/r/engagf7jws) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 | [GagaNode](https://t.co/UO6hnDCv4M) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 
