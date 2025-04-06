@@ -431,7 +431,7 @@ start_containers() {
         fi
         sudo chmod 777 cloudflared
         cloudflare_volume="-v $PWD/cloudflared:/cloudflare/cloudflared"
-        EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main; echo "nameserver 127.0.0.1" > /etc/resolv.conf; chmod +x /cloudflare/cloudflared;/cloudflare/cloudflared proxy-dns --upstream "https://dns.google/dns-query" --upstream "https://1.1.1.1/dns-query" --upstream "https://1.0.0.1/dns-query" --max-upstream-conns 0 &'
+        EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf; chmod +x /cloudflare/cloudflared;/cloudflare/cloudflared proxy-dns --upstream "https://dns.google/dns-query" --upstream "https://1.1.1.1/dns-query" --upstream "https://1.0.0.1/dns-query" --max-upstream-conns 0 &'
       else
         TUN_DNS_VOLUME="$DNS_VOLUME"
         EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
