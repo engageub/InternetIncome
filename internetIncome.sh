@@ -60,6 +60,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 proxyrack_file="proxyrack.txt"
+proxybase_file="proxybase.txt"
 proxyrack_script="proxyrack.sh"
 cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
@@ -68,7 +69,7 @@ required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_
 files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
-back_up_files=($proxyrack_file $earnapp_file)
+back_up_files=($proxybase_file $proxyrack_file $earnapp_file)
 restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 137 139 143 161 179 389 427 465 512 513 514 515 526 530 531 532 540 548 554 556 563 587 601 636 993 995 1719 1720 1723 2049 3659 4045 5060 5061 6000 6566 6665 6666 6667 6668 6669 6697 10080)
 container_pulled=false
 docker_in_docker_detected=false
@@ -984,6 +985,38 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting ProxyBase container
+  if [ "$PROXYBASE" = true ]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull proxybase/proxybase
+    fi
+    sequence=$i
+    if [ "$USE_DIRECT_CONNECTION" = true ]; then
+      sequence=$((1 + i))
+    fi
+    if [ -f $proxybase_file ] && proxybase_uuid=$(sed "${sequence}q;d" $proxybase_file);then
+      if [[ $proxybase_uuid ]];then
+        echo $proxybase_uuid
+      else
+        echo "Proxybase UUID does not exist, creating UUID"
+        proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+        printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
+      fi
+    else
+      echo "Proxybase UUID does not exist, creating UUID"
+      proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e device_id==$proxybase_uuid proxybase/proxybase)
+    execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the node uuid and paste in your proxybase dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the uuids in the file $proxybase_file in the same folder${NOCOLOUR}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}ProxyBase is not enabled. Ignoring ProxyBase..${NOCOLOUR}"
     fi
   fi
 
