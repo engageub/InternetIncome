@@ -864,36 +864,6 @@ start_containers() {
     fi
   fi
 
-  # Starting Grass Desktop container
-  if [[ $GRASS_USERNAME && $GRASS_PASSWORD  && $USE_GRASS_DESKTOP == true ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 trangoul/grass-desktop:latest
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/grassnode docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /grassnode && chmod +x /grassnode/restart.sh && while true; do sleep 7200; /grassnode/restart.sh --restartGrassNode; done')
-      execute_docker_command "GrassNode Restart" "dindgrassnode$UNIQUE_ID$i" "${docker_parameters[@]}"
-    fi
-    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e VNC_PASSWORD=mypasswd -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest)
-    execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
-    echo "Waiting for 60 seconds for grass container to login.."
-    sleep 60
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass Desktop..${NOCOLOUR}"
-    fi
-  fi
-
-  # Starting Grass Chrome Extension Node container
-  if [[ $GRASS_USERNAME && $GRASS_PASSWORD  && $USE_GRASS_DESKTOP != true ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull mrcolorrain/grass-node
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e USER_EMAIL=$GRASS_USERNAME -e USER_PASSWORD=$GRASS_PASSWORD mrcolorrain/grass-node)
-    execute_docker_command "Grass" "grass$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass Chrome Extension Node..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
@@ -930,16 +900,22 @@ start_containers() {
     fi
   fi
 
-  # Starting Gradient Network container
-  if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
+  # Starting Depin Chrome Extensions container
+  if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] || [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull overtrue/gradient-bot
+      sudo docker pull carbon2029/dockweb
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e APP_USER=$GRADIENT_EMAIL -e APP_PASS=$GRADIENT_PASSWORD overtrue/gradient-bot)
-    execute_docker_command "Gradient Network" "gradient$UNIQUE_ID$i" "${docker_parameters[@]}"
+    if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]]; then
+      grass_env="-e GRASS_USER=$GRASS_EMAIL -e GRASS_PASS=$GRASS_PASSWORD"
+    fi
+    if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
+      gradient_env="-e GRADIENT_EMAIL=$GRADIENT_EMAIL -e GRADIENT_PASS=$GRADIENT_PASSWORD"
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb)
+    execute_docker_command "Depin Extensions" "depinext$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Gradient Network Email or Password is not configured. Ignoring Gradient Network..${NOCOLOUR}"
+      echo -e "${RED}Depin Extensions are not configured. Ignoring Depin Extensions..${NOCOLOUR}"
     fi
   fi
 
