@@ -470,27 +470,6 @@ start_containers() {
     fi
   fi
 
-  # Starting Grass container
-  if [[ $GRASS_USERNAME && $GRASS_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Grass container..${NOCOLOUR}"
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 trangoul/grass-desktop:latest
-    fi
-    if CONTAINER_ID=$(sudo docker run -d --name grass$UNIQUE_ID$i --platform=linux/amd64 --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e VNC_PASSWORD=mypasswd -e GRASS_USERNAME=$GRASS_USERNAME -e GRASS_PASSWORD=$GRASS_PASSWORD trangoul/grass-desktop:latest); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "grass$UNIQUE_ID$i" | tee -a $container_names_file
-      echo "Waiting for 60 seconds for grass container to login.."
-      sleep 60
-    else
-      echo -e "${RED}Failed to start container for Grass. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Grass Username or Password is not configured. Ignoring Grass..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
@@ -669,25 +648,6 @@ start_containers() {
     fi
   fi
 
-  # Starting Gradient Network container
-  if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Gradient Network container..${NOCOLOUR}"
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull overtrue/gradient-bot
-    fi
-    if CONTAINER_ID=$(sudo docker run -d --name gradient$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e APP_USER=$GRADIENT_EMAIL -e APP_PASS=$GRADIENT_PASSWORD overtrue/gradient-bot); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "gradient$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Gradient Network. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Gradient Network Email or Password is not configured. Ignoring Gradient Network..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
     echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
@@ -789,6 +749,30 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Speedshare token is not configured. Ignoring Speedshare..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Depin Chrome Extensions container
+  if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] || [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull carbon2029/dockweb
+    fi
+    if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]]; then
+      grass_env="-e GRASS_USER=$GRASS_EMAIL -e GRASS_PASS=$GRASS_PASSWORD"
+    fi
+    if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
+      gradient_env="-e GRADIENT_EMAIL=$GRADIENT_EMAIL -e GRADIENT_PASS=$GRADIENT_PASSWORD"
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name depinext$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "depinext$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Depin Extensions. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Depin Extensions are not configured. Ignoring Depin Extensions..${NOCOLOUR}"
     fi
   fi
 
