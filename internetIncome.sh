@@ -62,11 +62,10 @@ titan_data_folder="titan-data"
 proxyrack_file="proxyrack.txt"
 proxybase_file="proxybase.txt"
 proxyrack_script="proxyrack.sh"
-cloud_collab_file="cloudcollab.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $proxyrack_script)
-files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $cloud_collab_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
+files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxybase_file $proxyrack_file $earnapp_file)
@@ -1006,19 +1005,6 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
-    fi
-  fi
-
-  # Starting Bearshare container
-  if [[ $BEARSHARE_EMAIL && $BEARSHARE_PASSWORD ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull bearshare/bearshare:latest
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN bearshare/bearshare:latest -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD)
-    execute_docker_command "Bearshare" "bearshare$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Bearshare Email or Password is not configured. Ignoring Bearshare..${NOCOLOUR}"
     fi
   fi
 
