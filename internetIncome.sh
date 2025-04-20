@@ -104,7 +104,7 @@ fi
 
 # Generate device Ids
 generate_device_ids() {
-  if [ "$CLOUDCOLLAB" = true ]; then
+  if [ "$GENERATE_DEVICE_ID" = true ]; then
     echo "Waiting 30 seconds before generating device Ids"
     sleep 30
     sudo bash $generate_device_ids_file
@@ -985,7 +985,7 @@ start_containers() {
       proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
       printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e device_id==$proxybase_uuid proxybase/proxybase)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e device_id=$proxybase_uuid proxybase/proxybase)
     execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the node uuid and paste in your proxybase dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the uuids in the file $proxybase_file in the same folder${NOCOLOUR}"
