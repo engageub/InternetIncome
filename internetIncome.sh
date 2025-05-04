@@ -604,22 +604,22 @@ start_containers() {
     fi
   fi
 
-  # Starting Bearshare container
-  if [[ $BEARSHARE_EMAIL && $BEARSHARE_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Bearshare container..${NOCOLOUR}"
+  # Starting Wipter container
+  if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
+    echo -e "${GREEN}Starting Wipter container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull bearshare/bearshare:latest
+      sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/wipter/wipter@sha256:aae4e3e33c15b787619fb6b979696c8af7a6cf4b477ee591c6db2868c4f1ff39
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bearshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN bearshare/bearshare:latest -email=$BEARSHARE_EMAIL -password=$BEARSHARE_PASSWORD); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:aae4e3e33c15b787619fb6b979696c8af7a6cf4b477ee591c6db2868c4f1ff39); then
       echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "bearshare$UNIQUE_ID$i" | tee -a $container_names_file
+      echo "wipter$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for Bearshare. Exiting..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for Wipter. Exiting..${NOCOLOUR}"
       exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Bearshare Email or Password is not configured. Ignoring Bearshare..${NOCOLOUR}"
+      echo -e "${RED}Wipter Email or Password is not configured. Ignoring Wipter..${NOCOLOUR}"
     fi
   fi
 
