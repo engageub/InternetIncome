@@ -591,6 +591,25 @@ start_containers() {
     fi
   fi
 
+  # Starting PacketSDK container
+  if [[ $PACKET_SDK_API ]]; then
+    echo -e "${GREEN}Starting PacketSDK container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull packetsdk/packetsdk
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name packetsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME packetsdk/packetsdk -appkey=$PACKET_SDK_API); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "packetsdk$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for PacketSDK. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}PacketSDK API is not configured. Ignoring PacketSDK..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
     echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
