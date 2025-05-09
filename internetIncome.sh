@@ -931,6 +931,19 @@ start_containers() {
     fi
   fi
 
+  # Starting PacketSDK container
+  if [[ $PACKET_SDK_API ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull packetsdk/packetsdk
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetsdk/packetsdk -appkey=$PACKET_SDK_API)
+    execute_docker_command "PacketSDK" "packetsdk$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}PacketSDK API is not configured. Ignoring PacketSDK..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
     if [ "$container_pulled" = false ]; then
