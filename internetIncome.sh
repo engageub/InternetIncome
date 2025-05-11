@@ -30,6 +30,7 @@ containers_file="containers.txt"
 container_names_file="containernames.txt"
 earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
+proxybase_file="proxybase.txt"
 proxyrack_file="proxyrack.txt"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
@@ -56,7 +57,7 @@ required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_
 files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($earnapp_file $proxyrack_file)
+back_up_files=($earnapp_file $proxybase_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
 
@@ -503,12 +504,12 @@ start_containers() {
   fi
 
   # Starting PacketSDK container
-  if [[ $PACKET_SDK_API ]]; then
+  if [[ $PACKET_SDK_APP_KEY ]]; then
     echo -e "${GREEN}Starting PacketSDK container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetsdk/packetsdk
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name packetsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME packetsdk/packetsdk -appkey=$PACKET_SDK_API); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME packetsdk/packetsdk -appkey=$PACKET_SDK_APP_KEY); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetsdk$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -601,6 +602,41 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Proxyrack is not enabled. Ignoring Proxyrack..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting ProxyBase container
+  if [ "$PROXYBASE" = true ]; then
+    echo -e "${GREEN}Starting Proxybase container..${NOCOLOUR}"
+    echo -e "${GREEN}Copy the following node uuid and paste in your proxybase dashboard${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the uuids in the file $proxybase_file in the same folder${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull proxybase/proxybase
+    fi
+    if [ -f $proxybase_file ] && proxybase_uuid=$(sed "${i}q;d" $proxybase_file);then
+      if [[ $proxybase_uuid ]];then
+        echo $proxybase_uuid
+      else
+        echo "Proxybase UUID does not exist, creating UUID"
+        proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+        printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
+      fi
+    else
+      echo "Proxybase UUID does not exist, creating UUID"
+      proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
+    fi
+
+    if CONTAINER_ID=$(sudo docker run -d --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e device_id=$proxybase_uuid proxybase/proxybase); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "proxybase$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Proxybase. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Proxybase is not enabled. Ignoring Proxybase..${NOCOLOUR}"
     fi
   fi
 
