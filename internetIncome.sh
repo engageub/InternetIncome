@@ -605,12 +605,12 @@ start_containers() {
         echo $proxybase_uuid
       else
         echo "Proxybase UUID does not exist, creating UUID"
-        proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+        proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
         printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
       fi
     else
       echo "Proxybase UUID does not exist, creating UUID"
-      proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
       printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
     fi
 
