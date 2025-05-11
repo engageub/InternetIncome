@@ -1184,7 +1184,20 @@ start_containers() {
 
   # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
-    RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+    for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Reached maximum attempts. Unique UUID cannot be generated. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      if [ -f $earnapp_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$earnapp_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     date_time=`date "+%D %T"`
     if [ "$container_pulled" = false ]; then
       sudo docker pull fazalfarhan01/earnapp:lite
