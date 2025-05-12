@@ -946,6 +946,20 @@ start_containers() {
 
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
+     for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Unique UUID cannot be generated for ProxyRack. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      if [ -f $proxyrack_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$proxyrack_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
@@ -958,12 +972,12 @@ start_containers() {
         echo $proxyrack_uuid
       else
         echo "Proxyrack UUID does not exist, creating UUID"
-        proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+        proxyrack_uuid=$RANDOM_ID
         printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
       fi
     else
       echo "Proxyrack UUID does not exist, creating UUID"
-      proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      proxyrack_uuid=$RANDOM_ID
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid -v $PWD/$proxyrack_script:/app/run.sh -e device_name=$DEVICE_NAME$i -e api_key=$PROXYRACK_API proxyrack/pop)
@@ -978,6 +992,20 @@ start_containers() {
 
   # Starting ProxyBase container
   if [ "$PROXYBASE" = true ]; then
+    for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Unique UUID cannot be generated for ProxyBase. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      if [ -f $proxybase_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$proxybase_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxybase/proxybase
     fi
@@ -990,12 +1018,12 @@ start_containers() {
         echo $proxybase_uuid
       else
         echo "Proxybase UUID does not exist, creating UUID"
-        proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+        proxybase_uuid=$RANDOM_ID
         printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
       fi
     else
       echo "Proxybase UUID does not exist, creating UUID"
-      proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      proxybase_uuid=$RANDOM_ID
       printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e device_id=$proxybase_uuid proxybase/proxybase)
@@ -1199,7 +1227,7 @@ start_containers() {
   if [ "$EARNAPP" = true ]; then
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
-        echo -e "${RED}Reached maximum attempts. Unique UUID cannot be generated. Exiting..${NOCOLOUR}"
+        echo -e "${RED}Unique UUID cannot be generated for Earnapp. Exiting..${NOCOLOUR}"
         exit 1
       fi
       RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
