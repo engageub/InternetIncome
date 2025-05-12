@@ -659,6 +659,25 @@ start_containers() {
     fi
   fi
 
+  # Starting CastarSDK container
+  if [[ $CASTAR_SDK_KEY ]]; then
+    echo -e "${GREEN}Starting CastarSDK container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull ghcr.io/adfly8470/castarsdk/castarsdk@sha256:e61d4c89ed9278921d2620a56f879a21d2ea78abcb1e73e514623048f4a2002d
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name castarsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e KEY=$CASTAR_SDK_KEY ghcr.io/adfly8470/castarsdk/castarsdk@sha256:e61d4c89ed9278921d2620a56f879a21d2ea78abcb1e73e514623048f4a2002d); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "castarsdk$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for CastarSDK. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}CastarSDK is not configured. Ignoring CastarSDK..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Wipter container
   if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
     echo -e "${GREEN}Starting Wipter container..${NOCOLOUR}"
