@@ -575,6 +575,20 @@ start_containers() {
     echo -e "${GREEN}Starting Proxyrack container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
+    for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Unique UUID cannot be generated for ProxyRack. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      if [ -f $proxyrack_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$proxyrack_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 proxyrack/pop
     fi
@@ -583,12 +597,12 @@ start_containers() {
         echo $proxyrack_uuid
       else
         echo "Proxyrack UUID does not exist, creating UUID"
-        proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+        proxyrack_uuid=$RANDOM_ID
         printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
       fi
     else
       echo "Proxyrack UUID does not exist, creating UUID"
-      proxyrack_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      proxyrack_uuid=$RANDOM_ID
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
 
@@ -610,6 +624,20 @@ start_containers() {
     echo -e "${GREEN}Starting Proxybase container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node uuid and paste in your proxybase dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the uuids in the file $proxybase_file in the same folder${NOCOLOUR}"
+    for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Unique UUID cannot be generated for ProxyBase. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      if [ -f $proxybase_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$proxybase_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxybase/proxybase
     fi
@@ -618,12 +646,12 @@ start_containers() {
         echo $proxybase_uuid
       else
         echo "Proxybase UUID does not exist, creating UUID"
-        proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+        proxybase_uuid=$RANDOM_ID
         printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
       fi
     else
       echo "Proxybase UUID does not exist, creating UUID"
-      proxybase_uuid=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      proxybase_uuid=$RANDOM_ID
       printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
     fi
 
@@ -896,7 +924,7 @@ start_containers() {
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
-        echo -e "${RED}Reached maximum attempts. Unique UUID cannot be generated. Exiting..${NOCOLOUR}"
+        echo -e "${RED}Unique UUID cannot be generated for Earnapp. Exiting..${NOCOLOUR}"
         exit 1
       fi
       RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
