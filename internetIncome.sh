@@ -53,11 +53,11 @@ dns_resolver_file="resolv.conf"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
-required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file container_commands.sh)
-folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
-back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($earnapp_file $proxybase_file $proxyrack_file)
+required_files=("$banner_file" "$properties_file" "$firefox_profile_zipfile" "$restart_file" "$chrome_profile_zipfile")
+files_to_be_removed=("$dns_resolver_file" "$containers_file" "$container_names_file" "$networks_file" "$mysterium_file" "$ebesucher_file" "$adnade_file" "$adnade_containers_file" "$firefox_containers_file" "$chrome_containers_file" "container_commands.sh")
+folders_to_be_removed=("$adnade_data_folder" "$firefox_data_folder" "$firefox_profile_data" "$earnapp_data_folder" "$chrome_data_folder" "$chrome_profile_data")
+back_up_folders=("$titan_data_folder" "$network3_data_folder" "$bitping_data_folder" "$traffmonetizer_data_folder" "$mysterium_data_folder")
+back_up_files=("$earnapp_file" "$proxybase_file" "$proxyrack_file")
 container_pulled=false
 docker_in_docker_detected=false
 

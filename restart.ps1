@@ -41,8 +41,8 @@ if ($Command -eq "--restartAdnade") {
                     docker start $container
                 }
                 catch {
-                    Write-Host "Error processing Firefox data: $_"
-                    exit 1
+                    Write-Host "Error processing Firefox data: $($_.Exception.Message)"
+                    continue
                 }
             }
             
@@ -71,8 +71,8 @@ if ($Command -eq "--restartAdnade") {
                 docker start $container
             }
             catch {
-                Write-Host "Error processing Firefox data$i: $_"
-                exit 1
+                Write-Host "Error processing Firefox data${i}: $($_.Exception.Message)"
+                continue
             }
         }
     }
@@ -114,8 +114,8 @@ elseif ($Command -eq "--restartChrome") {
                     docker start $container
                 }
                 catch {
-                    Write-Host "Error processing Chrome data: $_"
-                    exit 1
+                    Write-Host "Error processing Chrome data: $($_.Exception.Message)"
+                    continue
                 }
             }
             
@@ -140,8 +140,8 @@ elseif ($Command -eq "--restartChrome") {
                 docker start $container
             }
             catch {
-                Write-Host "Error processing Chrome data$i: $_"
-                exit 1
+                Write-Host "Error processing Chrome data${i}: $($_.Exception.Message)"
+                continue
             }
         }
     }
@@ -180,8 +180,8 @@ elseif ($Command -eq "--restartFirefox") {
                     docker start $container
                 }
                 catch {
-                    Write-Host "Error processing Firefox data: $_"
-                    exit 1
+                    Write-Host "Error processing Firefox data: $($_.Exception.Message)"
+                    continue
                 }
             }
             
@@ -207,8 +207,8 @@ elseif ($Command -eq "--restartFirefox") {
                 docker start $container
             }
             catch {
-                Write-Host "Error processing Firefox data$i: $_"
-                exit 1
+                Write-Host "Error processing Firefox data${i}: $($_.Exception.Message)"
+                continue
             }
         }
     }

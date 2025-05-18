@@ -69,7 +69,7 @@ $mysterium_first_port = 2000
 $ebesucher_first_port = 3000
 $adnade_first_port = 4000
 
-# Unique Id
+# Unique ID - generate 32 random hex characters
 $UNIQUE_ID = -join ((48..57) + (97..102) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
 
 # Display ASCII art banner with color cycling if banner file exists
@@ -86,99 +86,65 @@ function Show-Banner {
     }
 }
 
-# Check for open ports
+# Test for open ports
 function Test-OpenPorts {
     param (
-        [int]$first_port,
-        [int]$num_ports
+        [int]$StartPort,
+        [int]$NumPorts = 1
     )
-
-    $port_range = $first_port..($first_port + $num_ports - 1)
-    $open_ports = 0
-
-    foreach ($port in $port_range) {
+    
+    $portRange = $StartPort..($StartPort + $NumPorts - 1)
+    $openPorts = 0
+    
+    foreach ($port in $portRange) {
         try {
-            $tcpClient = New-Object System.Net.Sockets.TcpClient
-            $connection = $tcpClient.BeginConnect('localhost', $port, $null, $null)
-            $wait = $connection.AsyncWaitHandle.WaitOne(100)
-            if ($wait) {
-                try {
-                    $tcpClient.EndConnect($connection)
-                    if ($tcpClient.Connected) {
-                        $open_ports++
-                    }
-                } catch {
-                    # Connection was refused
-                }
-            }
-            $tcpClient.Close()
+            $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Loopback, $port)
+            $listener.Start()
+            $listener.Stop()
         }
         catch {
-            # Port is closed
+            $openPorts++
         }
     }
-
-    while ($open_ports -gt 0) {
-        $first_port = $first_port + $num_ports
-        $port_range = $first_port..($first_port + $num_ports - 1)
-        $open_ports = 0
-        
-        foreach ($port in $port_range) {
+    
+    while ($openPorts -gt 0) {
+        $StartPort += $NumPorts
+        $portRange = $StartPort..($StartPort + $NumPorts - 1)
+        $openPorts = 0
+        foreach ($port in $portRange) {
             try {
-                $tcpClient = New-Object System.Net.Sockets.TcpClient
-                $connection = $tcpClient.BeginConnect('localhost', $port, $null, $null)
-                $wait = $connection.AsyncWaitHandle.WaitOne(100)
-                if ($wait) {
-                    try {
-                        $tcpClient.EndConnect($connection)
-                        if ($tcpClient.Connected) {
-                            $open_ports++
-                        }
-                    } catch {
-                        # Connection was refused
-                    }
-                }
-                $tcpClient.Close()
+                $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Loopback, $port)
+                $listener.Start()
+                $listener.Stop()
             }
             catch {
-                # Port is closed
+                $openPorts++
             }
         }
     }
-
-    return $first_port
+    
+    return $StartPort
 }
 
 # Start containers
 function Start-Containers {
     param (
-        $i,
-        $proxy
+        [int]$Index,
+        [string]$Proxy
     )
-
+    
     $DNS_VOLUME = "-v ${PWD}/$dns_resolver_file`:/etc/resolv.conf:ro"
-    $TUN_DNS_VOLUME = $null
-
-    if (-not $container_pulled) {
+    
+    if (-not $global:container_pulled) {
         # Create DNS resolver file
-        'nameserver 8.8.8.8', 'nameserver 8.8.4.4', 'nameserver 1.1.1.1', 'nameserver 1.0.0.1', 'nameserver 9.9.9.9' | 
-            Out-File -FilePath $dns_resolver_file -Encoding ascii
+        "nameserver 8.8.8.8`nnameserver 8.8.4.4`nnameserver 1.1.1.1`nnameserver 1.0.0.1`nnameserver 9.9.9.9" | Out-File -FilePath $dns_resolver_file -Encoding ascii
         
         if (-not (Test-Path $dns_resolver_file)) {
             Write-Host "There is a problem creating resolver file. Exiting.." -ForegroundColor $RED
             exit 1
         }
-        
-        # Check for Docker-in-Docker
-        docker run --rm -v "${PWD}:/output" docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi" | Out-Null
-        if ($LASTEXITCODE -eq 0) {
-            $script:docker_in_docker_detected = $true
-        }
-        
-        docker run --rm -v ${PWD}:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
     }
-
-    # Configure log parameters
+    
     if ($ENABLE_LOGS -ne $true) {
         $LOGS_PARAM = "--log-driver none"
         $TUN_LOG_PARAM = "silent"
@@ -187,12 +153,12 @@ function Start-Containers {
         $LOGS_PARAM = "--log-driver=json-file --log-opt max-size=100k"
         $TUN_LOG_PARAM = "debug"
     }
-
-    # Start proxy container if specified
-    if ($i -and $proxy) {
-        $NETWORK_TUN = "--network=container:tun$UNIQUE_ID$i"
-
-        # Configure Mysterium port if enabled
+    
+    # If using proxy, setup network and TUN containers
+    if ($Index -and $Proxy) {
+        $NETWORK_TUN = "--network=container:tun$UNIQUE_ID$Index"
+        
+        # Mysterium port setup if enabled
         if ($MYSTERIUM -eq $true) {
             $mysterium_first_port = Test-OpenPorts $mysterium_first_port 1
             if (-not ($mysterium_first_port -match '^\d+$')) {
@@ -202,8 +168,8 @@ function Start-Containers {
             }
             $mysterium_port = "-p $mysterium_first_port`:4449 "
         }
-
-        # Configure Ebesucher port if enabled
+        
+        # Ebesucher port setup if enabled
         if ($EBESUCHER_USERNAME) {
             $ebesucher_first_port = Test-OpenPorts $ebesucher_first_port 1
             if (-not ($ebesucher_first_port -match '^\d+$')) {
@@ -218,8 +184,8 @@ function Start-Containers {
                 $ebesucher_port = "-p $ebesucher_first_port`:5800 "
             }
         }
-
-        # Configure Adnade port if enabled
+        
+        # Adnade port setup if enabled
         if ($ADNADE_USERNAME) {
             $adnade_first_port = Test-OpenPorts $adnade_first_port 1
             if (-not ($adnade_first_port -match '^\d+$')) {
@@ -229,107 +195,276 @@ function Start-Containers {
             }
             $adnade_port = "-p $adnade_first_port`:5900 "
         }
-
+        
         $combined_ports = $mysterium_port + $ebesucher_port + $adnade_port
         Write-Host "Starting Proxy container.." -ForegroundColor $GREEN
         
-        # Pull tun2socks image if needed
-        if (-not $container_pulled) {
+        # Pull tun2socks image if not pulled yet
+        if (-not $global:container_pulled) {
             docker pull xjasonlyu/tun2socks:v2.5.2
         }
         
-        # Configure DNS settings
-        $containerCommandsContent = "#!/bin/sh"
+        # Create container_commands.sh script file
+        $container_commands_content = "#!/bin/sh"
+        
         if ($USE_SOCKS5_DNS -eq $true) {
             $TUN_DNS_VOLUME = $DNS_VOLUME
         }
         elseif ($USE_DNS_OVER_HTTPS -eq $true) {
-            $containerCommandsContent += "`necho -e ""options use-vc`nnameserver 8.8.8.8`nnameserver 8.8.4.4"" > /etc/resolv.conf"
-            $containerCommandsContent += "`nip rule add iif lo ipproto udp dport 53 lookup main"
+            $container_commands_content = @"
+$container_commands_content
+echo -e "options use-vc
+nameserver 8.8.8.8
+nameserver 8.8.4.4" > /etc/resolv.conf
+ip rule add iif lo ipproto udp dport 53 lookup main
+"@
         }
         else {
             $TUN_DNS_VOLUME = $DNS_VOLUME
-            $containerCommandsContent += "`nip rule add iif lo ipproto udp dport 53 lookup main"
+            $container_commands_content = @"
+$container_commands_content
+ip rule add iif lo ipproto udp dport 53 lookup main
+"@
         }
         
-        # Write commands to file
-        $containerCommandsFile = Join-Path $PWD "container_commands.sh"
-        $containerCommandsContent | Out-File -FilePath $containerCommandsFile -Encoding utf8 -NoNewline
-
-        # Make sure the file has LF line endings (not CRLF)
-        $content = [System.IO.File]::ReadAllText($containerCommandsFile).Replace("`r`n", "`n")
-        [System.IO.File]::WriteAllText($containerCommandsFile, $content)
+        $container_commands_content | Out-File -FilePath "container_commands.sh" -Encoding ascii
         
-        # Start tun container
-        $containerCmd = "docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v ""${PWD}/container_commands.sh:/container_commands.sh"" -e EXTRA_COMMANDS=""/bin/sh /container_commands.sh"" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2"
-        $CONTAINER_ID = Invoke-Expression $containerCmd
-        
-        if ($LASTEXITCODE -eq 0) {
-            $CONTAINER_ID | Out-File -FilePath $containers_file -Append
-            "tun$UNIQUE_ID$i" | Out-File -FilePath $container_names_file -Append
+        # Format the proxy string according to type
+        if ($Proxy -match "^socks5://") {
+            $proxyType = "SOCKS5"
+            $proxyServer = $Proxy -replace "^socks5://", ""
+        }
+        elseif ($Proxy -match "^http://") {
+            $proxyType = "HTTP"
+            $proxyServer = $Proxy -replace "^http://", ""
         }
         else {
-            Write-Host "Failed to start container for proxy. Exiting.." -ForegroundColor $RED
+            Write-Host "Unknown proxy type for $Proxy. Format should be socks5://ip:port or http://ip:port. Exiting.." -ForegroundColor $RED
             exit 1
         }
-        Start-Sleep -Seconds 1
-    }
-
-    # Start Mysterium container if enabled
-    if (($MYSTERIUM -eq $true) -and (-not $NETWORK_TUN)) {
-        Write-Host "Starting Mysterium container.." -ForegroundColor $GREEN
-        Write-Host "Copy the following node url and paste in your browser" -ForegroundColor $GREEN
-        Write-Host "You will also find the urls in the file $mysterium_file in the same folder" -ForegroundColor $GREEN
         
-        if (-not $container_pulled) {
-            docker pull mysteriumnetwork/myst:latest
+        $containerCmd = "docker run -d --rm --name tun$UNIQUE_ID$Index $LOGS_PARAM $TUN_DNS_VOLUME $combined_ports --cap-add=NET_ADMIN --device=/dev/net/tun --entrypoint=/bin/sh xjasonlyu/tun2socks:v2.5.2 -c `"chmod +x /etc/container_commands.sh && /etc/container_commands.sh && tun2socks -device tun0 -proxy $Proxy -loglevel $TUN_LOG_PARAM`""
+        
+        try {
+            $CONTAINER_ID = Invoke-Expression $containerCmd
+            $CONTAINER_ID | Out-File -FilePath $containers_file -Append
+            "tun$UNIQUE_ID$Index" | Out-File -FilePath $container_names_file -Append
         }
-        
-        if (-not $proxy) {
-            $mysterium_first_port = Test-OpenPorts $mysterium_first_port 1
-            if (-not ($mysterium_first_port -match '^\d+$')) {
-                Write-Host "Problem assigning port $mysterium_first_port .." -ForegroundColor $RED
-                Write-Host "Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting.." -ForegroundColor $RED
+        catch {
+            Write-Host "Failed to start container for tun2socks. Exiting.." -ForegroundColor $RED
+            exit 1
+        }
+    }
+    
+    # Start Mysterium container
+    if ($MYSTERIUM -eq $true) {
+        if ($NETWORK_TUN) {
+            Write-Host "Starting Mysterium container.." -ForegroundColor $GREEN
+            Write-Host "Copy the following node url and paste in your browser" -ForegroundColor $GREEN
+            Write-Host "You will also find the urls in the file $mysterium_file in the same folder" -ForegroundColor $GREEN
+            
+            if (-not $global:container_pulled) {
+                docker pull mysteriumnetwork/myst:latest
+            }
+            
+            if (-not $Proxy) {
+                $mysterium_first_port = Test-OpenPorts $mysterium_first_port 1
+                if (-not ($mysterium_first_port -match '^\d+$')) {
+                    Write-Host "Problem assigning port $mysterium_first_port .." -ForegroundColor $RED
+                    Write-Host "Failed to start Mysterium node. Resolve or disable Mysterium to continue. Exiting.." -ForegroundColor $RED
+                    exit 1
+                }
+                $myst_port = "-p $mysterium_first_port`:4449"
+            }
+            
+            # Create mysterium data directory
+            $mystDataDir = Join-Path $PWD "$mysterium_data_folder/node$Index"
+            if (-not (Test-Path $mystDataDir)) {
+                New-Item -Path $mystDataDir -ItemType Directory -Force | Out-Null
+            }
+            
+            # Start mysterium container
+            # Build docker command arguments as an array
+            $dockerArgs = @(
+                "run",
+                "-d",
+                "--name", "myst$UNIQUE_ID$Index",
+                "--cap-add=NET_ADMIN"
+            )
+            
+            # Add network parameters if defined
+            if ($NETWORK_TUN) {
+                $dockerArgs += $NETWORK_TUN
+            }
+            
+            # Add logs parameter if defined
+            if ($LOGS_PARAM) {
+                $dockerArgs += $LOGS_PARAM
+            }
+            
+            # Add DNS volume if defined
+            if ($DNS_VOLUME) {
+                $dockerArgs += $DNS_VOLUME
+            }
+            
+            # Add the remaining arguments
+            $dockerArgs += @(
+                "-v", "${PWD}/$mysterium_data_folder/node$Index`:/var/lib/mysterium-node",
+                "--restart", "unless-stopped"
+            )
+            
+            # Add port mapping if defined
+            if ($myst_port) {
+                $dockerArgs += $myst_port.Split(" ")
+            }
+            
+            # Add image and command
+            $dockerArgs += @(
+                "mysteriumnetwork/myst:latest",
+                "service",
+                "--agreed-terms-and-conditions"
+            )
+            
+            try {
+                $CONTAINER_ID = & docker $dockerArgs
+                $CONTAINER_ID | Out-File -FilePath $containers_file -Append
+                "myst$UNIQUE_ID$Index" | Out-File -FilePath $container_names_file -Append
+                "http://127.0.0.1:$mysterium_first_port" | Out-File -FilePath $mysterium_file -Append
+                $script:mysterium_first_port++
+            }
+            catch {
+                Write-Host "Failed to start container for Mysterium. Exiting.." -ForegroundColor $RED
                 exit 1
             }
-            $myst_port = "-p $mysterium_first_port`:4449"
         }
-        
-        # Create mysterium data directory
-        $mystDataDir = Join-Path $PWD "$mysterium_data_folder/node$i"
-        if (-not (Test-Path $mystDataDir)) {
-            New-Item -Path $mystDataDir -ItemType Directory -Force | Out-Null
-        }
-        
-        # Start mysterium container
-        $containerCmd = "docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v ${PWD}/$mysterium_data_folder/node$i`:/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions"
-        $CONTAINER_ID = Invoke-Expression $containerCmd
-        
-        if ($LASTEXITCODE -eq 0) {
-            $CONTAINER_ID | Out-File -FilePath $containers_file -Append
-            "myst$UNIQUE_ID$i" | Out-File -FilePath $container_names_file -Append
-            "http://127.0.0.1:$mysterium_first_port" | Out-File -FilePath $mysterium_file -Append
-            $mysterium_first_port++
+        elseif (($MYSTERIUM -eq $true) -and $NETWORK_TUN) {
+            if (-not $global:container_pulled) {
+                Write-Host "Proxy for Mysterium is not supported at the moment due to ongoing issue. Please see https://github.com/xjasonlyu/tun2socks/issues/262 for more details. Ignoring Mysterium.." -ForegroundColor $RED
+            }
         }
         else {
-            Write-Host "Failed to start container for Mysterium. Exiting.." -ForegroundColor $RED
-            exit 1
+            if ((-not $global:container_pulled) -and ($ENABLE_LOGS -eq $true)) {
+                Write-Host "Mysterium Node is not enabled. Ignoring Mysterium.." -ForegroundColor $RED
+            }
         }
     }
-    elseif (($MYSTERIUM -eq $true) -and $NETWORK_TUN) {
-        if (-not $container_pulled) {
-            Write-Host "Proxy for Mysterium is not supported at the moment due to ongoing issue. Please see https://github.com/xjasonlyu/tun2socks/issues/262 for more details. Ignoring Mysterium.." -ForegroundColor $RED
+    
+    # Starting Earnapp container
+    if ($EARNAPP -eq $true) {
+        Write-Host "Starting Earnapp container.." -ForegroundColor $GREEN
+        Write-Host "Copy the following node url and paste in your earnapp dashboard" -ForegroundColor $GREEN
+        Write-Host "You will also find the urls in the file $earnapp_file in the same folder" -ForegroundColor $GREEN
+        
+        # Generate random ID for Earnapp
+        $foundUnique = $false
+        $attemptCount = 0
+        $RANDOM_ID = ""
+        
+        while (-not $foundUnique -and $attemptCount -lt 500) {
+            $RANDOM_ID = -join ((48..57) + (97..102) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
+            
+            if (Test-Path $earnapp_file) {
+                $content = Get-Content $earnapp_file
+                if ($content -notcontains $RANDOM_ID) {
+                    $foundUnique = $true
+                }
+            }
+            else {
+                $foundUnique = $true
+            }
+            
+            $attemptCount++
+        }
+        
+        if ($attemptCount -ge 500) {
+            Write-Host "Unique UUID cannot be generated for Earnapp. Exiting.." -ForegroundColor $RED
+            exit 1
+        }
+        
+        $date_time = Get-Date -Format "MM/dd/yy HH:mm:ss"
+        
+        if (-not $global:container_pulled) {
+            docker pull fazalfarhan01/earnapp:lite
+        }
+        
+        # Create Earnapp data directory
+        $earnappDataDir = Join-Path $PWD "$earnapp_data_folder/data$Index"
+        if (-not (Test-Path $earnappDataDir)) {
+            New-Item -Path $earnappDataDir -ItemType Directory -Force | Out-Null
+        }
+        
+        # Check if UUID exists in the earnapp file
+        $uuid = ""
+        if (Test-Path $earnapp_file) {
+            $lines = Get-Content $earnapp_file
+            if ($Index -le $lines.Count) {
+                $line = $lines[$Index - 1]
+                if ($line -match "https://earnapp.com/r/([a-zA-Z0-9-]+)") {
+                    $uuid = $Matches[1]
+                }
+            }
+        }
+        
+        if (-not $uuid) {
+            Write-Host "UUID does not exist, creating UUID"
+            $uuid = "sdk-node-$RANDOM_ID"
+            "$date_time https://earnapp.com/r/$uuid" | Out-File -FilePath $earnapp_file -Append
+        }
+        
+        # Start Earnapp container
+        try {
+            # Build docker command arguments as an array for Earnapp
+            $dockerArgs = @(
+                "run",
+                "-d",
+                "--health-interval=24h",
+                "--name", "earnapp$UNIQUE_ID$Index"
+            )
+            
+            # Add logs parameter if defined
+            if ($LOGS_PARAM) {
+                $dockerArgs += $LOGS_PARAM
+            }
+            
+            # Add DNS volume if defined
+            if ($DNS_VOLUME) {
+                $dockerArgs += $DNS_VOLUME
+            }
+            
+            # Add restart policy
+            $dockerArgs += @("--restart=always")
+            
+            # Add network parameters if defined
+            if ($NETWORK_TUN) {
+                $dockerArgs += $NETWORK_TUN
+            }
+            
+            # Add the volume and environment variable
+            $dockerArgs += @(
+                "-v", "${PWD}/$earnapp_data_folder/data$Index`:/etc/earnapp",
+                "-e", "EARNAPP_UUID=$uuid",
+                "fazalfarhan01/earnapp:lite"
+            )
+            
+            $CONTAINER_ID = & docker $dockerArgs
+            $CONTAINER_ID | Out-File -FilePath $containers_file -Append
+            "earnapp$UNIQUE_ID$Index" | Out-File -FilePath $container_names_file -Append
+        }
+        catch {
+            Write-Host "Failed to start container for Earnapp. Exiting.." -ForegroundColor $RED
+            exit 1
         }
     }
     else {
-        if ((-not $container_pulled) -and ($ENABLE_LOGS -eq $true)) {
-            Write-Host "Mysterium Node is not enabled. Ignoring Mysterium.." -ForegroundColor $RED
+        if ((-not $global:container_pulled) -and ($ENABLE_LOGS -eq $true)) {
+            Write-Host "Earnapp is not enabled. Ignoring Earnapp.." -ForegroundColor $RED
         }
     }
-
-    # Continue with other containers (like Ebesucher, Adnade, etc.)
-    # This would be the rest of the start_containers function from the bash script
-    # converted to PowerShell...
+    
+    # Additional containers can be added here: Ebesucher, Adnade, BitPing, Repocket, etc.
+    # based on the Linux script pattern
+    
+    $global:container_pulled = $true
 }
 
 # Main function to parse arguments and execute commands
@@ -399,7 +534,6 @@ function Main {
     switch ($Command) {
         "--start" {
             # Start containers logic goes here
-            # This would be the main start functionality from the bash script
             Write-Host "Starting Internet Income containers..." -ForegroundColor $GREEN
             
             # Here we would use proxies_file, if USE_PROXIES is true
@@ -407,14 +541,27 @@ function Main {
                 if (Test-Path $proxies_file) {
                     # Process proxies and start containers
                     Write-Host "Using proxies from $proxies_file" -ForegroundColor $GREEN
-                    # Implementation would go here
+                    
+                    # Remove any carriage returns from proxies file
+                    (Get-Content $proxies_file) | ForEach-Object { $_ -replace "`r", "" } | Set-Content $proxies_file
+                    
+                    $i = 0
+                    foreach ($line in (Get-Content $proxies_file)) {
+                        if ($line -match "^[^#].*") {
+                            $i++
+                            Start-Containers -Index $i -Proxy $line
+                        }
+                    }
                 }
                 else {
                     Write-Host "Proxies file $proxies_file not found but USE_PROXIES is set to true. Exiting.." -ForegroundColor $RED
                     exit 1
                 }
             }
-            # Implementation of starting all the containers...
+            else {
+                Write-Host "USE_PROXIES is disabled, using direct internet connection..." -ForegroundColor $RED
+                Start-Containers
+            }
         }
         
         "--delete" {
