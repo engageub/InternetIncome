@@ -5,6 +5,7 @@ Configuration management for InternetIncome
 import os
 import yaml
 import logging
+import platform
 from schema import Schema, Optional, And, Or, SchemaError
 from pathlib import Path
 from dotenv import load_dotenv
@@ -44,7 +45,7 @@ class Config:
                 logger.warning(f"Config file not found: {self.config_path}")
                 # Create default config
                 default_config = {
-                    'device_name': os.uname().nodename,
+                    'device_name': platform.node(),
                     'use_proxies': False,
                     'enable_logs': False,
                     'services': {}
@@ -75,7 +76,9 @@ class Config:
             try:
                 with open(proxies_path, 'r') as f:
                     proxies_config = yaml.safe_load(f)
-                    if isinstance(proxies_config, list):
+                    if proxies_config is None:
+                        return []
+                    elif isinstance(proxies_config, list):
                         return proxies_config
                     elif isinstance(proxies_config, dict) and 'proxies' in proxies_config:
                         return proxies_config['proxies']
@@ -125,7 +128,7 @@ class Config:
         
     def get_device_name(self):
         """Get device name from config"""
-        return self.config.get('device_name', os.uname().nodename)
+        return self.config.get('device_name', platform.node())
         
     def are_logs_enabled(self):
         """Check if logs are enabled"""

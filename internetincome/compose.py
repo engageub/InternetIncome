@@ -99,8 +99,8 @@ class ComposeManager:
             proxy_name = f"tun-proxy-{uuid.uuid4().hex[:8]}"
             service.container_name = f"{service.name.lower()}-{uuid.uuid4().hex[:8]}"
             
-            # Add TUN proxy service
-            proxy_config = TUN_PROXY_TEMPLATE.copy()
+            # Add TUN proxy service - deep copy to avoid modifying the original template
+            proxy_config = copy.deepcopy(TUN_PROXY_TEMPLATE)
             proxy_config['environment'] = {
                 'LOGLEVEL': 'debug' if self.config.are_logs_enabled() else 'silent',
                 'PROXY': service.proxy

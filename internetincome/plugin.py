@@ -54,8 +54,10 @@ class ServicePlugin(ABC):
         """Return path for data volume if required"""
         if not self.data_volume_required:
             return None
-            
-        return f"./data/{self.name.lower()}"
+        
+        # Get the project root directory and create absolute path
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        return os.path.join(project_root, 'data', self.name.lower())
 
 
 class PluginManager:
@@ -91,7 +93,8 @@ class PluginManager:
                         
             logger.info(f"Loaded {len(self.plugins)} plugins")
         except ImportError:
-            logger.warning("No plugins package found")
+            logger.error("Failed to import plugins package. The application cannot function without plugins.")
+            raise SystemExit("Plugin system initialization failed: No plugins package found. Please ensure the plugins directory exists and is properly installed.")
             
     def get_plugin(self, name):
         """Get plugin by name"""
