@@ -57,9 +57,9 @@ class Config:
                 return default_config
                 
             with open(self.config_path, 'r') as f:
-                config = yaml.safe_load(f)
+                loaded = yaml.safe_load(f) or {}
                 # Validate against schema
-                return BASE_SCHEMA.validate(config)
+                return BASE_SCHEMA.validate(loaded)
         except Exception as e:
             logger.error(f"Error loading config: {str(e)}")
             raise

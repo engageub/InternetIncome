@@ -2,6 +2,7 @@
 Docker Compose management for InternetIncome
 """
 
+import copy
 import os
 import uuid
 import logging
@@ -85,8 +86,8 @@ class ComposeManager:
             
     def generate_compose(self, services):
         """Generate Docker Compose configuration from services"""
-        # Start with fresh compose data
-        self.compose_data = DEFAULT_COMPOSE.copy()
+        # Start with a *deep* copy so nested structures are isolated
+        self.compose_data = copy.deepcopy(DEFAULT_COMPOSE)
         self.compose_data['services'] = {}
         
         # Process services with proxies first
@@ -133,7 +134,7 @@ class ComposeManager:
     def start_services(self):
         """Start services with Docker Compose"""
         try:
-            compose_cmd = ['docker-compose', '-f', self.compose_file, 'up', '-d']
+            compose_cmd = ['docker', 'compose', '-f', self.compose_file, 'up', '-d']
             
             logger.info(f"Starting services: {' '.join(compose_cmd)}")
             result = subprocess.run(compose_cmd, capture_output=True, text=True)

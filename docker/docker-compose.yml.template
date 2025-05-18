@@ -1,5 +1,3 @@
-version: '3'
-
 networks:
   internet_income:
     driver: bridge
@@ -18,7 +16,7 @@ services:
       - /dev/net/tun:/dev/net/tun
     environment:
       - LOGLEVEL=silent
-      - PROXY=protocol://user:pass@ip:port
+      - PROXY=protocol://<your-credentials>@<proxy-server>:<port>
     networks:
       - internet_income
       

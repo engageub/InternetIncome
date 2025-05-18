@@ -115,7 +115,14 @@ class PluginManager:
             logger.warning(f"Plugin {name} does not support proxies")
             proxy = None
             
-        return plugin_class(service_config, proxy)
+        # Create service instance
+        service = plugin_class(service_config, proxy)
+        
+        # Set config_manager reference if the plugin has the attribute
+        if hasattr(service, 'config_manager'):
+            service.config_manager = self.config
+            
+        return service
         
     def get_enabled_services(self, with_proxies=False):
         """Get all enabled services with optional proxy assignment"""

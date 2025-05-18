@@ -29,6 +29,13 @@ class EarnAppPlugin(ServicePlugin):
     service_image = "fazalfarhan01/earnapp"
     data_volume_required = True
     
+    def __init__(self, config, proxy=None):
+        """Initialize the service plugin"""
+        super().__init__(config, proxy)
+        # Store reference to the config manager from the proxy or config
+        # Will be set by PluginManager when creating service instances
+        self.config_manager = None
+        
     def validate_config(self):
         """Validate service configuration"""
         try:
@@ -73,6 +80,13 @@ class EarnAppPlugin(ServicePlugin):
                 'EARNAPP_UUID': node_id
             }
             logger.info(f"Generated new EarnApp node ID: {node_id}")
+            
+            # Persist the node_id to disk
+            if hasattr(self, 'config_manager') and self.config_manager is not None:
+                self.config_manager.update_service_config('earnapp', self.config)
+                logger.info("Saved EarnApp node ID to configuration")
+            else:
+                logger.warning("Config manager not available, node ID not persisted")
             
         return config
         
