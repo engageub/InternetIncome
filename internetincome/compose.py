@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 # Default Docker Compose template
 DEFAULT_COMPOSE = {
-    'version': '3',
     'networks': {
         'internet_income': {
             'driver': 'bridge'
