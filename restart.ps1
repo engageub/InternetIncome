@@ -32,7 +32,7 @@ if ($Command -eq "--restartAdnade") {
                     
                     # Copy profile data
                     $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                    $destDir = Join-Path $PWD "firefox\firefox\adnadedata\data\"
+                    $destDir = Join-Path $PWD "firefox\adnadedata\data\"
                     Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                     
                     # Update and start container
@@ -60,7 +60,7 @@ if ($Command -eq "--restartAdnade") {
                 
                 # Copy profile data
                 $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                $destDir = Join-Path $PWD "firefox\firefox\adnadedata\data$i\"
+                $destDir = Join-Path $PWD "firefox\adnadedata\data$i\"
                 Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                 
                 # Update and start container
@@ -172,7 +172,7 @@ elseif ($Command -eq "--restartFirefox") {
                     
                     # Copy profile data
                     $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                    $destDir = Join-Path $PWD "firefox\firefox\firefoxdata\data\"
+                    $destDir = Join-Path $PWD "firefox\firefoxdata\data\"
                     Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                     
                     # Update and start container
@@ -199,7 +199,7 @@ elseif ($Command -eq "--restartFirefox") {
                 
                 # Copy profile data
                 $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                $destDir = Join-Path $PWD "firefox\firefox\firefoxdata\data$i\"
+                $destDir = Join-Path $PWD "firefox\firefoxdata\data$i\"
                 Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                 
                 # Update and start container
