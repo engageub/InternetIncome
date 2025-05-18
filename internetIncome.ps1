@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 
 ##################################################################################
-# Author: engageub                                                               #
+# Author: tboy1337                                                               #
 # Description: PowerShell version of InternetIncome for Windows                  #
 # This script lets you earn passive income by sharing your internet connection.  #
 # It also supports multiple proxies with multiple accounts.                      #
