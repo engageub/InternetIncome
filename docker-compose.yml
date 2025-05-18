@@ -1,0 +1,35 @@
+services:
+  # Main service to run the script
+  internet-income:
+    image: debian:latest
+    container_name: internet-income
+    volumes:
+      - ./:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - UNIQUE_ID=${UNIQUE_ID:-internet-income}
+    command: >
+      bash -c "cd /app && 
+              apt-get update && 
+              apt-get install -y docker.io wget unzip netcat-traditional iproute2 &&
+              bash internetIncome.sh --start"
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+
+  # For easy cleanup/reset
+  internet-income-cleanup:
+    image: debian:latest
+    container_name: internet-income-cleanup
+    profiles:
+      - cleanup
+    volumes:
+      - ./:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      bash -c "cd /app && 
+              apt-get update && 
+              apt-get install -y docker.io &&
+              bash internetIncome.sh --delete"
+    network_mode: host
+    privileged: true 
