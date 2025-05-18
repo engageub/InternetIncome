@@ -4,7 +4,7 @@
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
 The main advantage of this script is the use of multiple proxies through docker containers. 
-This script has been tested on Linux amd64, armv7, arm64, and aarch64 platforms. 
+This script has been tested on Linux amd64, armv7, arm64, aarch64 platforms as well as Windows with Docker Desktop. 
 Your income depends on the number of proxies used and the proxy location. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy.
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
@@ -62,67 +62,117 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 ### <ins>[Click here to view Browser Extension Based Apps](https://github.com/engageub/InternetIncome/wiki/Browser-Extension-Based-Apps)</ins> 
 
 
-
 ## :house_with_garden:	Prerequisites 	
-You can just run the following commands to install or update docker.
 
 [Click here to get up to 4 always free instances](https://developer.oracle.com/free.html)
 
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
-### Install docker on Linux
+### Choose Your Operating System
+
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+
+### Linux Installation
+#### Install docker on Linux
 ```
 sudo apt-get update
 sudo apt-get -y install docker.io
 ```
 If you use Arm or Aarch Linux OS, you must install [binfmt](https://hub.docker.com/r/tonistiigi/binfmt) emulator to support amd64 images on your PC.
-### For ARM or AARCH Architectures
+#### For ARM or AARCH Architectures
 ```
 sudo docker run --privileged --rm tonistiigi/binfmt --install all
 sudo apt-get install qemu binfmt-support qemu-user-static
 ```
 
-![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
-### Install Docker on Windows
-Follow this [tutorial](https://www.youtube.com/watch?v=2ezNqqaSjq8) till 7.30 minutes where docker runs on Ubuntu and then follow the next steps below to download the code.
+### Windows Installation 
+#### Install Docker Desktop for Windows
+1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
+2. During installation, ensure WSL 2 is enabled
+3. Start Docker Desktop and verify it's running properly
+
+Follow this [tutorial](https://www.youtube.com/watch?v=2ezNqqaSjq8) till 7.30 minutes for additional guidance if needed.
   
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)  
 ### Want to try Docker for free without installation?
 If you like to use Docker directly for free, you can use [Play with Docker](https://labs.play-with-docker.com/). It resets every 4 hours. Please use the [tunproxy](https://github.com/engageub/InternetIncome/tree/tunproxy) branch to test it using proxies.
+
 ## 👇	Next steps❓	
 Download the code and edit the configuration file properties.conf with your account details.  
-If you don't have GUI access but have terminal access, you can use the following commands to download the code.
+
 ### Download the code
+#### For Linux (Terminal)
 ```
 wget -O main.zip https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
 sudo apt-get install unzip
 unzip -o main.zip
 cd InternetIncome-main
 ```
+
+#### For Windows (PowerShell)
+```
+Invoke-WebRequest -Uri "https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip" -OutFile "main.zip"
+Expand-Archive -Path "main.zip" -DestinationPath "." -Force
+cd InternetIncome-main
+```
+
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
 * If you are using proxies, please set the `USE_PROXIES` value to `true`. 
 * When setting your email, password, or token, always place them between single quotes ('') to consider special characters. 
 * If you do not wish to use a particular application, leave the default value as it is, and the script will not run for that application.
-### Update configuration and save
-```
-vi properties.conf
-```
+
 ## :runner: Run the script
-After you have followed all the mentioned above steps just run the following command to start and check your income flow to you :money_mouth_face:	.
+After you have followed all the mentioned above steps just run the appropriate command for your OS to start and check your income flow to you :money_mouth_face:	.
+
 ### Start the process
+#### For Linux
 ```
 sudo bash internetIncome.sh --start
 ```
+
+#### For Windows (PowerShell)
+Run PowerShell as Administrator, then:
+```
+./internetIncome.ps1 --start
+```
+
 ## :stop_sign: Stop and Delete containers
-To stop and delete all the containers started with the script. Run the following command.  Note that for Earnapp, Proxyrack, Traffmonetizer, and mysterium the data is not deleted and the same IDs will be used on delete and start since it is required to do a manual setup each time you start. Delete them or use a different folder to download the script if you want to change the node IDs.
+To stop and delete all the containers started with the script. Run the appropriate command for your OS.  
+Note that for Earnapp, Proxyrack, Traffmonetizer, and mysterium the data is not deleted and the same IDs will be used on delete and start since it is required to do a manual setup each time you start. Delete them or use a different folder to download the script if you want to change the node IDs.
+
 ### Stop and delete containers
-Note that the backup of device IDs and node IDs are present in the same folder of the script. 
+#### For Linux
 ```
 sudo bash internetIncome.sh --delete
 ```
+
+#### For Windows (PowerShell)
+```
+./internetIncome.ps1 --delete
+```
+
 ### Delete backup files and folders
 To delete the backup files and folders created by the script, use the following command.
+
+#### For Linux
 ```
 sudo bash internetIncome.sh --deleteBackup
+```
+
+#### For Windows (PowerShell)
+```
+./internetIncome.ps1 --deleteBackup
+```
+
+## :arrows_counterclockwise: Update Proxies
+If you need to update your proxies, you can use the following commands:
+
+#### For Linux
+```
+sudo bash updateProxies.sh
+```
+
+#### For Windows (PowerShell)
+```
+./updateProxies.ps1
 ```
 
 ## :department_store:	Proxies or Hosting Providers
