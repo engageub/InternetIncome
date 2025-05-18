@@ -1,0 +1,8 @@
+proxies:
+  # Add your proxies below in the format:
+  # - protocol://username:password@ip:port
+  # - protocol://ip:port
+  # 
+  # Examples:
+  # - socks5://user:pass@192.168.1.1:1080
+  # - http://10.0.0.1:8080

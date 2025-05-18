@@ -1,0 +1,18 @@
+device_name: internetincome
+use_proxies: false
+enable_logs: false
+services:
+  earnapp:
+    enabled: false
+    # Node ID will be auto-generated if not provided
+    # node_id: your-node-id-here
+  mysterium:
+    enabled: false
+    port: 4449
+  traffmonetizer:
+    enabled: false
+    # token: your-token-here
+  honeygain:
+    enabled: false
+    # email: your-email-here
+    # password: your-password-here 
