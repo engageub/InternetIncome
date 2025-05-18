@@ -119,13 +119,17 @@ class PluginManager:
             proxy = None
             
         # Create service instance
-        service = plugin_class(service_config, proxy)
-        
-        # Set config_manager reference if the plugin has the attribute
-        if hasattr(service, 'config_manager'):
-            service.config_manager = self.config
+        try:
+            service = plugin_class(service_config, proxy)
             
-        return service
+            # Set config_manager reference if the plugin has the attribute
+            if hasattr(service, 'config_manager'):
+                service.config_manager = self.config
+                
+            return service
+        except Exception as e:
+            logger.error(f"Error instantiating service {name}: {str(e)}")
+            return None
         
     def get_enabled_services(self, with_proxies=False):
         """Get all enabled services with optional proxy assignment"""
