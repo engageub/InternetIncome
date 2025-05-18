@@ -84,12 +84,25 @@ if ($containerCount -eq $proxyCount) {
         
         $container_image = docker inspect --format='{{.Config.Image}}' $container_id
         if ($container_image -match "^xjasonlyu/tun2socks.*") {
-            # Escape forward slashes for sed command
-            $escaped_proxy = $container_proxy -replace '/', '\/'
+            # Create a temporary script to safely update the proxy
+            # This approach avoids complex escaping issues with special characters
             
-            # Update the proxy in the container
-            $command = "sed -i `"`\#--proxy`\#s`\#.*`\#    --proxy ${escaped_proxy} \\\\\`\#`" entrypoint.sh"
-            docker exec $container_id sh -c $command
+            # Escape single quotes in proxy for safe passing to container
+            $escaped_proxy = $container_proxy -replace "'", "'\'''"
+            
+            # Write the proxy to a file inside the container
+            docker exec $container_id sh -c "echo '$escaped_proxy' > /tmp/proxy_value.txt"
+            
+            # Create a script inside the container to perform the update
+            docker exec $container_id sh -c @'
+cat > /tmp/update_proxy.sh << 'EOF'
+#!/bin/sh
+PROXY=$(cat /tmp/proxy_value.txt)
+sed -i '\#--proxy#s#.*#    --proxy '"$PROXY"' \\\\#' entrypoint.sh
+EOF
+chmod +x /tmp/update_proxy.sh
+/tmp/update_proxy.sh
+'@
         }
     }
 }

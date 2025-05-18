@@ -54,7 +54,7 @@ traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file container_commands.sh)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxybase_file $proxyrack_file)
@@ -184,15 +184,27 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xjasonlyu/tun2socks:v2.5.2
     fi
+    # Create container_commands.sh script file
+    container_commands_content="#!/bin/sh"
     if [ "$USE_SOCKS5_DNS" = true ]; then
       TUN_DNS_VOLUME="$DNS_VOLUME"
     elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-      EXTRA_COMMANDS='echo -e "options use-vc\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+      container_commands_content="$container_commands_content
+echo -e \"options use-vc
+nameserver 8.8.8.8
+nameserver 8.8.4.4\" > /etc/resolv.conf
+ip rule add iif lo ipproto udp dport 53 lookup main"
     else
       TUN_DNS_VOLUME="$DNS_VOLUME"
-      EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
+      container_commands_content="$container_commands_content
+ip rule add iif lo ipproto udp dport 53 lookup main"
     fi
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
+    
+    # Write commands to file
+    echo "$container_commands_content" > container_commands.sh
+    chmod +x container_commands.sh
+    
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -v "$PWD/container_commands.sh:/container_commands.sh" -e EXTRA_COMMANDS="/bin/sh /container_commands.sh" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -789,7 +801,7 @@ start_containers() {
     else
       echo -e "${RED}Failed to start container for Honeygain. Exiting..${NOCOLOUR}"
       exit 1
-  fi
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"

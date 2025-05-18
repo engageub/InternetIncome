@@ -20,7 +20,7 @@ if ($Command -eq "--restartAdnade") {
             docker stop $container
             
             # Firefox with direct connection
-            $basePath = "/firefox/adnadedata/data"
+            $basePath = Join-Path $PWD "firefox\adnadedata\data"
             if (Test-Path $basePath) {
                 # Set permissions
                 try {
@@ -31,15 +31,14 @@ if ($Command -eq "--restartAdnade") {
                     Get-ChildItem -Path $basePath -Recurse | Remove-Item -Force -Recurse
                     
                     # Copy profile data
-                    $sourceDir = "/firefox/" + $firefox_profile_data
-                    $destDir = "adnadedata/data/"
+                    $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
+                    $destDir = Join-Path $PWD "adnadedata\data\"
                     Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                     
                     # Update and start container
                     docker update --restart=always $container
                     Start-Sleep -Seconds 300
                     docker start $container
-                    exit 1
                 }
                 catch {
                     Write-Host "Error processing Firefox data: $_"
@@ -48,7 +47,7 @@ if ($Command -eq "--restartAdnade") {
             }
             
             # Check if data folder exists
-            $dataPath = "/firefox/adnadedata/data" + $i
+            $dataPath = Join-Path $PWD "firefox\adnadedata\data$i"
             if (-not (Test-Path $dataPath)) {
                 Write-Host "Folder data$i does not exist. Exiting.."
                 exit 1
@@ -60,8 +59,8 @@ if ($Command -eq "--restartAdnade") {
                 Get-ChildItem -Path $dataPath -Recurse | Remove-Item -Force -Recurse
                 
                 # Copy profile data
-                $sourceDir = "/firefox/" + $firefox_profile_data
-                $destDir = "adnadedata/data" + $i + "/"
+                $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
+                $destDir = Join-Path $PWD "adnadedata\data$i\"
                 Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                 
                 # Update and start container
@@ -97,7 +96,7 @@ elseif ($Command -eq "--restartChrome") {
             docker stop $container
             
             # Chrome with direct connection
-            $basePath = "/chrome/" + $chrome_data_folder + "/data"
+            $basePath = Join-Path $PWD "chrome\$chrome_data_folder\data"
             if (Test-Path $basePath) {
                 try {
                     # Remove contents (Windows equivalent of rm -rf)
@@ -107,13 +106,12 @@ elseif ($Command -eq "--restartChrome") {
                     # Docker will handle ownership inside container
                     
                     # Copy profile data
-                    $sourceDir = "/chrome/" + $chrome_profile_data
+                    $sourceDir = Join-Path $PWD "chrome\$chrome_profile_data"
                     Copy-Item -Path $sourceDir -Destination $basePath -Recurse -Force
                     
                     # Update and start container
                     docker update --restart=always $container
                     docker start $container
-                    exit 1
                 }
                 catch {
                     Write-Host "Error processing Chrome data: $_"
@@ -122,7 +120,7 @@ elseif ($Command -eq "--restartChrome") {
             }
             
             # Check if data folder exists
-            $dataPath = "/chrome/" + $chrome_data_folder + "/data" + $i
+            $dataPath = Join-Path $PWD "chrome\$chrome_data_folder\data$i"
             if (-not (Test-Path $dataPath)) {
                 Write-Host "Folder data$i does not exist. Exiting.."
                 exit 1
@@ -134,7 +132,7 @@ elseif ($Command -eq "--restartChrome") {
                 Get-ChildItem -Path $dataPath -Recurse | Remove-Item -Force -Recurse
                 
                 # Copy profile data
-                $sourceDir = "/chrome/" + $chrome_profile_data
+                $sourceDir = Join-Path $PWD "chrome\$chrome_profile_data"
                 Copy-Item -Path $sourceDir -Destination $dataPath -Recurse -Force
                 
                 # Update and start container
@@ -166,21 +164,20 @@ elseif ($Command -eq "--restartFirefox") {
             docker stop $container
             
             # Firefox with direct connection
-            $basePath = "/firefox/firefoxdata/data"
+            $basePath = Join-Path $PWD "firefox\firefoxdata\data"
             if (Test-Path $basePath) {
                 try {
                     # Remove contents
                     Get-ChildItem -Path $basePath -Recurse | Remove-Item -Force -Recurse
                     
                     # Copy profile data
-                    $sourceDir = "/firefox/" + $firefox_profile_data
-                    $destDir = "firefoxdata/data/"
+                    $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
+                    $destDir = Join-Path $PWD "firefoxdata\data\"
                     Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                     
                     # Update and start container
                     docker update --restart=always $container
                     docker start $container
-                    exit 1
                 }
                 catch {
                     Write-Host "Error processing Firefox data: $_"
@@ -189,7 +186,7 @@ elseif ($Command -eq "--restartFirefox") {
             }
             
             # Check if data folder exists
-            $dataPath = "/firefox/firefoxdata/data" + $i
+            $dataPath = Join-Path $PWD "firefox\firefoxdata\data$i"
             if (-not (Test-Path $dataPath)) {
                 Write-Host "Folder data$i does not exist. Exiting.."
                 exit 1
@@ -201,8 +198,8 @@ elseif ($Command -eq "--restartFirefox") {
                 Get-ChildItem -Path $dataPath -Recurse | Remove-Item -Force -Recurse
                 
                 # Copy profile data
-                $sourceDir = "/firefox/" + $firefox_profile_data
-                $destDir = "firefoxdata/data" + $i + "/"
+                $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
+                $destDir = Join-Path $PWD "firefoxdata\data$i\"
                 Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                 
                 # Update and start container
