@@ -151,7 +151,7 @@ class ComposeManager:
     def stop_services(self):
         """Stop services with Docker Compose"""
         try:
-            compose_cmd = ['docker-compose', '-f', self.compose_file, 'down']
+            compose_cmd = ['docker', 'compose', '-f', self.compose_file, 'down']
             
             logger.info(f"Stopping services: {' '.join(compose_cmd)}")
             result = subprocess.run(compose_cmd, capture_output=True, text=True)
@@ -169,7 +169,7 @@ class ComposeManager:
     def restart_services(self):
         """Restart services with Docker Compose"""
         try:
-            compose_cmd = ['docker-compose', '-f', self.compose_file, 'restart']
+            compose_cmd = ['docker', 'compose', '-f', self.compose_file, 'restart']
             
             logger.info(f"Restarting services: {' '.join(compose_cmd)}")
             result = subprocess.run(compose_cmd, capture_output=True, text=True)
@@ -187,7 +187,7 @@ class ComposeManager:
     def get_service_status(self):
         """Get status of services"""
         try:
-            compose_cmd = ['docker-compose', '-f', self.compose_file, 'ps']
+            compose_cmd = ['docker', 'compose', '-f', self.compose_file, 'ps']
             
             logger.info(f"Getting service status: {' '.join(compose_cmd)}")
             result = subprocess.run(compose_cmd, capture_output=True, text=True)
