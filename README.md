@@ -84,6 +84,56 @@ sudo apt-get install qemu binfmt-support qemu-user-static
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ### Install Docker on Windows
 Follow this [tutorial](https://www.youtube.com/watch?v=2ezNqqaSjq8) till 7.30 minutes where docker runs on Ubuntu and then follow the next steps below to download the code.
+
+### Windows Setup without Linux Distribution
+If you have WSL 2 installed but don't want to install a Linux distribution, you can use Docker Compose to run the script directly:
+
+#### Prerequisites
+1. Install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)
+2. Enable WSL 2 backend in Docker Desktop settings
+3. Make sure Docker Desktop is running
+
+#### How to Use
+The project includes several batch files for easy operation:
+
+1. **Initial Setup**
+   - Edit the `properties.conf` file with your account details
+   - If using proxies, set `USE_PROXIES=true` in properties.conf and add your proxies to proxies.txt
+
+2. **Starting and Stopping**
+   - To start the service:
+     - Option 1: Open Command Prompt or PowerShell in the project directory
+     - Run: `docker-compose up -d`
+   - To stop the service:
+     - Open Command Prompt or PowerShell in the project directory
+     - Run: `docker-compose down`
+
+3. **Update Proxies**
+   - If you changed your proxies in proxies.txt:
+     - Option 1: Double-click `updateProxies.cmd`
+     - Option 2: Run: `docker exec internet-income bash -c "cd /app && bash updateProxies.sh"`
+
+4. **Clean Up**
+   - To remove all containers and start fresh:
+     - Option 1: Double-click `cleanup.cmd`
+     - Option 2: Run: `docker-compose --profile cleanup up internet-income-cleanup`
+   - This will remove all containers created by the script
+   - Data for services like EarnApp, Proxyrack, and Mysterium will be preserved in backup files
+
+5. **Restart Specific Containers**
+   - To restart Adnade containers:
+     - Run: `restart.cmd --restartAdnade`
+   - To restart Chrome containers:
+     - Run: `restart.cmd --restartChrome` 
+   - To restart Firefox containers:
+     - Run: `restart.cmd --restartFirefox`
+
+#### Troubleshooting
+If you encounter any issues:
+1. Make sure Docker Desktop is running and properly configured
+2. Check the Docker Desktop logs for any errors
+3. Try restarting Docker Desktop
+4. Make sure you have sufficient privileges to run Docker commands
   
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)  
 ### Want to try Docker for free without installation?
