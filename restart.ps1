@@ -32,7 +32,7 @@ if ($Command -eq "--restartAdnade") {
                     
                     # Copy profile data
                     $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                    $destDir = Join-Path $PWD "adnadedata\data\"
+                    $destDir = Join-Path $PWD "firefox\firefox\adnadedata\data\"
                     Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                     
                     # Update and start container
@@ -49,8 +49,8 @@ if ($Command -eq "--restartAdnade") {
             # Check if data folder exists
             $dataPath = Join-Path $PWD "firefox\adnadedata\data$i"
             if (-not (Test-Path $dataPath)) {
-                Write-Host "Folder data$i does not exist. Exiting.."
-                exit 1
+                Write-Host "Folder data$i does not exist. Creating directory..."
+                New-Item -Path $dataPath -ItemType Directory -Force
             }
             
             # Deleting data and starting containers
@@ -60,7 +60,7 @@ if ($Command -eq "--restartAdnade") {
                 
                 # Copy profile data
                 $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                $destDir = Join-Path $PWD "adnadedata\data$i\"
+                $destDir = Join-Path $PWD "firefox\firefox\adnadedata\data$i\"
                 Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                 
                 # Update and start container
@@ -122,8 +122,8 @@ elseif ($Command -eq "--restartChrome") {
             # Check if data folder exists
             $dataPath = Join-Path $PWD "chrome\$chrome_data_folder\data$i"
             if (-not (Test-Path $dataPath)) {
-                Write-Host "Folder data$i does not exist. Exiting.."
-                exit 1
+                Write-Host "Folder data$i does not exist. Creating directory..."
+                New-Item -Path $dataPath -ItemType Directory -Force
             }
             
             # Deleting data and starting containers
@@ -172,7 +172,7 @@ elseif ($Command -eq "--restartFirefox") {
                     
                     # Copy profile data
                     $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                    $destDir = Join-Path $PWD "firefoxdata\data\"
+                    $destDir = Join-Path $PWD "firefox\firefox\firefoxdata\data\"
                     Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                     
                     # Update and start container
@@ -188,8 +188,8 @@ elseif ($Command -eq "--restartFirefox") {
             # Check if data folder exists
             $dataPath = Join-Path $PWD "firefox\firefoxdata\data$i"
             if (-not (Test-Path $dataPath)) {
-                Write-Host "Folder data$i does not exist. Exiting.."
-                exit 1
+                Write-Host "Folder data$i does not exist. Creating directory..."
+                New-Item -Path $dataPath -ItemType Directory -Force
             }
             
             # Deleting data and starting containers
@@ -199,7 +199,7 @@ elseif ($Command -eq "--restartFirefox") {
                 
                 # Copy profile data
                 $sourceDir = Join-Path $PWD "firefox\$firefox_profile_data"
-                $destDir = Join-Path $PWD "firefoxdata\data$i\"
+                $destDir = Join-Path $PWD "firefox\firefox\firefoxdata\data$i\"
                 Get-ChildItem -Path $sourceDir | Copy-Item -Destination $destDir -Recurse -Force
                 
                 # Update and start container

@@ -571,6 +571,25 @@ function Main {
             # Here we would use files_to_be_removed and folders_to_be_removed
             Write-Host "Removing containers..." -ForegroundColor $YELLOW
             # Implementation of container deletion...
+            if (Test-Path $container_names_file) {
+                $containerNames = Get-Content $container_names_file
+                foreach ($containerName in $containerNames) {
+                    try {
+                        Write-Host "Stopping container: $containerName" -ForegroundColor $YELLOW
+                        docker stop $containerName 2>$null
+                        
+                        Write-Host "Removing container: $containerName" -ForegroundColor $GREEN
+                        docker rm -f $containerName 2>$null
+                    }
+                    catch {
+                        Write-Host "Failed to remove container: $containerName" -ForegroundColor $RED
+                    }
+                }
+                Write-Host "All containers removed successfully" -ForegroundColor $GREEN
+            }
+            else {
+                Write-Host "No container names file found. No containers to remove." -ForegroundColor $YELLOW
+            }
             
             Write-Host "Removing temporary files..." -ForegroundColor $YELLOW
             foreach ($file in $files_to_be_removed) {
