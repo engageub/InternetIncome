@@ -1,4 +1,20 @@
 @echo off
+REM Check if Docker is running
+docker info >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+  echo Error: Docker is not running. Please start Docker Desktop and try again.
+  pause
+  exit /b 1
+)
+
+REM Check if the container exists and is running
+docker container inspect internet-income >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+  echo Error: internet-income container not found or not running
+  pause
+  exit /b 1
+)
+
 SET OPTION=%1
 
 IF "%OPTION%"=="--restartAdnade" (

@@ -110,23 +110,23 @@ The project includes several batch files for easy operation:
 
 3. **Update Proxies**
    - If you changed your proxies in proxies.txt:
-     - Option 1: Double-click `updateProxies.bat`
+     - Option 1: Double-click `updateProxies.cmd`
      - Option 2: Run: `docker exec internet-income bash -c "cd /app && bash updateProxies.sh"`
 
 4. **Clean Up**
    - To remove all containers and start fresh:
-     - Option 1: Double-click `cleanup.bat`
+     - Option 1: Double-click `cleanup.cmd`
      - Option 2: Run: `docker-compose --profile cleanup up internet-income-cleanup`
    - This will remove all containers created by the script
    - Data for services like EarnApp, Proxyrack, and Mysterium will be preserved in backup files
 
 5. **Restart Specific Containers**
    - To restart Adnade containers:
-     - Run: `restart.bat --restartAdnade`
+     - Run: `restart.cmd --restartAdnade`
    - To restart Chrome containers:
-     - Run: `restart.bat --restartChrome` 
+     - Run: `restart.cmd --restartChrome` 
    - To restart Firefox containers:
-     - Run: `restart.bat --restartFirefox`
+     - Run: `restart.cmd --restartFirefox`
 
 #### Troubleshooting
 If you encounter any issues:
