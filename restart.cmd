@@ -17,15 +17,15 @@ if %ERRORLEVEL% NEQ 0 (
 
 SET OPTION=%1
 
-IF "%OPTION%"=="--restartAdnade" (
+IF /I "%OPTION%"=="--restartAdnade" (
     echo Restarting Adnade containers...
     docker exec internet-income bash -c "cd /app && bash restart.sh --restartAdnade"
     echo Adnade containers have been restarted.
-) ELSE IF "%OPTION%"=="--restartChrome" (
+) ELSE IF /I "%OPTION%"=="--restartChrome" (
     echo Restarting Chrome containers...
     docker exec internet-income bash -c "cd /app && bash restart.sh --restartChrome"
     echo Chrome containers have been restarted.
-) ELSE IF "%OPTION%"=="--restartFirefox" (
+) ELSE IF /I "%OPTION%"=="--restartFirefox" (
     echo Restarting Firefox containers...
     docker exec internet-income bash -c "cd /app && bash restart.sh --restartFirefox"
     echo Firefox containers have been restarted.
