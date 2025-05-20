@@ -43,6 +43,7 @@ custom_chrome_data_folder="custom-chrome-data"
 custom_firefox_file="custom_firefox.txt"
 custom_firefox_data_folder="custom-firefox-data"
 adnade_file="adnade.txt"
+uprock_file="uprock.txt"
 firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
 adnade_containers_file="adnadecontainers.txt"
@@ -65,7 +66,7 @@ proxyrack_script="proxyrack.sh"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $proxyrack_script)
-files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file)
+files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxybase_file $proxyrack_file $earnapp_file)
@@ -78,6 +79,7 @@ mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
 meson_first_port=9000
+uprock_first_port=6100
 custom_firefox_first_port=5000
 custom_chrome_first_port=7000
 
@@ -314,6 +316,17 @@ start_containers() {
       fi
     fi
 
+    if [ "$UPROCK" = true ]; then
+      uprock_first_port=$(check_open_ports $uprock_first_port)
+      if ! expr "$uprock_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $uprock_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Uprock. Resolve or disable Uprock to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      uprock_port="-p $uprock_first_port:5111 "
+    fi
+
+
     if [ "$CUSTOM_FIREFOX" = true ];then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -334,7 +347,7 @@ start_containers() {
       custom_chrome_port="-p $custom_chrome_first_port:3200 "
     fi
 
-    combined_ports=$mysterium_port$ebesucher_port$adnade_port$custom_firefox_port$custom_chrome_port
+    combined_ports=$mysterium_port$ebesucher_port$adnade_port$custom_firefox_port$custom_chrome_port$uprock_port
 
     if [ "$vpn_enabled" = true ];then
       # Starting vpn containers
@@ -485,6 +498,33 @@ start_containers() {
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
     fi
   fi
+
+  # Starting Uprock container
+  if [ "$UPROCK" = true ]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull ghcr.io/adfly8470/uprock/uprock@sha256:c41be1805b47fde433883d11a11b04e2064846d5aafe162fc12aa0340bb0703b
+    fi
+    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+      uprock_first_port=$(check_open_ports $uprock_first_port)
+      if ! expr "$uprock_first_port" : '[[:digit:]]*$' >/dev/null; then
+         echo -e "${RED}Problem assigning port $uprock_first_port ..${NOCOLOUR}"
+         echo -e "${RED}Failed to start Uprock. Resolve or disable Uprock to continue. Exiting..${NOCOLOUR}"
+         exit 1
+      fi
+      uprock_container_port="-p $local_IP_address:$uprock_first_port:5111"
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN  $uprock_container_port -e VNC_PORT=5722 -e WEBSOCKIFY_PORT=5111 -e VNC_PASSWORD="internetincome" ghcr.io/adfly8470/uprock/uprock@sha256:c41be1805b47fde433883d11a11b04e2064846d5aafe162fc12aa0340bb0703b)
+    execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
+    echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
+    echo "http://$localhost_address:$uprock_first_port" |tee -a $uprock_file
+    uprock_first_port=`expr $uprock_first_port + 1`
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Uprock is not enabled. Ignoring Uprock..${NOCOLOUR}"
+    fi
+  fi
+
 
   # Starting Custom Firefox container
   if [[ "$CUSTOM_FIREFOX" = true  ]]; then
