@@ -48,6 +48,7 @@ firefox_containers_file="firefoxcontainers.txt"
 chrome_containers_file="chromecontainers.txt"
 adnade_containers_file="adnadecontainers.txt"
 bitping_data_folder="bitping-data"
+urnetwork_data_folder="urnetwork-data"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
 firefox_profile_zipfile="firefoxprofiledata.zip"
@@ -68,7 +69,7 @@ dns_resolver_file="resolv.conf"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $proxyrack_script)
 files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
-back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
+back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxybase_file $proxyrack_file $earnapp_file)
 restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 137 139 143 161 179 389 427 465 512 513 514 515 526 530 531 532 540 548 554 556 563 587 601 636 993 995 1719 1720 1723 2049 3659 4045 5060 5061 6000 6566 6665 6666 6667 6668 6669 6697 10080)
 container_pulled=false
@@ -923,6 +924,32 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting URnetwork container
+  if [[ $UR_AUTH_TOKEN ]]; then
+    echo -e "${GREEN}Starting URnetwork container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull bringyour/community-provider:latest
+      # Create URnetwork folder
+      mkdir -p $PWD/$urnetwork_data_folder/data$i/.urnetwork
+      sudo chmod -R 777 $PWD/$urnetwork_data_folder/data$i/.urnetwork
+      if [ ! -f "$PWD/$urnetwork_data_folder/data$i/.urnetwork/jwt" ]; then
+        sudo docker run --rm $NETWORK_TUN -v "$PWD/$urnetwork_data_folder/data$i/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+      fi
+      if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data$i/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest provide); then
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      echo -e "${GREEN}The current script is designed to support only a single device for URnetwork. Please create a new folder, download the InternetIncome script, and add the appropriate token for the new device.${NOCOLOUR}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}URnetwork Node is not enabled. Ignoring URnetwork..${NOCOLOUR}"
     fi
   fi
 
