@@ -929,7 +929,6 @@ start_containers() {
 
   # Starting URnetwork container
   if [[ $UR_AUTH_TOKEN ]]; then
-    echo -e "${GREEN}Starting URnetwork container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull bringyour/community-provider:latest
       # Create URnetwork folder
