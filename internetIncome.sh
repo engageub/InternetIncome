@@ -933,19 +933,23 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull bringyour/community-provider:latest
       # Create URnetwork folder
-      mkdir -p $PWD/$urnetwork_data_folder/data$i/.urnetwork
-      sudo chmod -R 777 $PWD/$urnetwork_data_folder/data$i/.urnetwork
-      if [ ! -f "$PWD/$urnetwork_data_folder/data$i/.urnetwork/jwt" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$PWD/$urnetwork_data_folder/data$i/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+      mkdir -p $PWD/$urnetwork_data_folder/data/.urnetwork
+      sudo chmod -R 777 $PWD/$urnetwork_data_folder/data/.urnetwork
+      if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
+        sudo docker run --rm $NETWORK_TUN -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+        sleep 1
+        if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
+          echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
       fi
-      if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data$i/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest provide); then
-        echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
-      else
-        echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
-      echo -e "${GREEN}The current script is designed to support only a single device for URnetwork. Please create a new folder, download the InternetIncome script, and add the appropriate token for the new device.${NOCOLOUR}"
+    fi  
+    if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest provide); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
+      exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
