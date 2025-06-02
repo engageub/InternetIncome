@@ -35,9 +35,9 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| [URnetwork](https://ur.io/c?bonus=YSC0T7) | :heavy_check_mark:	  | :x: |No limit|1| Rewards |
 | [Nodepay](https://app.nodepay.ai/register?ref=jQKVeB8MZjYfTcq) | :heavy_check_mark:	  | :x: |3|1| Rewards|
 | [Gradient Network](https://app.gradient.network/signup?code=OKM7KM) | :heavy_check_mark: | :x: |No limit|1| Rewards|
+| [URnetwork](https://ur.io/c?bonus=YSC0T7) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Network3 AI](https://account.network3.ai/register_page?rc=62e3b8a3) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
 | [Titan Network](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
 | [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
