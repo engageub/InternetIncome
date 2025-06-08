@@ -1073,6 +1073,8 @@ start_containers() {
     done
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxybase/proxybase
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/proxybase docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /proxybase && chmod +x /proxybase/restart.sh && while true; do sleep 86400; /proxybase/restart.sh --restartProxybase; done')
+      execute_docker_command "Proxybase Restart" "dindproxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
     sequence=$i
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
