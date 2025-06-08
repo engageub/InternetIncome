@@ -154,12 +154,11 @@ elif [[ "$1" == "--restartEarnapp" ]]; then
     docker restart $container
   done
 
-elif [[ "$1" == "--restartGrassNode" ]]; then
-  # Restarting Grass Nodes with delay of 1 minute
-  for container in `cat containernames.txt | grep ^grass`
+elif [[ "$1" == "--restartProxybase" ]]; then
+  # Restarting Proxybase Nodes
+  for container in `cat containernames.txt | grep ^proxybase`
   do
     docker restart $container
-    sleep 60
   done
   
 fi
