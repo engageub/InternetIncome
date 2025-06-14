@@ -34,7 +34,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [CastarSDK](https://t.co/CWeXsOqOmH) | :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
+| [Uprock](https://uprock.com/register?ref=YOUR_UPROCK_REF_CODE) <!-- TODO: Update with actual Uprock referral link --> | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Nodepay](https://app.nodepay.ai/register?ref=jQKVeB8MZjYfTcq) | :heavy_check_mark:	  | :x: |3|1| Rewards|
 | [Gradient Network](https://app.gradient.network/signup?code=OKM7KM) | :heavy_check_mark: | :x: |No limit|1| Rewards|
 | [URnetwork](https://ur.io/c?bonus=YSC0T7) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
@@ -53,7 +53,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 | [GagaNode](https://t.co/UO6hnDCv4M) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| [Meson Network](https://dashboard.meson.network/register?ref=YOUR_MESON_REF_CODE) <!-- TODO: Update with actual Meson Network referral link --> | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 
 * [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
@@ -126,6 +126,20 @@ To delete the backup files and folders created by the script, use the following 
 sudo bash internetIncome.sh --deleteBackup
 ```
 
+### Estimate Potential Earnings
+To get a rough estimate of potential daily and monthly earnings based on your configured services:
+```bash
+sudo bash internetIncome.sh --estimate-earnings
+```
+**Note:** These are highly speculative estimates and actual earnings can vary significantly based on demand, location, and network conditions.
+
+### Check Container Status
+To check the status of containers managed by this script:
+```bash
+sudo bash internetIncome.sh --status
+```
+This will show whether each container is running, exited, or in another state.
+
 ## :department_store:	Proxies or Hosting Providers
 [Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
 
@@ -134,6 +148,14 @@ sudo bash internetIncome.sh --deleteBackup
 
 ## :grey_question: FAQ
 ### <ins>[Click here to view Frequently Asked Questions](https://github.com/engageub/InternetIncome/wiki/Frequently-Asked-Questions)</ins> 
+
+## 💖 Support the Project
+This script is provided free of charge and is maintained by the author in their free time. If you find this script useful and would like to support its continued development and maintenance, please consider the following options:
+
+*   You can support the developer via [Liberapay](https://liberapay.com/engageub/donate).
+*   Alternatively, consider using the GitHub Sponsors button on this repository's page!
+
+Your support is greatly appreciated! 🙏
 
 ## 📇 License:
 * This product is available for free and may be freely copied and distributed in its original form. 

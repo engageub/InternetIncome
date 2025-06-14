@@ -56,8 +56,8 @@ network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
 files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
-folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
-back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
+folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data meson_data)
+back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder meson_data)
 back_up_files=($earnapp_file $proxybase_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
@@ -69,6 +69,37 @@ adnade_first_port=4000
 
 #Unique Id
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+
+# Associative array for hypothetical daily earnings (in USD)
+declare -A service_daily_earnings=(
+  [Honeygain]=0.10
+  [Peer2Profit]=0.08
+  [PacketStream]=0.05
+  [IPRoyal]=0.07
+  [EarnApp]=0.12
+  [Traffmonetizer]=0.06
+  [Uprock]=0.09
+  [MesonNetwork]=0.07
+  [Repocket]=0.04      # Added Repocket as it's in properties
+  [EarnFM]=0.03         # Added EarnFM
+  [PacketSDK]=0.02      # Added PacketSDK
+  [Gaganode]=0.01       # Added Gaganode
+  [ProxyRack]=0.05      # Added ProxyRack
+  [ProxyBase]=0.05      # Added ProxyBase
+  [CastarSDK]=0.01      # Added CastarSDK
+  [Wipter]=0.01         # Added Wipter
+  [PacketShare]=0.02    # Added PacketShare
+  [BitPing]=0.01        # Added BitPing
+  [Grass]=0.03          # Added Grass (Depin)
+  [Gradient]=0.02       # Added Gradient (Depin)
+  [URNetwork]=0.01      # Added URNetwork
+  [Network3]=0.01       # Added Network3
+  [TitanNetwork]=0.01   # Added TitanNetwork
+  [Mysterium]=0.04      # Added Mysterium
+  [Ebesucher]=0.01      # Added Ebesucher
+  [Adnade]=0.01         # Added Adnade
+  [Proxylite]=0.01      # Added Proxylite
+)
 
 # Use banner if exists
 if [ -f "$banner_file" ]; then
@@ -238,6 +269,47 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Meson Network container
+  if [[ $MESON_TOKEN ]]; then
+    echo -e "${GREEN}Starting Meson Network container...${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull mesonnetwork/meson-node:latest # Placeholder image, verify correct image
+    fi
+    mkdir -p $PWD/meson_data/data$i
+    sudo chmod -R 777 $PWD/meson_data/data$i
+    meson_volume="-v $PWD/meson_data/data$i:/opt/meson_data"
+    if CONTAINER_ID=$(sudo docker run -d --name meson$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME $meson_volume -e MESON_TOKEN=$MESON_TOKEN mesonnetwork/meson-node:latest); then # Verify correct env var name
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "meson$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Meson Network. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Meson Network Token is not configured. Ignoring Meson Network..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Uprock container
+  if [[ $UPROCK_TOKEN ]]; then
+    echo -e "${GREEN}Starting Uprock container...${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull uprock/client:latest # Placeholder image, verify correct image
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name uprock$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e UPROCK_TOKEN=$UPROCK_TOKEN uprock/client:latest); then # Verify correct env var name
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "uprock$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for Uprock. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}Uprock Token is not configured. Ignoring Uprock..${NOCOLOUR}"
     fi
   fi
 
@@ -1065,7 +1137,7 @@ if [[ "$1" == "--start" ]]; then
             export "$key"="$value"
         fi
     fi
-  done < $properties_file
+  done < <(grep -v -e '^UPROCK_TOKEN=' -e '^MESON_TOKEN=' "$properties_file"; grep -e '^UPROCK_TOKEN=' -e '^MESON_TOKEN=' "$properties_file")
 
   # Setting Device name
   if [[ ! $DEVICE_NAME ]]; then
@@ -1194,4 +1266,181 @@ if [[ "$1" == "--deleteBackup" ]]; then
   exit 1
 fi
 
-echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}"
+# Estimate earnings
+if [[ "$1" == "--estimate-earnings" ]]; then
+  echo -e "\n\n${YELLOW}Calculating Estimated Earnings...${NOCOLOUR}"
+
+  # Check if properties file exists
+  if [ ! -f "$properties_file" ]; then
+    echo -e "${RED}Properties file $properties_file does not exist. Cannot estimate earnings. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+
+  # Remove special characters ^M from properties file
+  sed -i 's/\r//g' $properties_file
+
+  # Read the properties file and export variables to the current shell
+  # This is a simplified version for checking if variables are set
+  while IFS= read -r line; do
+    if [[ $line != '#'* ]]; then
+        key="${line%%=*}"
+        value="${line#*=}"
+        key="${key%"${key##*[![:space:]]}"}"
+        value="${value%"${value##*[![:space:]]}"}"
+        if [[ -n $value ]]; then
+            # For estimation, we just need to know if the credential is set
+            export "$key"="$value"
+        fi
+    fi
+  done < <(grep -v -E '^(UPROCK_TOKEN|MESON_TOKEN)=' "$properties_file"; grep -E '^(UPROCK_TOKEN|MESON_TOKEN)=' "$properties_file")
+
+
+  total_daily_estimate=0.0
+  echo -e "\n${GREEN}Estimated Daily Earnings per Service (USD):${NOCOLOUR}"
+
+  if [[ -n "$HONEYGAIN_EMAIL" && -n "$HONEYGAIN_PASSWORD" ]]; then
+    echo "  - Honeygain: \$${service_daily_earnings[Honeygain]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Honeygain]}" | bc)
+  fi
+  if [[ -n "$PEER2PROFIT_EMAIL" ]]; then
+    echo "  - Peer2Profit: \$${service_daily_earnings[Peer2Profit]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Peer2Profit]}" | bc)
+  fi
+  if [[ -n "$PACKETSTREAM_CID" ]]; then
+    echo "  - PacketStream: \$${service_daily_earnings[PacketStream]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[PacketStream]}" | bc)
+  fi
+  if [[ -n "$IPROYALS_EMAIL" && -n "$IPROYALS_PASSWORD" ]]; then
+    echo "  - IPRoyal Pawns: \$${service_daily_earnings[IPRoyal]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[IPRoyal]}" | bc)
+  fi
+  if [[ "$EARNAPP" == true ]]; then
+    echo "  - EarnApp: \$${service_daily_earnings[EarnApp]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[EarnApp]}" | bc)
+  fi
+  if [[ -n "$TRAFFMONETIZER_TOKEN" ]]; then
+    echo "  - Traffmonetizer: \$${service_daily_earnings[Traffmonetizer]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Traffmonetizer]}" | bc)
+  fi
+  if [[ -n "$UPROCK_TOKEN" ]]; then
+    echo "  - Uprock: \$${service_daily_earnings[Uprock]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Uprock]}" | bc)
+  fi
+  if [[ -n "$MESON_TOKEN" ]]; then
+    echo "  - Meson Network: \$${service_daily_earnings[MesonNetwork]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[MesonNetwork]}" | bc)
+  fi
+  if [[ -n "$REPOCKET_EMAIL" && -n "$REPOCKET_API" ]]; then
+    echo "  - Repocket: \$${service_daily_earnings[Repocket]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Repocket]}" | bc)
+  fi
+  if [[ -n "$EARN_FM_API" ]]; then
+    echo "  - EarnFM: \$${service_daily_earnings[EarnFM]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[EarnFM]}" | bc)
+  fi
+  if [[ -n "$PACKET_SDK_APP_KEY" ]]; then
+    echo "  - PacketSDK: \$${service_daily_earnings[PacketSDK]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[PacketSDK]}" | bc)
+  fi
+  if [[ -n "$GAGANODE_TOKEN" ]]; then
+    echo "  - Gaganode: \$${service_daily_earnings[Gaganode]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Gaganode]}" | bc)
+  fi
+  if [[ "$PROXYRACK" == true ]]; then
+    echo "  - ProxyRack: \$${service_daily_earnings[ProxyRack]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[ProxyRack]}" | bc)
+  fi
+  if [[ "$PROXYBASE" == true ]]; then
+    echo "  - ProxyBase: \$${service_daily_earnings[ProxyBase]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[ProxyBase]}" | bc)
+  fi
+  if [[ -n "$CASTAR_SDK_KEY" ]]; then
+    echo "  - CastarSDK: \$${service_daily_earnings[CastarSDK]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[CastarSDK]}" | bc)
+  fi
+  if [[ -n "$WIPTER_EMAIL" && -n "$WIPTER_PASSWORD" ]]; then
+    echo "  - Wipter: \$${service_daily_earnings[Wipter]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Wipter]}" | bc)
+  fi
+  if [[ -n "$PACKETSHARE_EMAIL" && -n "$PACKETSHARE_PASSWORD" ]]; then
+    echo "  - PacketShare: \$${service_daily_earnings[PacketShare]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[PacketShare]}" | bc)
+  fi
+  if [[ -n "$BITPING_EMAIL" && -n "$BITPING_PASSWORD" ]]; then
+    echo "  - BitPing: \$${service_daily_earnings[BitPing]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[BitPing]}" | bc)
+  fi
+  if [[ -n "$GRASS_EMAIL" && -n "$GRASS_PASSWORD" ]]; then # Assuming GRASS is one of the depin
+    echo "  - Grass: \$${service_daily_earnings[Grass]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Grass]}" | bc)
+  fi
+  if [[ -n "$GRADIENT_EMAIL" && -n "$GRADIENT_PASSWORD" ]]; then # Assuming GRADIENT is one of the depin
+    echo "  - Gradient Network: \$${service_daily_earnings[Gradient]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Gradient]}" | bc)
+  fi
+   if [[ -n "$UR_AUTH_TOKEN" ]]; then
+    echo "  - URNetwork: \$${service_daily_earnings[URNetwork]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[URNetwork]}" | bc)
+  fi
+  if [[ -n "$NETWORK3_EMAIL" ]]; then
+    echo "  - Network3 AI: \$${service_daily_earnings[Network3]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Network3]}" | bc)
+  fi
+  if [[ -n "$TITAN_HASH" ]]; then
+    echo "  - Titan Network: \$${service_daily_earnings[TitanNetwork]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[TitanNetwork]}" | bc)
+  fi
+  if [[ "$MYSTERIUM" == true ]]; then
+    echo "  - Mysterium: \$${service_daily_earnings[Mysterium]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Mysterium]}" | bc)
+  fi
+  if [[ -n "$EBESUCHER_USERNAME" ]]; then
+    echo "  - Ebesucher: \$${service_daily_earnings[Ebesucher]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Ebesucher]}" | bc)
+  fi
+  if [[ -n "$ADNADE_USERNAME" ]]; then
+    echo "  - Adnade: \$${service_daily_earnings[Adnade]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Adnade]}" | bc)
+  fi
+  if [[ -n "$PROXYLITE_USER_ID" ]]; then
+    echo "  - Proxylite: \$${service_daily_earnings[Proxylite]}"
+    total_daily_estimate=$(echo "$total_daily_estimate + ${service_daily_earnings[Proxylite]}" | bc)
+  fi
+
+  echo -e "\n${GREEN}Total Estimated Daily Earnings: \$${total_daily_estimate}${NOCOLOUR}"
+  total_monthly_estimate=$(echo "$total_daily_estimate * 30" | bc)
+  echo -e "${GREEN}Total Estimated Monthly Earnings (30 days): \$${total_monthly_estimate}${NOCOLOUR}"
+
+  echo -e "\n${RED}DISCLAIMER: These are rough estimates based on hypothetical average earnings. Actual earnings can vary significantly based on demand, location, network performance, number of IPs/proxies used, and other factors. This tool is for illustrative purposes only.${NOCOLOUR}"
+  exit 0 # Exit after displaying estimates
+fi
+
+# Display status of containers
+if [[ "$1" == "--status" ]]; then
+  echo -e "\n${YELLOW}Status of Internet Income Containers:${NOCOLOUR}"
+  if [ ! -f "$container_names_file" ]; then
+    echo -e "${RED}No container information file found ($container_names_file). Either no containers were started by this script, or the file is missing.${NOCOLOUR}"
+    exit 1
+  fi
+
+  if [ ! -s "$container_names_file" ]; then # Check if file is empty
+    echo -e "${YELLOW}Container information file ($container_names_file) is empty. No active containers managed by this script.${NOCOLOUR}"
+    exit 0
+  fi
+
+  while IFS= read -r container_name || [ -n "$container_name" ]; do
+    if [ -z "$container_name" ]; then # Skip empty lines
+      continue
+    fi
+    # Exact match for container name using ^ and $
+    status_output=$(sudo docker ps -a --filter name=^"$container_name"$ --format "{{.Names}}: {{.Status}} (State: {{.State}})")
+    if [ -z "$status_output" ]; then
+      echo -e "${GREEN}$container_name${NOCOLOUR}: ${RED}Not found by Docker (may have been manually removed or script is run by non-root user without sudo privileges).${NOCOLOUR}"
+    else
+      echo -e "${GREEN}${status_output}${NOCOLOUR}"
+    fi
+  done < "$container_names_file"
+  exit 0
+fi
+
+echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}, ${RED}--estimate-earnings${NOCOLOUR}, ${RED}--status${NOCOLOUR}"
