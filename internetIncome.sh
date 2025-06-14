@@ -318,10 +318,6 @@ start_containers() {
 
   # Starting Ebesucher Chrome container
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" = true ]]; then
-    if [ "$docker_in_docker_detected" = true ]; then
-      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
-      exit 1
-    fi
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
 
@@ -340,7 +336,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/chrome docker:20.10.24-cli-alpine3.18 /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
         echo "Chrome restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
@@ -384,10 +380,6 @@ start_containers() {
 
   # Starting Ebesucher container
   if [[ $EBESUCHER_USERNAME && "$EBESUCHER_USE_CHROME" != true ]]; then
-    if [ "$docker_in_docker_detected" = true ]; then
-      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
-      exit 1
-    fi
     echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
@@ -409,7 +401,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/firefox docker:20.10.24-cli-alpine3.18 /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
@@ -451,10 +443,6 @@ start_containers() {
 
   # Starting Adnade container
   if [[ $ADNADE_USERNAME ]]; then
-    if [ "$docker_in_docker_detected" = true ]; then
-      echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
-      exit 1
-    fi
     echo -e "${GREEN}Starting Adnade container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
@@ -476,7 +464,7 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
+      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/firefox docker:20.10.24-cli-alpine3.18 /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
         echo "Firefox restart container started"
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file
