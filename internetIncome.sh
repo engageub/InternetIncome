@@ -51,12 +51,14 @@ chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 restart_file="restart.sh"
 dns_resolver_file="resolv.conf"
+config_dir="docker_config"
+dns_resolver_file="$config_dir/resolv.conf"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
-folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data meson_data)
+files_to_be_removed=($containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data meson_data docker_config)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder meson_data)
 back_up_files=($earnapp_file $proxybase_file $proxyrack_file)
 container_pulled=false
@@ -154,15 +156,16 @@ start_containers() {
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
-    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > $dns_resolver_file;
-    if [ ! -f $dns_resolver_file ]; then
+    mkdir -p $PWD/$config_dir
+    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > $PWD/$dns_resolver_file;
+    if [ ! -f "$PWD/$dns_resolver_file" ]; then
       echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
       exit 1;
     fi
-    if sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
+    if sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c "if [ ! -f /output/$config_dir/resolv.conf ]; then exit 0; else exit 1; fi"; then
       docker_in_docker_detected=true
     fi
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
+    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "mkdir -p /output/$config_dir && if [ ! -f /output/$config_dir/resolv.conf ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > /output/$config_dir/resolv.conf; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
   fi
 
   if [[ "$ENABLE_LOGS" != true ]]; then
