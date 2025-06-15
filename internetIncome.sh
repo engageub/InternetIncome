@@ -152,41 +152,58 @@ start_containers() {
   local i=$1
   local proxy=$2
 
-    local RAW_PWD="$PWD"
-    local CURRENT_CWD="" # Initialize
+            local RAW_PWD="$PWD"
+            echo "Debug: Initial RAW_PWD: '$RAW_PWD'"
+            local CURRENT_CWD="$RAW_PWD" # Default if no cygpath
 
-    # Attempt to get a clean Windows-style path if using cygpath
-    if command -v cygpath &> /dev/null; then
-        CURRENT_CWD_WIN=$(cygpath -w "$RAW_PWD")
-        CURRENT_CWD=$(cygpath -m "$CURRENT_CWD_WIN") # Convert to mixed for Docker
-    else
-        # Fallback if cygpath is not available
-        CURRENT_CWD="$RAW_PWD"
-    fi
+            if command -v cygpath &> /dev/null; then
+                echo "Debug: cygpath is available."
+                # Temporarily store direct output of cygpath calls
+                local temp_win_path
+                local temp_mixed_path
 
-    # Replace all backslashes with forward slashes for internal consistency
-    CURRENT_CWD="${CURRENT_CWD//\//}"
+                temp_win_path=$(cygpath -w "$RAW_PWD")
+                echo "Debug: Output of 'cygpath -w "$RAW_PWD"': '$temp_win_path'"
 
-    # Remove any trailing slash
-    if [[ "$CURRENT_CWD" == */ ]]; then
-        CURRENT_CWD="\${CURRENT_CWD%/}"
-    fi
+                temp_mixed_path=$(cygpath -m "$temp_win_path")
+                echo "Debug: Output of 'cygpath -m "$temp_win_path"': '$temp_mixed_path'"
 
-    # Explicitly remove any ";C" suffix if it appears
-    if [[ "$CURRENT_CWD" == *";C" ]]; then
-        CURRENT_CWD="\${CURRENT_CWD%;C}"
-    fi
+                CURRENT_CWD="$temp_mixed_path" # Assign to CURRENT_CWD
+            else
+                echo "Debug: cygpath is NOT available. Using RAW_PWD for CURRENT_CWD."
+            fi
+            echo "Debug: CURRENT_CWD after cygpath block: '$CURRENT_CWD'"
 
-    # The variable to be used throughout the script
-    local SCRIPT_CWD="$CURRENT_CWD"
+            # Replace all backslashes with forward slashes (if any somehow remain or cygpath wasn't used)
+            local temp_no_bslash="${CURRENT_CWD//\//}"
+            echo "Debug: CURRENT_CWD after backslash replacement ('${CURRENT_CWD//\//}'): '$temp_no_bslash'"
+            CURRENT_CWD="$temp_no_bslash"
 
-    # DEBUG: Echo the path to see what it is before use
-    echo "Debug: SCRIPT_CWD is set to: '$SCRIPT_CWD'"
+            # Remove any trailing slash
+            local temp_no_trailing_slash="$CURRENT_CWD"
+            if [[ "$temp_no_trailing_slash" == */ ]]; then
+                temp_no_trailing_slash="\${temp_no_trailing_slash%/}"
+                echo "Debug: CURRENT_CWD after removing trailing slash (if any): '$temp_no_trailing_slash'"
+            fi
+            CURRENT_CWD="$temp_no_trailing_slash"
 
-  # Local, paths for resolv.conf, now using the cleaned SCRIPT_CWD
-  local LOCAL_HOST_CONFIG_DIR="$SCRIPT_CWD/$CONFIG_DIR_NAME"
-  local LOCAL_HOST_DNS_RESOLVER_FILE="$LOCAL_HOST_CONFIG_DIR/$RESOLV_CONF_NAME"
-  echo "Debug: LOCAL_HOST_DNS_RESOLVER_FILE is set to: '$LOCAL_HOST_DNS_RESOLVER_FILE'"
+            # Explicitly remove any ";C" suffix
+            local temp_no_semicolon_c="$CURRENT_CWD"
+            if [[ "$temp_no_semicolon_c" == *";C" ]]; then
+                temp_no_semicolon_c="\${temp_no_semicolon_c%;C}"
+                echo "Debug: CURRENT_CWD after removing ;C (if any): '$temp_no_semicolon_c'"
+            fi
+            CURRENT_CWD="$temp_no_semicolon_c"
+
+            local SCRIPT_CWD="$CURRENT_CWD"
+            echo "Debug: Final SCRIPT_CWD is set to: '$SCRIPT_CWD'"
+
+            # Define LOCAL_HOST_CONFIG_DIR and LOCAL_HOST_DNS_RESOLVER_FILE using SCRIPT_CWD
+            # These echos were already present from previous debug, ensure they use SCRIPT_CWD
+            local LOCAL_HOST_CONFIG_DIR="$SCRIPT_CWD/$CONFIG_DIR_NAME"
+            local LOCAL_HOST_DNS_RESOLVER_FILE="$LOCAL_HOST_CONFIG_DIR/$RESOLV_CONF_NAME"
+            # Ensure this echo is present and correct from previous debug step:
+            echo "Debug: Final LOCAL_HOST_DNS_RESOLVER_FILE is set to: '$LOCAL_HOST_DNS_RESOLVER_FILE'"
   # CLEANED_ versions are no longer needed as SCRIPT_CWD is cleaned at source.
 
   # DNS_VOLUME will be inlined in each docker run command using LOCAL_HOST_DNS_RESOLVER_FILE
