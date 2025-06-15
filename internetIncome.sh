@@ -154,32 +154,37 @@ start_containers() {
 
             local RAW_PWD="$PWD"
             echo "Debug: Initial RAW_PWD: '$RAW_PWD'"
-            local CURRENT_CWD="$RAW_PWD" # Default if no cygpath
+            local CURRENT_CWD="$RAW_PWD" # Default
+            local cygpath_used=false
 
             if command -v cygpath &> /dev/null; then
                 echo "Debug: cygpath is available."
-                # Temporarily store direct output of cygpath calls
-                local temp_win_path
-                local temp_mixed_path
-
-                temp_win_path=$(cygpath -w "$RAW_PWD")
+                local temp_win_path=$(cygpath -w "$RAW_PWD")
                 echo "Debug: Output of 'cygpath -w "$RAW_PWD"': '$temp_win_path'"
 
-                temp_mixed_path=$(cygpath -m "$temp_win_path")
+                local temp_mixed_path=$(cygpath -m "$temp_win_path")
                 echo "Debug: Output of 'cygpath -m "$temp_win_path"': '$temp_mixed_path'"
 
-                CURRENT_CWD="$temp_mixed_path" # Assign to CURRENT_CWD
+                CURRENT_CWD="$temp_mixed_path"
+                cygpath_used=true
             else
-                echo "Debug: cygpath is NOT available. Using RAW_PWD for CURRENT_CWD."
+                echo "Debug: cygpath is NOT available."
             fi
             echo "Debug: CURRENT_CWD after cygpath block: '$CURRENT_CWD'"
 
-            # Replace all backslashes with forward slashes (if any somehow remain or cygpath wasn't used)
-            local temp_no_bslash="${CURRENT_CWD//\//}"
-            echo "Debug: CURRENT_CWD after backslash replacement ('${CURRENT_CWD//\//}'): '$temp_no_bslash'"
-            CURRENT_CWD="$temp_no_bslash"
+            # Only attempt global backslash to forward slash conversion if cygpath wasn't used
+            if [ "$cygpath_used" = false ]; then
+                echo "Debug: cygpath not used, attempting global backslash to forward slash replacement."
+                local temp_no_bslash="${CURRENT_CWD//\//}"
+                echo "Debug: CURRENT_CWD after backslash replacement (only if cygpath not used): '$temp_no_bslash'"
+                CURRENT_CWD="$temp_no_bslash"
+            else
+                # If cygpath was used, its output (temp_mixed_path) should already have forward slashes.
+                # The previous problematic line is now skipped if cygpath_used is true.
+                echo "Debug: cygpath was used, SKIPPING global backslash replacement. CURRENT_CWD is: '$CURRENT_CWD'"
+            fi
 
-            # Remove any trailing slash
+            # Trailing slash removal
             local temp_no_trailing_slash="$CURRENT_CWD"
             if [[ "$temp_no_trailing_slash" == */ ]]; then
                 temp_no_trailing_slash="\${temp_no_trailing_slash%/}"
@@ -187,7 +192,7 @@ start_containers() {
             fi
             CURRENT_CWD="$temp_no_trailing_slash"
 
-            # Explicitly remove any ";C" suffix
+            # Semicolon C removal
             local temp_no_semicolon_c="$CURRENT_CWD"
             if [[ "$temp_no_semicolon_c" == *";C" ]]; then
                 temp_no_semicolon_c="\${temp_no_semicolon_c%;C}"
@@ -198,11 +203,8 @@ start_containers() {
             local SCRIPT_CWD="$CURRENT_CWD"
             echo "Debug: Final SCRIPT_CWD is set to: '$SCRIPT_CWD'"
 
-            # Define LOCAL_HOST_CONFIG_DIR and LOCAL_HOST_DNS_RESOLVER_FILE using SCRIPT_CWD
-            # These echos were already present from previous debug, ensure they use SCRIPT_CWD
             local LOCAL_HOST_CONFIG_DIR="$SCRIPT_CWD/$CONFIG_DIR_NAME"
             local LOCAL_HOST_DNS_RESOLVER_FILE="$LOCAL_HOST_CONFIG_DIR/$RESOLV_CONF_NAME"
-            # Ensure this echo is present and correct from previous debug step:
             echo "Debug: Final LOCAL_HOST_DNS_RESOLVER_FILE is set to: '$LOCAL_HOST_DNS_RESOLVER_FILE'"
   # CLEANED_ versions are no longer needed as SCRIPT_CWD is cleaned at source.
 
