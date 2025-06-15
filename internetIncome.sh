@@ -336,14 +336,6 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/chrome docker:20.10.24-cli-alpine3.18 /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
-        echo "Chrome restart container started"
-        echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
-      else
-        echo -e "${RED}Failed to start container for ebesucher chrome restart. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
     fi
 
     # Create folder and copy files
@@ -401,14 +393,6 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/firefox docker:20.10.24-cli-alpine3.18 /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
-        echo "Firefox restart container started"
-        echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "dind$UNIQUE_ID$i" | tee -a $container_names_file
-      else
-        echo -e "${RED}Failed to start container for ebesucher firefox restart. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
     fi
 
     # Create folder and copy files
@@ -464,14 +448,6 @@ start_containers() {
         exit 1
       fi
 
-      if CONTAINER_ID=$(sudo docker run -d --name adnadedind$UNIQUE_ID$i $LOGS_PARAM --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/firefox docker:20.10.24-cli-alpine3.18 /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnade; done'); then
-        echo "Firefox restart container started"
-        echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "adnadedind$UNIQUE_ID$i" | tee -a $container_names_file
-      else
-        echo -e "${RED}Failed to start container for adnade firefox restart. Exiting..${NOCOLOUR}"
-        exit 1
-      fi
     fi
 
     # Create folder and copy files
