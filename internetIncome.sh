@@ -152,29 +152,42 @@ start_containers() {
   local i=$1
   local proxy=$2
 
-        local NPWD="$PWD"
-        # Check if cygpath is available (common in MINGW/Cygwin)
-        if command -v cygpath &> /dev/null; then
-            # Convert to Windows-style path, then to mixed (forward slashes)
-            # This helps Docker Desktop understand the path from MSYS/MINGW
-            NPWD=$(cygpath -w "$NPWD")
-            NPWD=$(cygpath -m "$NPWD")
-        fi
-        # Replace backslashes with forward slashes for consistency in script
-        NPWD="${NPWD//\//}"
-        # Remove any trailing slash
-        NPWD="\${NPWD%/}"
-        # Critical: Remove any trailing ';C' which seems to be an artifact from previous errors or env.
-        if [[ "$NPWD" == *";C" ]]; then
-            NPWD="\${NPWD%;C}"
-        fi
-        # Assign to NORMALIZED_PWD, the variable used throughout the script
-        local NORMALIZED_PWD="$NPWD"
+    local RAW_PWD="$PWD"
+    local CURRENT_CWD="" # Initialize
 
-  # Local, paths for resolv.conf, now using the cleaned NORMALIZED_PWD
-  local LOCAL_HOST_CONFIG_DIR="$NORMALIZED_PWD/$CONFIG_DIR_NAME"
+    # Attempt to get a clean Windows-style path if using cygpath
+    if command -v cygpath &> /dev/null; then
+        CURRENT_CWD_WIN=$(cygpath -w "$RAW_PWD")
+        CURRENT_CWD=$(cygpath -m "$CURRENT_CWD_WIN") # Convert to mixed for Docker
+    else
+        # Fallback if cygpath is not available
+        CURRENT_CWD="$RAW_PWD"
+    fi
+
+    # Replace all backslashes with forward slashes for internal consistency
+    CURRENT_CWD="${CURRENT_CWD//\//}"
+
+    # Remove any trailing slash
+    if [[ "$CURRENT_CWD" == */ ]]; then
+        CURRENT_CWD="\${CURRENT_CWD%/}"
+    fi
+
+    # Explicitly remove any ";C" suffix if it appears
+    if [[ "$CURRENT_CWD" == *";C" ]]; then
+        CURRENT_CWD="\${CURRENT_CWD%;C}"
+    fi
+
+    # The variable to be used throughout the script
+    local SCRIPT_CWD="$CURRENT_CWD"
+
+    # DEBUG: Echo the path to see what it is before use
+    echo "Debug: SCRIPT_CWD is set to: '$SCRIPT_CWD'"
+
+  # Local, paths for resolv.conf, now using the cleaned SCRIPT_CWD
+  local LOCAL_HOST_CONFIG_DIR="$SCRIPT_CWD/$CONFIG_DIR_NAME"
   local LOCAL_HOST_DNS_RESOLVER_FILE="$LOCAL_HOST_CONFIG_DIR/$RESOLV_CONF_NAME"
-  # CLEANED_ versions are no longer needed as NORMALIZED_PWD is cleaned at source.
+  echo "Debug: LOCAL_HOST_DNS_RESOLVER_FILE is set to: '$LOCAL_HOST_DNS_RESOLVER_FILE'"
+  # CLEANED_ versions are no longer needed as SCRIPT_CWD is cleaned at source.
 
   # DNS_VOLUME will be inlined in each docker run command using LOCAL_HOST_DNS_RESOLVER_FILE
   local TUN_DNS_VOLUME
@@ -182,6 +195,7 @@ start_containers() {
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
+    echo "Debug: Path for DNS resolver volume: '$SCRIPT_CWD/$CONFIG_DIR_NAME/$RESOLV_CONF_NAME:/etc/resolv.conf:ro'"
     mkdir -p "$LOCAL_HOST_CONFIG_DIR"
     printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > "$LOCAL_HOST_DNS_RESOLVER_FILE";
     if [ ! -f "$LOCAL_HOST_DNS_RESOLVER_FILE" ]; then
@@ -281,9 +295,11 @@ start_containers() {
       fi
       myst_port="-p $mysterium_first_port:4449"
     fi
-    mkdir -p "$NORMALIZED_PWD/$mysterium_data_folder/node$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$mysterium_data_folder/node$i"
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node" --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    mkdir -p "$SCRIPT_CWD/$mysterium_data_folder/node$i"
+    echo "Debug: Path for chmod: '$SCRIPT_CWD/$mysterium_data_folder/node$i'"
+    sudo chmod -R 777 "$SCRIPT_CWD/$mysterium_data_folder/node$i"
+    echo "Debug: Path for Mysterium volume: '$SCRIPT_CWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node'"
+    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node" --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "myst$UNIQUE_ID$i" | tee -a $container_names_file
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
@@ -308,9 +324,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull mesonnetwork/meson-node:latest # Placeholder image, verify correct image
     fi
-    mkdir -p "$NORMALIZED_PWD/meson_data/data$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/meson_data/data$i"
-    if CONTAINER_ID=$(sudo docker run -d --name meson$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/meson_data/data$i:/opt/meson_data" -e MESON_TOKEN=$MESON_TOKEN mesonnetwork/meson-node:latest); then # Verify correct env var name
+    mkdir -p "$SCRIPT_CWD/meson_data/data$i"
+    sudo chmod -R 777 "$SCRIPT_CWD/meson_data/data$i"
+    if CONTAINER_ID=$(sudo docker run -d --name meson$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/meson_data/data$i:/opt/meson_data" -e MESON_TOKEN=$MESON_TOKEN mesonnetwork/meson-node:latest); then # Verify correct env var name
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "meson$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -348,16 +364,16 @@ start_containers() {
       sudo docker pull lscr.io/linuxserver/chromium:latest
 
       # Exit, if chrome profile zip file is missing
-      if [ ! -f "$NORMALIZED_PWD/$chrome_profile_zipfile" ];then
+      if [ ! -f "$SCRIPT_CWD/$chrome_profile_zipfile" ];then
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
 
       # Unzip the file
-      unzip -o "$NORMALIZED_PWD/$chrome_profile_zipfile"
+      unzip -o "$SCRIPT_CWD/$chrome_profile_zipfile"
 
       # Exit, if chrome profile data is missing
-      if [ ! -d "$NORMALIZED_PWD/$chrome_profile_data" ];then
+      if [ ! -d "$SCRIPT_CWD/$chrome_profile_data" ];then
         echo -e "${RED}Chrome Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
@@ -365,10 +381,10 @@ start_containers() {
     fi
 
     # Create folder and copy files
-    mkdir -p "$NORMALIZED_PWD/$chrome_data_folder/data$i"
-    sudo chown -R 911:911 "$NORMALIZED_PWD/$chrome_profile_data"
-    sudo cp -r "$NORMALIZED_PWD/$chrome_profile_data" "$NORMALIZED_PWD/$chrome_data_folder/data$i"
-    sudo chown -R 911:911 "$NORMALIZED_PWD/$chrome_data_folder/data$i"
+    mkdir -p "$SCRIPT_CWD/$chrome_data_folder/data$i"
+    sudo chown -R 911:911 "$SCRIPT_CWD/$chrome_profile_data"
+    sudo cp -r "$SCRIPT_CWD/$chrome_profile_data" "$SCRIPT_CWD/$chrome_data_folder/data$i"
+    sudo chown -R 911:911 "$SCRIPT_CWD/$chrome_data_folder/data$i"
 
     if [[ ! $proxy ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
@@ -380,7 +396,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:3000 "
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v "$NORMALIZED_PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config" --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v "$SCRIPT_CWD/$chrome_data_folder/data$i/$chrome_profile_data:/config" --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
@@ -405,16 +421,16 @@ start_containers() {
       sudo docker pull jlesage/firefox
 
       # Exit, if firefox profile zip file is missing
-      if [ ! -f "$NORMALIZED_PWD/$firefox_profile_zipfile" ];then
+      if [ ! -f "$SCRIPT_CWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
 
       # Unzip the file
-      unzip -o "$NORMALIZED_PWD/$firefox_profile_zipfile"
+      unzip -o "$SCRIPT_CWD/$firefox_profile_zipfile"
 
       # Exit, if firefox profile data is missing
-      if [ ! -d "$NORMALIZED_PWD/$firefox_profile_data" ];then
+      if [ ! -d "$SCRIPT_CWD/$firefox_profile_data" ];then
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
@@ -422,10 +438,10 @@ start_containers() {
     fi
 
     # Create folder and copy files
-    mkdir -p "$NORMALIZED_PWD/$firefox_data_folder/data$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$firefox_profile_data"
-    cp -r "$NORMALIZED_PWD/$firefox_profile_data/"* "$NORMALIZED_PWD/$firefox_data_folder/data$i/"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$firefox_data_folder/data$i"
+    mkdir -p "$SCRIPT_CWD/$firefox_data_folder/data$i"
+    sudo chmod -R 777 "$SCRIPT_CWD/$firefox_profile_data"
+    cp -r "$SCRIPT_CWD/$firefox_profile_data/"* "$SCRIPT_CWD/$firefox_data_folder/data$i/"
+    sudo chmod -R 777 "$SCRIPT_CWD/$firefox_data_folder/data$i"
     if [[ ! $proxy ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -435,7 +451,7 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v "$NORMALIZED_PWD/$firefox_data_folder/data$i:/config:rw" $eb_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v "$SCRIPT_CWD/$firefox_data_folder/data$i:/config:rw" $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
@@ -460,16 +476,16 @@ start_containers() {
       sudo docker pull jlesage/firefox
 
       # Exit, if firefox profile zip file is missing
-      if [ ! -f "$NORMALIZED_PWD/$firefox_profile_zipfile" ];then
+      if [ ! -f "$SCRIPT_CWD/$firefox_profile_zipfile" ];then
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
 
       # Unzip the file
-      unzip -o "$NORMALIZED_PWD/$firefox_profile_zipfile"
+      unzip -o "$SCRIPT_CWD/$firefox_profile_zipfile"
 
       # Exit, if firefox profile data is missing
-      if [ ! -d "$NORMALIZED_PWD/$firefox_profile_data" ];then
+      if [ ! -d "$SCRIPT_CWD/$firefox_profile_data" ];then
         echo -e "${RED}Firefox profile Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
@@ -477,10 +493,10 @@ start_containers() {
     fi
 
     # Create folder and copy files
-    mkdir -p "$NORMALIZED_PWD/$adnade_data_folder/data$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$firefox_profile_data"
-    cp -r "$NORMALIZED_PWD/$firefox_profile_data/"* "$NORMALIZED_PWD/$adnade_data_folder/data$i/"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$adnade_data_folder/data$i"
+    mkdir -p "$SCRIPT_CWD/$adnade_data_folder/data$i"
+    sudo chmod -R 777 "$SCRIPT_CWD/$firefox_profile_data"
+    cp -r "$SCRIPT_CWD/$firefox_profile_data/"* "$SCRIPT_CWD/$adnade_data_folder/data$i/"
+    sudo chmod -R 777 "$SCRIPT_CWD/$adnade_data_folder/data$i"
     if [[ ! $proxy ]]; then
       adnade_first_port=$(check_open_ports $adnade_first_port 1)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -490,7 +506,7 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v "$NORMALIZED_PWD/$adnade_data_folder/data$i:/config:rw" $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v "$SCRIPT_CWD/$adnade_data_folder/data$i:/config:rw" $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file
       echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
@@ -513,12 +529,12 @@ start_containers() {
       sudo docker pull bitping/bitpingd:latest
     fi
     # Create bitping folder
-    mkdir -p "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd"
-    if [ ! -f "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+    mkdir -p "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd"
+    sudo chmod -R 777 "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd"
+    if [ ! -f "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
+        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -620,9 +636,9 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $traffmonetizer_image
     fi
-    mkdir -p "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer" $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
+    mkdir -p "$SCRIPT_CWD/$traffmonetizer_data_folder/data$i"
+    sudo chmod -R 777 "$SCRIPT_CWD/$traffmonetizer_data_folder/data$i"
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$SCRIPT_CWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer" $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -924,18 +940,18 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull bringyour/community-provider:latest
       # Create URnetwork folder
-      mkdir -p "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork"
-      sudo chmod -R 777 "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork"
-      if [ ! -f "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+      mkdir -p "$SCRIPT_CWD/$urnetwork_data_folder/data/.urnetwork"
+      sudo chmod -R 777 "$SCRIPT_CWD/$urnetwork_data_folder/data/.urnetwork"
+      if [ ! -f "$SCRIPT_CWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
+        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
         sleep 1
-        if [ ! -f "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
+        if [ ! -f "$SCRIPT_CWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
           echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
           exit 1
         fi
       fi
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
+    if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -953,10 +969,10 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull aron666/network3-ai
     fi
-    mkdir -p "$NORMALIZED_PWD/$network3_data_folder/data$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$network3_data_folder/data$i"
+    mkdir -p "$SCRIPT_CWD/$network3_data_folder/data$i"
+    sudo chmod -R 777 "$SCRIPT_CWD/$network3_data_folder/data$i"
     # DIAGNOSTIC: Temporarily removed --cap-add NET_ADMIN and --device /dev/net/tun for Network3 to debug 'custom device C' error.
-    if CONTAINER_ID=$(sudo docker run -d --name network3$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$network3_data_folder/data$i:/usr/local/etc/wireguard" -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai); then
+    if CONTAINER_ID=$(sudo docker run -d --name network3$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$network3_data_folder/data$i:/usr/local/etc/wireguard" -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "network3$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -973,9 +989,9 @@ start_containers() {
   if [[ $TITAN_HASH ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull nezha123/titan-edge
-      mkdir -p "$NORMALIZED_PWD/$titan_data_folder/data$i"
-      sudo chmod -R 777 "$NORMALIZED_PWD/$titan_data_folder/data$i"
-      if CONTAINER_ID=$(sudo  docker run -d --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$NORMALIZED_PWD/$titan_data_folder/data$i:/root/.titanedge" nezha123/titan-edge); then
+      mkdir -p "$SCRIPT_CWD/$titan_data_folder/data$i"
+      sudo chmod -R 777 "$SCRIPT_CWD/$titan_data_folder/data$i"
+      if CONTAINER_ID=$(sudo  docker run -d --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$SCRIPT_CWD/$titan_data_folder/data$i:/root/.titanedge" nezha123/titan-edge); then
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "titan$UNIQUE_ID$i" | tee -a $container_names_file
       else
@@ -983,7 +999,7 @@ start_containers() {
         exit 1
       fi
       sleep 5
-      sudo docker run --rm -it -v "$NORMALIZED_PWD/$titan_data_folder/data$i:/root/.titanedge" nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
+      sudo docker run --rm -it -v "$SCRIPT_CWD/$titan_data_folder/data$i:/root/.titanedge" nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
       echo -e "${GREEN}The current script is designed to support only a single device for the Titan Network. Please create a new folder, download the InternetIncome script, and add the appropriate hash for the new device.${NOCOLOUR}"
     fi
   else
@@ -1015,8 +1031,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull fazalfarhan01/earnapp:lite
     fi
-    mkdir -p "$NORMALIZED_PWD/$earnapp_data_folder/data$i"
-    sudo chmod -R 777 "$NORMALIZED_PWD/$earnapp_data_folder/data$i"
+    mkdir -p "$SCRIPT_CWD/$earnapp_data_folder/data$i"
+    sudo chmod -R 777 "$SCRIPT_CWD/$earnapp_data_folder/data$i"
     if [ -f $earnapp_file ] && uuid=$(sed "${i}q;d" $earnapp_file | grep -o 'https[^[:space:]]*'| sed 's/https:\/\/earnapp.com\/r\///g');then
       if [[ $uuid ]];then
         echo $uuid
@@ -1031,7 +1047,7 @@ start_containers() {
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --health-interval=24h --name earnapp$UNIQUE_ID$i $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always $NETWORK_TUN -v "$NORMALIZED_PWD/$earnapp_data_folder/data$i:/etc/earnapp" -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --health-interval=24h --name earnapp$UNIQUE_ID$i $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always $NETWORK_TUN -v "$SCRIPT_CWD/$earnapp_data_folder/data$i:/etc/earnapp" -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file
     else
