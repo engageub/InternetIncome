@@ -155,15 +155,7 @@ start_containers() {
   # Normalize PWD for Docker volume paths within this function
   local TEMP_PWD="$PWD"
   TEMP_PWD="${TEMP_PWD//\\//}" # Replace backslashes with forward slashes
-  local FIRST_CHAR_OF_PWD="${TEMP_PWD:0:1}"
-  if [[ "$FIRST_CHAR_OF_PWD" == "/" ]] && [[ "${TEMP_PWD:2:1}" == "/" ]]; then
-    local CURRENT_DRIVE_CHAR="${TEMP_PWD:1:1}"
-    local CURRENT_DRIVE_UPPER="$(echo "$CURRENT_DRIVE_CHAR" | tr 'a-z' 'A-Z')"
-    local PATH_AFTER_DRIVE="${TEMP_PWD:3}"
-    NORMALIZED_PWD="/$CURRENT_DRIVE_UPPER/$PATH_AFTER_DRIVE"
-  else
-    NORMALIZED_PWD="$TEMP_PWD" # Assume it's already a standard Unix path if not matching /c/...
-  fi
+  NORMALIZED_PWD="$TEMP_PWD"     # Assign, preserving original drive letter case
   NORMALIZED_PWD="${NORMALIZED_PWD%;C}" # Remove trailing ;C if present, from NORMALIZED_PWD itself
 
   # Local, paths for resolv.conf, now using the cleaned NORMALIZED_PWD
