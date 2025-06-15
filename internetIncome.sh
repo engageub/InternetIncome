@@ -152,9 +152,24 @@ start_containers() {
   local i=$1
   local proxy=$2
 
-  local NORMALIZED_PWD="$PWD"
-  # Remove trailing slashes if any, to prevent issues like //
-  NORMALIZED_PWD=\${NORMALIZED_PWD%/}
+        local NPWD="$PWD"
+        # Check if cygpath is available (common in MINGW/Cygwin)
+        if command -v cygpath &> /dev/null; then
+            # Convert to Windows-style path, then to mixed (forward slashes)
+            # This helps Docker Desktop understand the path from MSYS/MINGW
+            NPWD=$(cygpath -w "$NPWD")
+            NPWD=$(cygpath -m "$NPWD")
+        fi
+        # Replace backslashes with forward slashes for consistency in script
+        NPWD="${NPWD//\//}"
+        # Remove any trailing slash
+        NPWD="\${NPWD%/}"
+        # Critical: Remove any trailing ';C' which seems to be an artifact from previous errors or env.
+        if [[ "$NPWD" == *";C" ]]; then
+            NPWD="\${NPWD%;C}"
+        fi
+        # Assign to NORMALIZED_PWD, the variable used throughout the script
+        local NORMALIZED_PWD="$NPWD"
 
   # Local, paths for resolv.conf, now using the cleaned NORMALIZED_PWD
   local LOCAL_HOST_CONFIG_DIR="$NORMALIZED_PWD/$CONFIG_DIR_NAME"
