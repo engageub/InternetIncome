@@ -152,11 +152,9 @@ start_containers() {
   local i=$1
   local proxy=$2
 
-  # Normalize PWD for Docker volume paths within this function
-  local TEMP_PWD="$PWD"
-  TEMP_PWD="${TEMP_PWD//\\//}" # Replace backslashes with forward slashes
-  NORMALIZED_PWD="$TEMP_PWD"     # Assign, preserving original drive letter case
-  NORMALIZED_PWD="${NORMALIZED_PWD%;C}" # Remove trailing ;C if present, from NORMALIZED_PWD itself
+  local NORMALIZED_PWD="$PWD"
+  # Remove trailing slashes if any, to prevent issues like //
+  NORMALIZED_PWD=\${NORMALIZED_PWD%/}
 
   # Local, paths for resolv.conf, now using the cleaned NORMALIZED_PWD
   local LOCAL_HOST_CONFIG_DIR="$NORMALIZED_PWD/$CONFIG_DIR_NAME"
@@ -505,7 +503,7 @@ start_containers() {
     if [ ! -f "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
         sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint "" bitping/bitpingd:latest /app/bitpingd); then
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file
     else
