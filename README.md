@@ -149,6 +149,59 @@ This will show whether each container is running, exited, or in another state.
 ## :grey_question: FAQ
 ### <ins>[Click here to view Frequently Asked Questions](https://github.com/engageub/InternetIncome/wiki/Frequently-Asked-Questions)</ins> 
 
+### Ebesucher/Adnade Automatic Restart Changes
+
+**Important Note:** The previous mechanism for automatically restarting Ebesucher and Adnade browser instances using Docker-in-Docker (DinD) has been removed from `internetIncome.sh`. This change was made due to compatibility issues and to simplify the script's dependencies.
+
+If you relied on this automatic restart functionality, you will need to set up an alternative method. We recommend using a cron job on your host system to periodically execute the `restart.sh` script with the appropriate arguments.
+
+**What is a cron job?**
+A cron job is a time-based job scheduler in Unix-like computer operating systems. Users can schedule jobs (commands or shell scripts) to run periodically at fixed times, dates, or intervals.
+
+**How to set up a cron job for restarting Ebesucher/Adnade:**
+
+1.  **Open your crontab:**
+    You can edit your user's crontab file by running the following command in your terminal:
+    ```bash
+    crontab -e
+    ```
+    If prompted, choose an editor (like nano).
+
+2.  **Add a cron job entry:**
+    You'll need to add a line to this file for each service you want to restart. The format is:
+    `[minute] [hour] [day_of_month] [month] [day_of_week] [command_to_execute]`
+
+    *   Replace `/path/to/InternetIncome-main` with the actual absolute path to your `InternetIncome-main` directory.
+
+    **Example Cron Job Entries:**
+
+    *   **To restart Adnade every 6 hours:**
+        ```cron
+        0 */6 * * * cd /path/to/InternetIncome-main && sudo bash restart.sh --restartAdnade >> /path/to/InternetIncome-main/adnade_restart.log 2>&1
+        ```
+
+    *   **To restart Ebesucher (Firefox) once a day at 3:00 AM:**
+        ```cron
+        0 3 * * * cd /path/to/InternetIncome-main && sudo bash restart.sh --restartFirefox >> /path/to/InternetIncome-main/ebesucher_firefox_restart.log 2>&1
+        ```
+
+    *   **To restart Ebesucher (Chrome) every 12 hours:**
+        ```cron
+        0 */12 * * * cd /path/to/InternetIncome-main && sudo bash restart.sh --restartChrome >> /path/to/InternetIncome-main/ebesucher_chrome_restart.log 2>&1
+        ```
+
+    **Explanation of the cron job:**
+    *   `0 */6 * * *`: This means "at minute 0 of every 6th hour."
+    *   `0 3 * * *`: This means "at 03:00 (3 AM) every day."
+    *   `cd /path/to/InternetIncome-main`: This changes the directory to where your `internetIncome.sh` and `restart.sh` scripts are located. **It is crucial to use the correct absolute path.**
+    *   `sudo bash restart.sh --restartAdnade`: This is the command that executes the restart.
+    *   `>> /path/to/InternetIncome-main/adnade_restart.log 2>&1`: This is optional but recommended. It redirects the output (both standard output and errors) of the command to a log file, so you can check if the restarts are happening correctly. Make sure the log path is writable.
+
+3.  **Save and exit:**
+    If you used nano, press `Ctrl+X`, then `Y`, then `Enter`.
+
+This manual setup gives you more control over the restart schedule and avoids the complexities of DinD. Remember to adjust the cron schedule and paths to fit your specific needs.
+
 ## 💖 Support the Project
 This script is provided free of charge and is maintained by the author in their free time. If you find this script useful and would like to support its continued development and maintenance, please consider the following options:
 
