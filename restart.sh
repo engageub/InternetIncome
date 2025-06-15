@@ -10,27 +10,27 @@ if [[ "$1" == "--restartAdnade" ]]; then
     docker update --restart=no $container
     docker stop $container
     # Firefox with direct connection
-    if [ -d "/firefox/adnadedata/data" ];then
-      chmod -R 777 /firefox/adnadedata/data
-      rm -rf /firefox/adnadedata/data/*
-      cp -r /firefox/$firefox_profile_data/* adnadedata/data/
-      chmod -R 777 /firefox/adnadedata/data
+    if [ -d "adnadedata/data" ];then
+      chmod -R 777 adnadedata/data
+      rm -rf adnadedata/data/*
+      cp -r $firefox_profile_data/* adnadedata/data/
+      chmod -R 777 adnadedata/data
       docker update --restart=always $container
       sleep 300
       docker start $container
       exit 1
     fi
 
-    if [ ! -d "/firefox/adnadedata/data$i" ];then
+    if [ ! -d "adnadedata/data$i" ];then
       echo "Folder data$i does not exist. Exiting.."
       exit 1
     fi
 
     # Deleting data and starting containers
-    chmod -R 777 /firefox/adnadedata/data$i
-    rm -rf /firefox/adnadedata/data$i/*
-    cp -r /firefox/$firefox_profile_data/* adnadedata/data$i/
-    chmod -R 777 /firefox/adnadedata/data$i
+    chmod -R 777 adnadedata/data$i
+    rm -rf adnadedata/data$i/*
+    cp -r $firefox_profile_data/* adnadedata/data$i/
+    chmod -R 777 adnadedata/data$i
     docker update --restart=always $container
     if [ $i == 1 ];then
       sleep 300
@@ -49,28 +49,28 @@ elif [[ "$1" == "--restartChrome" ]]; then
     docker update --restart=no $container
     docker stop $container
     # Chrome with direct connection
-    if [ -d "/chrome/$chrome_data_folder/data" ];then
-      chmod -R 777 /chrome/$chrome_data_folder/data
-      rm -rf /chrome/$chrome_data_folder/data/*
-      chown -R 911:911 /chrome/$chrome_profile_data
-      cp -r /chrome/$chrome_profile_data /chrome/$chrome_data_folder/data
-      chown -R 911:911 /chrome/$chrome_data_folder/data
+    if [ -d "$chrome_data_folder/data" ];then
+      chmod -R 777 $chrome_data_folder/data
+      rm -rf $chrome_data_folder/data/*
+      chown -R 911:911 $chrome_profile_data
+      cp -r $chrome_profile_data $chrome_data_folder/data
+      chown -R 911:911 $chrome_data_folder/data
       docker update --restart=always $container
       docker start $container
       exit 1
     fi
 
-    if [ ! -d "/chrome/$chrome_data_folder/data$i" ];then
+    if [ ! -d "$chrome_data_folder/data$i" ];then
       echo "Folder data$i does not exist. Exiting.."
       exit 1
     fi
 
     # Deleting data and starting containers
-    chmod -R 777 /chrome/$chrome_data_folder/data$i
-    rm -rf /chrome/$chrome_data_folder/data$i/*
-    chown -R 911:911 /chrome/$chrome_profile_data
-    cp -r /chrome/$chrome_profile_data /chrome/$chrome_data_folder/data$i
-    chown -R 911:911 /chrome/$chrome_data_folder/data$i
+    chmod -R 777 $chrome_data_folder/data$i
+    rm -rf $chrome_data_folder/data$i/*
+    chown -R 911:911 $chrome_profile_data
+    cp -r $chrome_profile_data $chrome_data_folder/data$i
+    chown -R 911:911 $chrome_data_folder/data$i
     docker update --restart=always $container
     docker start $container
   done
@@ -85,26 +85,26 @@ elif [[ "$1" == "--restartFirefox" ]]; then
     docker update --restart=no $container
     docker stop $container
     # Firefox with direct connection
-    if [ -d "/firefox/firefoxdata/data" ];then
-      chmod -R 777 /firefox/firefoxdata/data
-      rm -rf /firefox/firefoxdata/data/*
-      cp -r /firefox/$firefox_profile_data/* firefoxdata/data/
-      chmod -R 777 /firefox/firefoxdata/data
+    if [ -d "firefoxdata/data" ];then
+      chmod -R 777 firefoxdata/data
+      rm -rf firefoxdata/data/*
+      cp -r $firefox_profile_data/* firefoxdata/data/
+      chmod -R 777 firefoxdata/data
       docker update --restart=always $container
       docker start $container
       exit 1
     fi
 
-    if [ ! -d "/firefox/firefoxdata/data$i" ];then
+    if [ ! -d "firefoxdata/data$i" ];then
       echo "Folder data$i does not exist. Exiting.."
       exit 1
     fi
 
     # Deleting data and starting containers
-    chmod -R 777 /firefox/firefoxdata/data$i
-    rm -rf /firefox/firefoxdata/data$i/*
-    cp -r /firefox/$firefox_profile_data/* firefoxdata/data$i/
-    chmod -R 777 /firefox/firefoxdata/data$i
+    chmod -R 777 firefoxdata/data$i
+    rm -rf firefoxdata/data$i/*
+    cp -r $firefox_profile_data/* firefoxdata/data$i/
+    chmod -R 777 firefoxdata/data$i
     docker update --restart=always $container
     docker start $container
   done
