@@ -152,7 +152,7 @@ start_containers() {
   local i=$1
   local proxy=$2
   # DNS_VOLUME is now defined using HOST_DNS_RESOLVER_FILE
-  local DNS_VOLUME="-v \"$HOST_DNS_RESOLVER_FILE\":/etc/resolv.conf:ro"
+  local DNS_VOLUME="-v $HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro"
   local TUN_DNS_VOLUME
 
   if [ "$container_pulled" = false ]; then
