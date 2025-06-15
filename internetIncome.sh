@@ -401,9 +401,21 @@ start_containers() {
 
     # Create folder and copy files
     mkdir -p "$SCRIPT_CWD/$chrome_data_folder/data$i"
-    sudo chown -R 911:911 "$SCRIPT_CWD/$chrome_profile_data"
+    if [ "$cygpath_used" = false ]; then
+        sudo chown -R 911:911 "$SCRIPT_CWD/$chrome_profile_data"
+    else
+        if [[ "$ENABLE_LOGS" == true ]]; then
+            echo "Debug: Skipping chown command for Chrome profile data as cygpath was used (Windows environment detected)."
+        fi
+    fi
     sudo cp -r "$SCRIPT_CWD/$chrome_profile_data" "$SCRIPT_CWD/$chrome_data_folder/data$i"
-    sudo chown -R 911:911 "$SCRIPT_CWD/$chrome_data_folder/data$i"
+    if [ "$cygpath_used" = false ]; then
+        sudo chown -R 911:911 "$SCRIPT_CWD/$chrome_data_folder/data$i"
+    else
+        if [[ "$ENABLE_LOGS" == true ]]; then
+            echo "Debug: Skipping chown command for Chrome data folder as cygpath was used (Windows environment detected)."
+        fi
+    fi
 
     if [[ ! $proxy ]]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port 1)
@@ -551,9 +563,9 @@ start_containers() {
     mkdir -p "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd"
     sudo chmod -R 777 "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd"
     if [ ! -f "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" -w /app --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$SCRIPT_CWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" -w /app --entrypoint /app/bitpingd bitping/bitpingd:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file
     else
