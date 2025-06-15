@@ -164,23 +164,22 @@ start_containers() {
   else
     NORMALIZED_PWD="$TEMP_PWD" # Assume it's already a standard Unix path if not matching /c/...
   fi
+  NORMALIZED_PWD="${NORMALIZED_PWD%;C}" # Remove trailing ;C if present, from NORMALIZED_PWD itself
 
-  # Local, normalized paths for resolv.conf
+  # Local, paths for resolv.conf, now using the cleaned NORMALIZED_PWD
   local LOCAL_HOST_CONFIG_DIR="$NORMALIZED_PWD/$CONFIG_DIR_NAME"
-  local CLEANED_LOCAL_HOST_CONFIG_DIR="${LOCAL_HOST_CONFIG_DIR%;C}" # Remove trailing ;C if present
-  local LOCAL_HOST_DNS_RESOLVER_FILE="$CLEANED_LOCAL_HOST_CONFIG_DIR/$RESOLV_CONF_NAME"
-  local CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE="${LOCAL_HOST_DNS_RESOLVER_FILE%;C}" # Remove trailing ;C if present
+  local LOCAL_HOST_DNS_RESOLVER_FILE="$LOCAL_HOST_CONFIG_DIR/$RESOLV_CONF_NAME"
+  # CLEANED_ versions are no longer needed as NORMALIZED_PWD is cleaned at source.
 
-
-  # DNS_VOLUME will be inlined in each docker run command using CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE
+  # DNS_VOLUME will be inlined in each docker run command using LOCAL_HOST_DNS_RESOLVER_FILE
   local TUN_DNS_VOLUME
 
   if [ "$container_pulled" = false ]; then
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
-    mkdir -p "$CLEANED_LOCAL_HOST_CONFIG_DIR"
-    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE";
-    if [ ! -f "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE" ]; then
+    mkdir -p "$LOCAL_HOST_CONFIG_DIR"
+    printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\nnameserver 9.9.9.9\n' > "$LOCAL_HOST_DNS_RESOLVER_FILE";
+    if [ ! -f "$LOCAL_HOST_DNS_RESOLVER_FILE" ]; then
       echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
       exit 1;
     fi
@@ -243,11 +242,11 @@ start_containers() {
       sudo docker pull xjasonlyu/tun2socks:v2.5.2
     fi
     if [ "$USE_SOCKS5_DNS" = true ]; then
-      TUN_DNS_VOLUME="-v \"$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro\""
+      TUN_DNS_VOLUME="-v \"$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro\""
     elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
       EXTRA_COMMANDS='echo -e "options use-vc\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
     else
-      TUN_DNS_VOLUME="-v \"$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro\""
+      TUN_DNS_VOLUME="-v \"$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro\""
       EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
     fi
     if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
@@ -279,7 +278,7 @@ start_containers() {
     fi
     mkdir -p "$NORMALIZED_PWD/$mysterium_data_folder/node$i"
     sudo chmod -R 777 "$NORMALIZED_PWD/$mysterium_data_folder/node$i"
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node" --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$mysterium_data_folder/node$i:/var/lib/mysterium-node" --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "myst$UNIQUE_ID$i" | tee -a $container_names_file
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
@@ -306,7 +305,7 @@ start_containers() {
     fi
     mkdir -p "$NORMALIZED_PWD/meson_data/data$i"
     sudo chmod -R 777 "$NORMALIZED_PWD/meson_data/data$i"
-    if CONTAINER_ID=$(sudo docker run -d --name meson$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/meson_data/data$i:/opt/meson_data" -e MESON_TOKEN=$MESON_TOKEN mesonnetwork/meson-node:latest); then # Verify correct env var name
+    if CONTAINER_ID=$(sudo docker run -d --name meson$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/meson_data/data$i:/opt/meson_data" -e MESON_TOKEN=$MESON_TOKEN mesonnetwork/meson-node:latest); then # Verify correct env var name
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "meson$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -325,7 +324,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull uprock/client:latest # Placeholder image, verify correct image
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name uprock$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e UPROCK_TOKEN=$UPROCK_TOKEN uprock/client:latest); then # Verify correct env var name
+    if CONTAINER_ID=$(sudo docker run -d --name uprock$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e UPROCK_TOKEN=$UPROCK_TOKEN uprock/client:latest); then # Verify correct env var name
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "uprock$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -376,7 +375,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:3000 "
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v "$NORMALIZED_PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config" --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v "$NORMALIZED_PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config" --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
@@ -431,7 +430,7 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v "$NORMALIZED_PWD/$firefox_data_folder/data$i:/config:rw" $eb_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v "$NORMALIZED_PWD/$firefox_data_folder/data$i:/config:rw" $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
@@ -486,7 +485,7 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v "$NORMALIZED_PWD/$adnade_data_folder/data$i:/config:rw" $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v "$NORMALIZED_PWD/$adnade_data_folder/data$i:/config:rw" $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file
       echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
@@ -512,9 +511,9 @@ start_containers() {
     mkdir -p "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd"
     sudo chmod -R 777 "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd"
     if [ ! -f "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
+        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint "" bitping/bitpingd:latest /app/bitpingd); then
+    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$bitping_data_folder/data$i/.bitpingd:/root/.bitpingd" --entrypoint "" bitping/bitpingd:latest /app/bitpingd); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "bitping$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -533,7 +532,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
+    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "repocket$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -552,7 +551,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/earnfm-client:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -571,7 +570,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetsdk/packetsdk
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name packetsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" packetsdk/packetsdk -appkey=$PACKET_SDK_APP_KEY); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" packetsdk/packetsdk -appkey=$PACKET_SDK_APP_KEY); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetsdk$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -590,7 +589,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xterna/gaga-node
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
+    if CONTAINER_ID=$(sudo docker run -d --name gaganode$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "gaganode$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -618,7 +617,7 @@ start_containers() {
     fi
     mkdir -p "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i"
     sudo chmod -R 777 "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i"
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer" $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$NORMALIZED_PWD/$traffmonetizer_data_folder/data$i:/app/traffmonetizer" $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "traffmon$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -667,7 +666,7 @@ start_containers() {
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -716,7 +715,7 @@ start_containers() {
       printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e device_id=$proxybase_uuid proxybase/proxybase); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always -e device_id=$proxybase_uuid proxybase/proxybase); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxybase$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -735,7 +734,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
+    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "pawns$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -754,7 +753,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull ghcr.io/adfly8470/castarsdk/castarsdk@sha256:881cdbe79f10dbfac65a1de0673587f67059b650f8cd94cd71801cc52a435f53
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name castarsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e KEY=$CASTAR_SDK_KEY ghcr.io/adfly8470/castarsdk/castarsdk@sha256:881cdbe79f10dbfac65a1de0673587f67059b650f8cd94cd71801cc52a435f53); then
+    if CONTAINER_ID=$(sudo docker run -d --name castarsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -e KEY=$CASTAR_SDK_KEY ghcr.io/adfly8470/castarsdk/castarsdk@sha256:881cdbe79f10dbfac65a1de0673587f67059b650f8cd94cd71801cc52a435f53); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "castarsdk$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -773,7 +772,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/wipter/wipter@sha256:339e6a23d6fd9a787fc35884b81d1dea9d169c40e902789ed73cb6b79621fba2
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:339e6a23d6fd9a787fc35884b81d1dea9d169c40e902789ed73cb6b79621fba2); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:339e6a23d6fd9a787fc35884b81d1dea9d169c40e902789ed73cb6b79621fba2); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "wipter$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -792,7 +791,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetshare/packetshare
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name packetshare$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN packetshare/packetshare -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetshare$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN packetshare/packetshare -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetshare$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -816,7 +815,7 @@ start_containers() {
     if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
       gradient_env="-e GRADIENT_EMAIL=$GRADIENT_EMAIL -e GRADIENT_PASS=$GRADIENT_PASSWORD"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name depinext$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb); then
+    if CONTAINER_ID=$(sudo docker run -d --name depinext$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "depinext$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -844,7 +843,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $honeygain_image
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "honey$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -863,7 +862,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 enwaiax/peer2profit
     fi
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "peer2profit$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -882,7 +881,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "packetstream$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -901,7 +900,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro"  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro"  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxylite$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -923,7 +922,7 @@ start_containers() {
       mkdir -p "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork"
       sudo chmod -R 777 "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork"
       if [ ! -f "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+        sudo docker run --rm $NETWORK_TUN -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
         sleep 1
         if [ ! -f "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
           echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
@@ -931,7 +930,7 @@ start_containers() {
         fi
       fi
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
+    if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -952,7 +951,7 @@ start_containers() {
     mkdir -p "$NORMALIZED_PWD/$network3_data_folder/data$i"
     sudo chmod -R 777 "$NORMALIZED_PWD/$network3_data_folder/data$i"
     # DIAGNOSTIC: Temporarily removed --cap-add NET_ADMIN and --device /dev/net/tun for Network3 to debug 'custom device C' error.
-    if CONTAINER_ID=$(sudo docker run -d --name network3$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$network3_data_folder/data$i:/usr/local/etc/wireguard" -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai); then
+    if CONTAINER_ID=$(sudo docker run -d --name network3$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" -v "$NORMALIZED_PWD/$network3_data_folder/data$i:/usr/local/etc/wireguard" -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "network3$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -971,7 +970,7 @@ start_containers() {
       sudo docker pull nezha123/titan-edge
       mkdir -p "$NORMALIZED_PWD/$titan_data_folder/data$i"
       sudo chmod -R 777 "$NORMALIZED_PWD/$titan_data_folder/data$i"
-      if CONTAINER_ID=$(sudo  docker run -d --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$NORMALIZED_PWD/$titan_data_folder/data$i:/root/.titanedge" nezha123/titan-edge); then
+      if CONTAINER_ID=$(sudo  docker run -d --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" $NETWORK_TUN -v "$NORMALIZED_PWD/$titan_data_folder/data$i:/root/.titanedge" nezha123/titan-edge); then
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "titan$UNIQUE_ID$i" | tee -a $container_names_file
       else
@@ -1027,7 +1026,7 @@ start_containers() {
       printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --health-interval=24h --name earnapp$UNIQUE_ID$i $LOGS_PARAM -v "$CLEANED_LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always $NETWORK_TUN -v "$NORMALIZED_PWD/$earnapp_data_folder/data$i:/etc/earnapp" -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --health-interval=24h --name earnapp$UNIQUE_ID$i $LOGS_PARAM -v "$LOCAL_HOST_DNS_RESOLVER_FILE:/etc/resolv.conf:ro" --restart=always $NETWORK_TUN -v "$NORMALIZED_PWD/$earnapp_data_folder/data$i:/etc/earnapp" -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnapp$UNIQUE_ID$i" | tee -a $container_names_file
     else
