@@ -381,7 +381,7 @@ start_containers() {
     elif [ "$USE_TUN2PROXY" = true ];then
       # Starting tun2proxy containers
       if [ "$container_pulled" = false ]; then
-        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.6.4
+        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.10
       fi
       if [[ "$ENABLE_LOGS" != true ]]; then
         TUN_LOG_PARAM="off"
@@ -406,7 +406,7 @@ start_containers() {
           exit 1
         fi
       fi
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.6.4 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.10 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
