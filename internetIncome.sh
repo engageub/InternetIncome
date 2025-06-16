@@ -935,7 +935,7 @@ start_containers() {
       mkdir -p $PWD/$urnetwork_data_folder/data/.urnetwork
       sudo chmod -R 777 $PWD/$urnetwork_data_folder/data/.urnetwork
       if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
-        sudo docker run --rm $NETWORK_TUN -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+        sudo docker run --rm $DNS_VOLUME $NETWORK_TUN -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
         sleep 1
         if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
           echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
