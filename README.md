@@ -29,7 +29,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
-| [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
+| [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :x: |10|1| Paypal|
 | [PacketSDK](https://packetsdk.com/?r=4q2rAz0w)| :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
 | [CastarSDK](https://t.co/CWeXsOqOmH) | :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
