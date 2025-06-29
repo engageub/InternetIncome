@@ -108,4 +108,11 @@ elif [[ "$1" == "--restartFirefox" ]]; then
     docker update --restart=always $container
     docker start $container
   done
+
+  elif [[ "$1" == "--restartURnetwork" ]]; then
+  # Restarting URnetwork Nodes
+  for container in `cat containernames.txt | grep ^urnetwork`
+  do
+    docker restart $container
+  done
 fi
