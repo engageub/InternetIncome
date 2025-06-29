@@ -75,6 +75,9 @@ restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95
 container_pulled=false
 docker_in_docker_detected=false
 
+# WatchTower container name
+WATCH_TOWER_NAME="internetincomewatchtower"
+
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
 ebesucher_first_port=3000
@@ -200,15 +203,22 @@ execute_docker_command() {
   local container_name=${container_parameters[1]}
   local CONTAINER_ID
   local DOCKER_INIT
+  local WATCH_TOWER_LABEL
   if [[ "$USE_DOCKER_INIT" = true ]]; then
     DOCKER_INIT="--init"
   fi
-
+  
+  # Enable Watchtower auto-update for containers using the ':latest' tag,
+  # but skip Watchtower itself to avoid recursive self-updating.
+  if [[ "$AUTO_UPDATE_CONTAINERS" == true && "${container_parameters[@]:2}" == *":latest"* && "$container_name" != "$WATCH_TOWER_NAME" ]]; then
+    WATCH_TOWER_LABEL='--label=com.centurylinklabs.watchtower.enable=true'
+  fi
+  
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
   if [[ "$app_name" == "VPN" ]]; then
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
-    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d --name $container_name --restart=always "${container_parameters[@]:2}")
+    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d --name $container_name --restart=always $WATCH_TOWER_LABEL "${container_parameters[@]:2}")
   fi
 
   # Check if the container started successfully
@@ -1514,6 +1524,16 @@ if [[ "$1" == "--start" ]]; then
 
   if [[ $STATUS == 0 ]]; then
     echo -e "${RED}No Network configuration is specified. Script will not start unless specified in properties.conf ..Exiting..${NOCOLOUR}"
+  fi
+
+  if [ "$AUTO_UPDATE_CONTAINERS" = true ]; then
+    # Check if watch tower container exists
+    if sudo docker inspect $WATCH_TOWER_NAME >/dev/null 2>&1; then
+      echo "InternetIncome Watchtower is already present on the host. One Watchtower container is enough to update all the containers. Not creating another instance to avoid redundant updates and resource usage."
+    else
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --label-enable --interval 86400)
+      execute_docker_command "Internet Income Watch Tower" "$WATCH_TOWER_NAME" "${docker_parameters[@]}"
+    fi
   fi
   exit 1
 fi
