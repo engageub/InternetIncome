@@ -530,7 +530,7 @@ start_containers() {
   # Starting Custom Firefox container
   if [[ "$CUSTOM_FIREFOX" = true  ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull jlesage/firefox
+      sudo docker pull jlesage/firefox:latest
     fi
 
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
@@ -554,7 +554,7 @@ start_containers() {
 
     mkdir -p $PWD/$custom_firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$custom_firefox_data_folder/data$i
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 $CUSTOM_FIREFOX_DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 $CUSTOM_FIREFOX_DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 $cf_port -v $PWD/$custom_firefox_data_folder/data$i:/config:rw jlesage/firefox:latest)
     execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
@@ -603,7 +603,7 @@ start_containers() {
       exit 1
     fi
     if [ "$container_pulled" = false ]; then
-      sudo docker pull jlesage/firefox
+      sudo docker pull jlesage/firefox:latest
 
       # Exit, if firefox profile zip file is missing
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
@@ -648,7 +648,7 @@ start_containers() {
       DISPLAY_PARAMETERS="-e DISPLAY_WIDTH=$WINDOW_WIDTH  -e DISPLAY_HEIGHT=$WINDOW_HEIGHT"
     fi
 
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" $DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" $DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox:latest)
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
@@ -766,7 +766,7 @@ start_containers() {
       ad_port="-p $local_IP_address:$adnade_first_port:5900"
     fi
 
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox:latest)
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
@@ -894,9 +894,9 @@ start_containers() {
   # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull repocket/repocket
+      sudo docker pull repocket/repocket:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest)
     execute_docker_command "Repocket" "repocket$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -911,7 +911,7 @@ start_containers() {
     elif [ "$CPU_ARCH" == "armv7l" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm32v7"
     else
-      traffmonetizer_image="--platform=linux/amd64 traffmonetizer/cli_v2"
+      traffmonetizer_image="--platform=linux/amd64 traffmonetizer/cli_v2:latest"
     fi
     if [ "$container_pulled" = false ]; then
       sudo docker pull $traffmonetizer_image
@@ -956,9 +956,9 @@ start_containers() {
   # Starting PacketShare container
   if [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull packetshare/packetshare
+      sudo docker pull packetshare/packetshare:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetshare/packetshare -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetshare/packetshare:latest -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD)
     execute_docker_command "PacketShare" "packetshare$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -969,7 +969,7 @@ start_containers() {
   # Starting Depin Chrome Extensions container
   if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] || [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull carbon2029/dockweb
+      sudo docker pull carbon2029/dockweb:latest
     fi
     if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]]; then
       grass_env="-e GRASS_USER=$GRASS_EMAIL -e GRASS_PASS=$GRASS_PASSWORD"
@@ -977,7 +977,7 @@ start_containers() {
     if [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
       gradient_env="-e GRADIENT_EMAIL=$GRADIENT_EMAIL -e GRADIENT_PASS=$GRADIENT_PASSWORD"
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb:latest)
     execute_docker_command "Depin Extensions" "depinext$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1001,9 +1001,9 @@ start_containers() {
   # Starting PacketSDK container
   if [[ $PACKET_SDK_APP_KEY ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull packetsdk/packetsdk
+      sudo docker pull packetsdk/packetsdk:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetsdk/packetsdk -appkey=$PACKET_SDK_APP_KEY)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN packetsdk/packetsdk:latest -appkey=$PACKET_SDK_APP_KEY)
     execute_docker_command "PacketSDK" "packetsdk$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1028,7 +1028,7 @@ start_containers() {
       fi
     done
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 proxyrack/pop
+      sudo docker pull --platform=linux/amd64 proxyrack/pop:latest
     fi
     sequence=$i
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
@@ -1047,7 +1047,7 @@ start_containers() {
       proxyrack_uuid=$RANDOM_ID
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid -v $PWD/$proxyrack_script:/app/run.sh -e device_name=$DEVICE_NAME$i -e api_key=$PROXYRACK_API proxyrack/pop)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid -v $PWD/$proxyrack_script:/app/run.sh -e device_name=$DEVICE_NAME$i -e api_key=$PROXYRACK_API proxyrack/pop:latest)
     execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Device is automatically addded to your proxyrack dashboard after 5 minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
@@ -1074,7 +1074,7 @@ start_containers() {
       fi
     done
     if [ "$container_pulled" = false ]; then
-      sudo docker pull proxybase/proxybase
+      sudo docker pull proxybase/proxybase:latest
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/proxybase docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /proxybase && chmod +x /proxybase/restart.sh && while true; do sleep 86400; /proxybase/restart.sh --restartProxybase; done')
       execute_docker_command "Proxybase Restart" "dindproxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
@@ -1095,7 +1095,7 @@ start_containers() {
       proxybase_uuid=$RANDOM_ID
       printf "%s\n" "$proxybase_uuid" | tee -a $proxybase_file
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e device_id=$proxybase_uuid proxybase/proxybase)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e device_id=$proxybase_uuid proxybase/proxybase:latest)
     execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the node uuid and paste in your proxybase dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the uuids in the file $proxybase_file in the same folder${NOCOLOUR}"
@@ -1137,10 +1137,10 @@ start_containers() {
       if [ "$CPU_ARCH" == "x86_64" ] || [ "$CPU_ARCH" == "amd64" ]; then
         honeygain_image="honeygain/honeygain:0.6.6"
       else
-        honeygain_image="honeygain/honeygain"
+        honeygain_image="honeygain/honeygain:latest"
       fi
     else
-      honeygain_image="honeygain/honeygain"
+      honeygain_image="honeygain/honeygain:latest"
     fi
     if [ "$container_pulled" = false ]; then
       sudo docker pull $honeygain_image
@@ -1156,8 +1156,8 @@ start_containers() {
   # Starting Honeygain Pot container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD && "$HONEYGAIN_POT" = true ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xterna/honeygain-pot
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$HONEYGAIN_EMAIL -e PASSWORD=$HONEYGAIN_PASSWORD xterna/honeygain-pot)
+      sudo docker pull xterna/honeygain-pot:latest
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$HONEYGAIN_EMAIL -e PASSWORD=$HONEYGAIN_PASSWORD xterna/honeygain-pot:latest)
       execute_docker_command "HoneygainPot" "honeygainpot$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
   else
@@ -1169,9 +1169,9 @@ start_containers() {
   # Starting Gaganode container
   if [[ $GAGANODE_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xterna/gaga-node
+      sudo docker pull xterna/gaga-node:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node:latest)
     execute_docker_command "Gaganode" "gaganode$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1179,28 +1179,15 @@ start_containers() {
     fi
   fi
 
-  # Starting Speedshare container
-  if [[ $SPEEDSHARE_TOKEN ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull eldavo/speedshare
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e CODE=$SPEEDSHARE_TOKEN eldavo/speedshare)
-    execute_docker_command "Speedshare" "speedshare$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Speedshare Token is not configured. Ignoring Speedshare..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Network3 container
   if [[ $NETWORK3_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull aron666/network3-ai
+      sudo docker pull aron666/network3-ai:latest
     fi
     mkdir -p $PWD/$network3_data_folder/data$i
     sudo chmod -R 777 $PWD/$network3_data_folder/data$i
     network3_volume="-v $PWD/$network3_data_folder/data$i:/usr/local/etc/wireguard"
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $network3_volume --cap-add NET_ADMIN --device /dev/net/tun -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $network3_volume --cap-add NET_ADMIN --device /dev/net/tun -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai:latest)
     execute_docker_command "Network3" "network3$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1211,11 +1198,11 @@ start_containers() {
   # Starting Titan Network container
   if [[ $TITAN_HASH ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull nezha123/titan-edge
+      sudo docker pull nezha123/titan-edge:latest
       mkdir -p $PWD/$titan_data_folder/data$i
       sudo chmod -R 777 $PWD/$titan_data_folder/data$i
       titan_volume="-v $PWD/$titan_data_folder/data$i:/root/.titanedge"
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $titan_volume nezha123/titan-edge)
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $titan_volume nezha123/titan-edge:latest)
       execute_docker_command "TitanNetwork" "titan$UNIQUE_ID$i" "${docker_parameters[@]}"
       sleep 5
       sudo docker run --rm -it $titan_volume nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
@@ -1230,9 +1217,9 @@ start_containers() {
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit
+      sudo docker pull --platform=linux/amd64 enwaiax/peer2profit:latest
     fi
-    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit)
+    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit:latest)
     execute_docker_command "Peer2Profit" "peer2profit$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1243,9 +1230,9 @@ start_containers() {
   # Starting Nodepay container
   if [[ $NP_COOKIE ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull kellphy/nodepay
+      sudo docker pull kellphy/nodepay:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e NP_COOKIE=$NP_COOKIE kellphy/nodepay)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e NP_COOKIE=$NP_COOKIE kellphy/nodepay:latest)
     execute_docker_command "Nodepay" "nodepay$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1282,9 +1269,9 @@ start_containers() {
   # Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull proxylite/proxyservice
+      sudo docker pull proxylite/proxyservice:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice:latest)
     execute_docker_command "Proxylite" "proxylite$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
