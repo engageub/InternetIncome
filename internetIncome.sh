@@ -870,6 +870,14 @@ start_containers() {
           exit 1
         fi
       fi
+      if CONTAINER_ID=$(sudo docker run -d --name dindurnetwork$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/urnetwork docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done'); then
+        echo "URnetwork restart container started"
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "dindurnetwork$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for URnetwork restart. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
     fi
     if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
       echo "$CONTAINER_ID" | tee -a $containers_file
