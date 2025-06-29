@@ -218,7 +218,7 @@ execute_docker_command() {
   if [[ "$app_name" == "VPN" ]]; then
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
-    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d --name $container_name --restart=always $WATCH_TOWER_LABEL "${container_parameters[@]:2}")
+    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d $WATCH_TOWER_LABEL --name $container_name --restart=always "${container_parameters[@]:2}")
   fi
 
   # Check if the container started successfully
