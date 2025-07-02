@@ -28,7 +28,6 @@ banner_file="banner.jpg"
 proxies_file="proxies.txt"
 vpns_file="vpns.txt"
 multi_ip_file="multi_ips.txt"
-containers_file="containers.txt"
 container_names_file="containernames.txt"
 subnets_file="subnets.txt"
 earnapp_file="earnapp.txt"
@@ -67,7 +66,7 @@ proxyrack_script="proxyrack.sh"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file $proxyrack_script)
-files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $containers_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
+files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxybase_file $proxyrack_file $earnapp_file)
@@ -224,7 +223,6 @@ execute_docker_command() {
   # Check if the container started successfully
   if [[ -n "$CONTAINER_ID" ]]; then
     echo "$container_name" | tee -a "$container_names_file"
-    echo "$CONTAINER_ID" | tee -a "$containers_file"
   else
     echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
     exit 1
