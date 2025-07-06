@@ -511,7 +511,7 @@ start_containers() {
   # Starting Uprock container
   if [ "$UPROCK" = true ]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/uprock/uprock@sha256:c41be1805b47fde433883d11a11b04e2064846d5aafe162fc12aa0340bb0703b
+      sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/uprock/uprock@sha256:bccbcd0e73adafb626f8b5417594f5da8232077df4396dff4db149e8971d38d0
     fi
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       uprock_first_port=$(check_open_ports $uprock_first_port)
@@ -522,7 +522,7 @@ start_containers() {
       fi
       uprock_container_port="-p $local_IP_address:$uprock_first_port:5111"
     fi
-    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $uprock_container_port -e VNC_PORT=5722 -e WEBSOCKIFY_PORT=5111 -e VNC_PASSWORD="internetincome" ghcr.io/adfly8470/uprock/uprock@sha256:c41be1805b47fde433883d11a11b04e2064846d5aafe162fc12aa0340bb0703b)
+    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN $uprock_container_port -e VNC_PORT=5722 -e WEBSOCKIFY_PORT=5111 -e VNC_PASSWORD="internetincome" ghcr.io/adfly8470/uprock/uprock@sha256:bccbcd0e73adafb626f8b5417594f5da8232077df4396dff4db149e8971d38d0)
     execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
@@ -1129,9 +1129,9 @@ start_containers() {
   # Starting Wipter container
   if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:339e6a23d6fd9a787fc35884b81d1dea9d169c40e902789ed73cb6b79621fba2
+      sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:51d0fc6445e93fa81dfeaa1994d3bb940cb918cfff4ad9144162e50c5baba8fc
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:339e6a23d6fd9a787fc35884b81d1dea9d169c40e902789ed73cb6b79621fba2)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:51d0fc6445e93fa81dfeaa1994d3bb940cb918cfff4ad9144162e50c5baba8fc)
     execute_docker_command "Wipter" "wipter$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
