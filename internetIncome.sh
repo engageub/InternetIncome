@@ -692,9 +692,9 @@ start_containers() {
   if [[ $CASTAR_SDK_KEY ]]; then
     echo -e "${GREEN}Starting CastarSDK container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/adfly8470/castarsdk/castarsdk@sha256:881cdbe79f10dbfac65a1de0673587f67059b650f8cd94cd71801cc52a435f53
+      sudo docker pull ghcr.io/adfly8470/castarsdk/castarsdk@sha256:30d7e9830c0144165b86dbb053eaea11e36d1b9f7ee0837fd4eda71cc6b48125
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name castarsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e KEY=$CASTAR_SDK_KEY ghcr.io/adfly8470/castarsdk/castarsdk@sha256:881cdbe79f10dbfac65a1de0673587f67059b650f8cd94cd71801cc52a435f53); then
+    if CONTAINER_ID=$(sudo docker run -d --name castarsdk$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e KEY=$CASTAR_SDK_KEY ghcr.io/adfly8470/castarsdk/castarsdk@sha256:30d7e9830c0144165b86dbb053eaea11e36d1b9f7ee0837fd4eda71cc6b48125); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "castarsdk$UNIQUE_ID$i" | tee -a $container_names_file
     else
