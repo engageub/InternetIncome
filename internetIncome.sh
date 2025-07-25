@@ -1129,9 +1129,9 @@ start_containers() {
   # Starting Wipter container
   if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:51d0fc6445e93fa81dfeaa1994d3bb940cb918cfff4ad9144162e50c5baba8fc
+      sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:41a31ad455166b37372c3e3064149e874ad558e46d978d363ca31ee872d266ac
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:51d0fc6445e93fa81dfeaa1994d3bb940cb918cfff4ad9144162e50c5baba8fc)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:41a31ad455166b37372c3e3064149e874ad558e46d978d363ca31ee872d266ac)
     execute_docker_command "Wipter" "wipter$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
