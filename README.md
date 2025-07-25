@@ -36,6 +36,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Nodepay](https://app.nodepay.ai/register?ref=jQKVeB8MZjYfTcq) | :heavy_check_mark:	  | :x: |3|1| Rewards|
 | [Gradient Network](https://app.gradient.network/signup?code=OKM7KM) | :heavy_check_mark: | :x: |No limit|1| Rewards|
+| [Earn.cc](https://t.co/8QZinAmqfW) | :heavy_check_mark: | :x: |No limit|1| Crypto|
 | [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :heavy_check_mark: |10|1| Paypal|
 | [Network3 AI](https://account.network3.ai/register_page?rc=62e3b8a3) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
@@ -53,7 +54,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 | [GagaNode](https://t.co/UO6hnDCv4M) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [Meson Network](https://dashboard.meson.network/register) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 
 * [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
