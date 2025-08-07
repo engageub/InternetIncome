@@ -389,7 +389,7 @@ start_containers() {
     elif [ "$USE_TUN2PROXY" = true ];then
       # Starting tun2proxy containers
       if [ "$container_pulled" = false ]; then
-        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.10
+        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.13
       fi
       if [[ "$ENABLE_LOGS" != true ]]; then
         TUN_LOG_PARAM="off"
@@ -414,12 +414,12 @@ start_containers() {
           exit 1
         fi
       fi
-      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.10 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+      docker_parameters=($LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.13 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
       if [ "$container_pulled" = false ]; then
-        sudo docker pull xjasonlyu/tun2socks:v2.5.2
+        sudo docker pull xjasonlyu/tun2socks:v2.6.0
       fi
       if [ "$USE_SOCKS5_DNS" = true ]; then
         TUN_DNS_VOLUME="$DNS_VOLUME"
@@ -469,7 +469,7 @@ start_containers() {
           exit 1
         fi
       fi
-      docker_parameters=($LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.5.2)
+      docker_parameters=($LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.6.0)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
   fi
