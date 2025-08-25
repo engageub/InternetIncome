@@ -868,36 +868,6 @@ start_containers() {
     fi
   fi
 
-  # Starting Meson container
-  if [[ $MESON_TOKEN && $MESON_CACHE_SIZE ]]; then
-    if [[ $NETWORK_TUN == "--network=container:tun"* || $NETWORK_TUN == "--network=container:gluetun"* ]]; then
-      echo -e "${RED}Meson network with proxies or VPNs is not supported now as port has to be opened on specific IP address..${NOCOLOUR}"
-      echo "You may either use it with Direct Connection or Multi IPs with Port Forwarding enabled. Exiting.."
-      exit 1
-    fi
-    meson_first_port=$(check_open_ports $meson_first_port)
-    if ! expr "$meson_first_port" : '[[:digit:]]*$' >/dev/null; then
-      echo -e "${RED}Problem assigning port $meson_first_port ..${NOCOLOUR}"
-      echo -e "${RED}Failed to start Meson. Resolve or disable Meson to continue. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-    container_image="--platform=linux/amd64 jepbura/meson"
-    if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
-      container_image="jepbura/meson:arm64"
-    fi
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull $container_image
-    fi
-    echo "$localhost_address:$meson_first_port" | tee -a $meson_file
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $CPU_PARAM $NETWORK_TUN -p $local_IP_address:$meson_first_port:$meson_first_port -e PORT=$meson_first_port -e TOKEN=$MESON_TOKEN -e CACHE_SIZE=$MESON_CACHE_SIZE $container_image)
-    execute_docker_command "Meson" "meson$UNIQUE_ID$i" "${docker_parameters[@]}"
-    echo -e "${GREEN}You will find meson port numbers in the file $meson_file in the same folder${NOCOLOUR}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Meson Token is not configured. Ignoring Meson..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
     if [ "$container_pulled" = false ]; then
