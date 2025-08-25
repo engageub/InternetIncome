@@ -290,7 +290,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:3000 "
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e CUSTOM_USER="internetincome" -e PASSWORD="internetincome" -v $PWD/$chrome_data_folder/data$i/$chrome_profile_data:/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
@@ -357,7 +357,7 @@ start_containers() {
       fi
       eb_port="-p $ebesucher_first_port:5800"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -e VNC_PASSWORD="internetincome" -v $PWD/$firefox_data_folder/data$i:/config:rw $eb_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $container_names_file
       echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
@@ -424,7 +424,7 @@ start_containers() {
       fi
       ad_port="-p $adnade_first_port:5900"
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
+    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -e VNC_PASSWORD="internetincome" -v $PWD/$adnade_data_folder/data$i:/config:rw $ad_port jlesage/firefox); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "adnade$UNIQUE_ID$i" | tee -a $container_names_file
       echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
