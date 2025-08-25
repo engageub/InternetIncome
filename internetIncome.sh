@@ -182,7 +182,7 @@ start_containers() {
     echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xjasonlyu/tun2socks:v2.5.2
+      sudo docker pull xjasonlyu/tun2socks:v2.6.0
     fi
     if [ "$USE_SOCKS5_DNS" = true ]; then
       TUN_DNS_VOLUME="$DNS_VOLUME"
@@ -192,7 +192,7 @@ start_containers() {
       TUN_DNS_VOLUME="$DNS_VOLUME"
       EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
     fi
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.5.2); then
+    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.6.0); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
     else
