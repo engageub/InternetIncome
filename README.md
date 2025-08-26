@@ -31,7 +31,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
 | [PacketSDK](https://packetsdk.com/?r=4q2rAz0w)| :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
 | [CastarSDK](https://t.co/CWeXsOqOmH) | :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
-| [Pay2Search](https://pay2search.com?referrer=sczfk1ikhcplg1m3) |  :heavy_check_mark:	  | :x: |1|1| Paypal, Crypto|
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
