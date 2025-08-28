@@ -596,7 +596,7 @@ start_containers() {
   fi
 
   # Starting ProxyRack container
-  if [ "$PROXYRACK" = true ]; then
+  if [[ $PROXYRACK_API ]]; then
     echo -e "${GREEN}Starting Proxyrack container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
@@ -631,7 +631,7 @@ start_containers() {
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid  -e DEVICE_NAME=$DEVICE_NAME$i -e API_KEY=$PROXYRACK_API proxyrack/pop); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
     else
