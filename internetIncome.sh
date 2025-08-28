@@ -571,10 +571,8 @@ start_containers() {
   fi
 
   # Starting ProxyRack container
-  if [ "$PROXYRACK" = true ]; then
+  if [[ $PROXYRACK_API ]]; then
     echo -e "${GREEN}Starting Proxyrack container..${NOCOLOUR}"
-    echo -e "${GREEN}Copy the following node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for ProxyRack. Exiting..${NOCOLOUR}"
@@ -606,7 +604,7 @@ start_containers() {
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
 
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid proxyrack/pop); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid  -e DEVICE_NAME=$DEVICE_NAME$i -e API_KEY=$PROXYRACK_API proxyrack/pop); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "proxyrack$UNIQUE_ID$i" | tee -a $container_names_file
     else
@@ -858,27 +856,6 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}URnetwork Node is not enabled. Ignoring URnetwork..${NOCOLOUR}"
-    fi
-  fi
-
-  # Starting Network3 container
-  if [[ $NETWORK3_EMAIL ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull aron666/network3-ai
-    fi
-    mkdir -p $PWD/$network3_data_folder/data$i
-    sudo chmod -R 777 $PWD/$network3_data_folder/data$i
-    network3_volume="-v $PWD/$network3_data_folder/data$i:/usr/local/etc/wireguard"
-    if CONTAINER_ID=$(sudo docker run -d --name network3$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME $network3_volume --cap-add NET_ADMIN --device /dev/net/tun -e EMAIL=$NETWORK3_EMAIL aron666/network3-ai); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "network3$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for Network3. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Network3 Email is not configured. Ignoring Network3..${NOCOLOUR}"
     fi
   fi
 
