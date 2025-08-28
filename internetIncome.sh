@@ -598,8 +598,6 @@ start_containers() {
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
     echo -e "${GREEN}Starting Proxyrack container..${NOCOLOUR}"
-    echo -e "${GREEN}Copy the following node uuid and paste in your proxyrack dashboard${NOCOLOUR}"
-    echo -e "${GREEN}You will also find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for ProxyRack. Exiting..${NOCOLOUR}"
