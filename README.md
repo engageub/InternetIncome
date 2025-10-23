@@ -131,7 +131,7 @@ sudo bash internetIncome.sh --deleteBackup
 ## :department_store:	Proxies or Hosting Providers
 [Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
 
-**<ins>Note:</ins>** [Bytelixir](https://t.co/MNaVYiALR5) and [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  support proxies in dashboard. You can add your proxies directly in website dashboard instead of running applications. 
+**<ins>Note:</ins>** [Bytelixir](https://t.co/MNaVYiALR5), [PassiveApp](https://passiveapp.com/i/KWc0pl) and [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  support proxies in dashboard. You can add your proxies directly in website dashboard instead of running applications. 
 
 
 ## :grey_question: FAQ
