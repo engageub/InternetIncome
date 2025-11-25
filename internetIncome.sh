@@ -236,10 +236,6 @@ start_containers() {
       echo -e "${RED}Failed to start container for Mysterium. Exiting..${NOCOLOUR}"
       exit 1
     fi
-  elif [[ "$MYSTERIUM" = true && $NETWORK_TUN ]]; then
-    if [ "$container_pulled" = false ]; then
-      echo -e "${RED}Proxy for Mysterium is not supported at the moment due to ongoing issue. Please see https://github.com/xjasonlyu/tun2socks/issues/262 for more details. Ignoring Mysterium..${NOCOLOUR}"
-    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
