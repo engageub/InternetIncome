@@ -1158,18 +1158,21 @@ if [[ "$1" == "--delete" ]]; then
     if [ -f "$file" ]; then
       rm $file
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
+
+  # Delete files for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${files_to_be_removed[@]}"
 
   # Delete folders
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
+
+  # Delete folders for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
+
   exit 1
 fi
 
@@ -1202,18 +1205,21 @@ if [[ "$1" == "--deleteBackup" ]]; then
     if [ -f "$file" ]; then
       rm $file
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
+
+  # Delete backup files for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${back_up_files[@]}"
 
   # Delete backup folders
   for folder in "${back_up_folders[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
+
+  # Delete backup folders for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${back_up_folders[@]}"
+
   exit 1
 fi
 
