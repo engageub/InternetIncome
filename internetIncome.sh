@@ -34,7 +34,6 @@ earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
-meson_file="meson.txt"
 mysterium_data_folder="mysterium-data"
 ebesucher_file="ebesucher.txt"
 custom_chrome_file="custom_chrome.txt"
@@ -63,7 +62,7 @@ proxyrack_file="proxyrack.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($dns_resolver_file $meson_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
+files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $dns_resolver_file)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -78,7 +77,6 @@ WATCH_TOWER_NAME="internetincomewatchtower"
 mysterium_first_port=2000
 ebesucher_first_port=3000
 adnade_first_port=4000
-meson_first_port=9000
 uprock_first_port=6100
 custom_firefox_first_port=5000
 custom_chrome_first_port=7000
@@ -1500,18 +1498,21 @@ if [[ "$1" == "--delete" ]]; then
     if [ -f "$file" ]; then
       rm $file
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
+
+  # Delete files for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${files_to_be_removed[@]}"
 
   # Delete folders
   for folder in "${folders_to_be_removed[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
+
+  # Delete folders for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
+
   exit 1
 fi
 
@@ -1582,18 +1583,21 @@ if [[ "$1" == "--deleteBackup" ]]; then
     if [ -f "$file" ]; then
       rm $file
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -f /output/$file ]; then rm /output/$file; fi"
   done
+
+  # Delete backup files for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${back_up_files[@]}"
 
   # Delete backup folders
   for folder in "${back_up_folders[@]}"; do
     if [ -d "$folder" ]; then
       rm -Rf $folder;
     fi
-    # For Docker-in-Docker
-    sudo docker run --rm -v $PWD:/output docker:18.06.2-dind sh -c "if [ -d /output/$folder ]; then rm -Rf /output/$folder; fi"
   done
+
+  # Delete backup folders for Docker-in-Docker
+  sudo docker run --rm -v "$PWD:/output" docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${back_up_folders[@]}"
+
   exit 1
 fi
 
