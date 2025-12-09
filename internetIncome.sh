@@ -427,16 +427,16 @@ start_containers() {
         # Set the download URL based on the architecture
         case "$CPU_ARCH" in
           x86_64 | amd64)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
+            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-amd64"
             ;;
           i686 | i386)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-386"
+            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-386"
             ;;
           armv7l | armv6l | armhf)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
+            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-arm"
             ;;
           arm64 | aarch64)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
+            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-arm64"
             ;;
           *)
             echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
