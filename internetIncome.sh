@@ -1153,6 +1153,19 @@ start_containers() {
     fi
   fi
 
+  # Starting WizardGain container
+  if [[ $WIZARD_GAIN_EMAIL ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull wizardgain/worker:latest
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$WIZARD_GAIN_EMAIL wizardgain/worker:latest)
+    execute_docker_command "WizardGain" "wizardgain$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}WizardGain Email is not configured. Ignoring WizardGain..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Nodepay container
   if [[ $NP_COOKIE ]]; then
     if [ "$container_pulled" = false ]; then
