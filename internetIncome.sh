@@ -818,6 +818,25 @@ start_containers() {
     fi
   fi
 
+  # Starting WizardGain container
+  if [[ $WIZARD_GAIN_EMAIL ]]; then
+    echo -e "${GREEN}Starting WizardGain container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull wizardgain/worker:latest
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --name wizardgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e EMAIL=$WIZARD_GAIN_EMAIL wizardgain/worker:latest); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "wizardgain$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for WizardGain. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}WizardGain Email is not configured. Ignoring WizardGain..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
     echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
