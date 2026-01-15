@@ -61,8 +61,9 @@ titan_data_folder="titan-data"
 proxyrack_file="proxyrack.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
+earn_fm_config_file="earnfm_config.json"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
+files_to_be_removed=($earn_fm_config_file $dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $dns_resolver_file)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -962,16 +963,64 @@ start_containers() {
     fi
   fi
 
-  # Starting Earn Fm container
-  if [[ $EARN_FM_API ]]; then
+  # Starting Earn FM container
+  if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" != true ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/earnfm-client:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest)
-    execute_docker_command "EarnFm" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "EarnFM" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
+      echo -e "${RED}EarnFM Api is not configured. Ignoring EarnFM..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Earn FM Fleetshare container
+  if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull earnfm/fleetshare:latest
+      if [ -f "$proxies_file" ]; then
+        SOCKS_PROXIES=()
+        while IFS= read -r line; do
+          # Skip empty lines
+          [[ -z "$line" ]] && continue
+
+          if [[ "$line" == socks5://* ]]; then
+            # Remove socks5:// prefix for config format
+            proxy="${line#socks5://}"
+            SOCKS_PROXIES+=("\"$proxy\"")
+          fi
+        done < "$proxies_file"
+
+        if [[ ${#SOCKS_PROXIES[@]} -eq 0 ]]; then
+          echo -e "${RED}Proxies file $proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+
+        cat > "$earn_fm_config_file" <<-EOF
+        {
+          "apiKey": "$EARN_FM_API",
+          "devices": {
+            "subnets": [],
+            "socksProxies": [$(IFS=,; echo "${SOCKS_PROXIES[*]}")]
+          },
+          "debug": false
+        }
+        EOF
+      else
+        echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+        exit 1;
+      fi
+    fi
+    if [ ! -f "$earn_fm_config_file" ]; then
+      echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v $PWD/$earn_fm_config_file:/app/config.json earnfm/fleetshare:latest)
+    execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}EarnFM Fleetshare is not configured. Ignoring EarnFm Fleetshare..${NOCOLOUR}"
     fi
   fi
 
