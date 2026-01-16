@@ -50,11 +50,12 @@ chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 restart_file="restart.sh"
 dns_resolver_file="resolv.conf"
+earn_fm_config_file="earnfm_config.json"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+files_to_be_removed=($earn_fm_config_file $dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
@@ -480,9 +481,9 @@ start_containers() {
     fi
   fi
 
-  # Starting Earn Fm container
-  if [[ $EARN_FM_API ]]; then
-    echo -e "${GREEN}Starting EarnFm container..${NOCOLOUR}"
+  # Starting Earn FM container
+  if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" != true ]]; then
+    echo -e "${GREEN}Starting EarnFM container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/earnfm-client:latest
     fi
@@ -490,12 +491,64 @@ start_containers() {
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
     else
-      echo -e "${RED}Failed to start container for EarnFm. Exiting..${NOCOLOUR}"
+      echo -e "${RED}Failed to start container for EarnFM. Exiting..${NOCOLOUR}"
       exit 1
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFm Api is not configured. Ignoring EarnFm..${NOCOLOUR}"
+      echo -e "${RED}EarnFM Api is not configured. Ignoring EarnFM..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Earn FM Fleetshare container
+  if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]]; then
+    if [ "$container_pulled" = false ]; then
+      echo -e "${GREEN}Starting EarnFM Fleetshare container..${NOCOLOUR}"
+      sudo docker pull earnfm/fleetshare:latest
+      if [ -f "$proxies_file" ]; then
+	SOCKS_PROXIES=()
+        while IFS= read -r line; do
+          # Skip empty lines
+          [[ -z "$line" ]] && continue
+          if [[ "$line" == socks5://* ]]; then
+            # Remove socks5:// prefix for config format
+            proxy="${line#socks5://}"
+            SOCKS_PROXIES+=("\"$proxy\"")
+          fi
+        done < "$proxies_file"
+        if [[ ${#SOCKS_PROXIES[@]} -eq 0 ]]; then
+          echo -e "${RED}Proxies file $proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+      	cat > "$earn_fm_config_file" <<-EOF
+	{
+	  "apiKey": "$EARN_FM_API",
+	  "devices": {
+	    "subnets": [],
+	    "socksProxies": [$(IFS=,; echo "${SOCKS_PROXIES[*]}")]
+	  },
+	  "debug": false
+	}
+	EOF
+        if [ ! -f "$earn_fm_config_file" ]; then
+          echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
+	  exit 1
+        fi
+        if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME -v $PWD/$earn_fm_config_file:/app/config.json earnfm/fleetshare:latest); then
+          echo "$CONTAINER_ID" | tee -a $containers_file
+          echo "earnfm$UNIQUE_ID$i" | tee -a $container_names_file
+        else
+          echo -e "${RED}Failed to start container for EarnFM. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+      else
+	echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}EarnFM Fleetshare is not configured. Ignoring EarnFM Fleetshare..${NOCOLOUR}"
     fi
   fi
 
