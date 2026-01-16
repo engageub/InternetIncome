@@ -1010,12 +1010,13 @@ start_containers() {
 	}
 	EOF
       else
-	echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+	    echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
         exit 1;
       fi
     fi
     if [ ! -f "$earn_fm_config_file" ]; then
       echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
+	  exit 1;
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v $PWD/$earn_fm_config_file:/app/config.json earnfm/fleetshare:latest)
     execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
