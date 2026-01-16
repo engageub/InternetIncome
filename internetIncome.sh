@@ -1009,20 +1009,20 @@ start_containers() {
 	  "debug": false
 	}
 	EOF
+        if [ ! -f "$earn_fm_config_file" ]; then
+          echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
+	      exit 1;
+        fi
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v $PWD/$earn_fm_config_file:/app/config.json earnfm/fleetshare:latest)
+        execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
 	    echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
         exit 1;
       fi
     fi
-    if [ ! -f "$earn_fm_config_file" ]; then
-      echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
-	  exit 1;
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v $PWD/$earn_fm_config_file:/app/config.json earnfm/fleetshare:latest)
-    execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFM Fleetshare is not configured. Ignoring EarnFm Fleetshare..${NOCOLOUR}"
+      echo -e "${RED}EarnFM Fleetshare is not configured. Ignoring EarnFM Fleetshare..${NOCOLOUR}"
     fi
   fi
 
