@@ -1190,6 +1190,19 @@ start_containers() {
     fi
   fi
 
+  # Starting AntGain container
+  if [[ $ANTGAIN_API_KEY ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull --platform=linux/amd64 pinors/antgain-cli:latest
+    fi
+    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY pinors/antgain-cli:latest run)
+    execute_docker_command "AntGain" "antgain$UNIQUE_ID$i" "${docker_parameters[@]}"
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}AntGain API is not configured. Ignoring AntGain..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
     if [ "$container_pulled" = false ]; then
