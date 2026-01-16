@@ -24,7 +24,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :x: | No limit|1| Crypto |
 | [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 10|1| Paypal, Gift Card |
 | [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
@@ -39,6 +38,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Gradient Network](https://app.gradient.network/signup?code=OKM7KM) | :heavy_check_mark: | :x: |No limit|1| Rewards|
 | [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| Crypto, Paypal|
 | [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| Paypal, Stripe|
+| [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
 | [WizardGain](https://t.co/NBMM8abxi0) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal, Crypto|
 | [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :heavy_check_mark: |10|1| Paypal|
