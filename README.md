@@ -24,6 +24,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
+| [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :x: | No limit|1| Crypto |
 | [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 10|1| Paypal, Gift Card |
 | [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
