@@ -546,8 +546,8 @@ start_containers() {
 
   # Starting Earn FM Fleetshare container
   if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]]; then
-    echo -e "${GREEN}Starting EarnFM Fleetshare container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
+	  echo -e "${GREEN}Starting EarnFM Fleetshare container..${NOCOLOUR}"
       sudo docker pull earnfm/fleetshare:latest
       if [ -f "$proxies_file" ]; then
 	SOCKS_PROXIES=()
