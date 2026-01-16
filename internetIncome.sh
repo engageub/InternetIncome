@@ -981,24 +981,20 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/fleetshare:latest
       if [ -f "$proxies_file" ]; then
-	SOCKS_PROXIES=()
-
+        SOCKS_PROXIES=()
         while IFS= read -r line; do
           # Skip empty lines
           [[ -z "$line" ]] && continue
-
           if [[ "$line" == socks5://* ]]; then
             # Remove socks5:// prefix for config format
             proxy="${line#socks5://}"
             SOCKS_PROXIES+=("\"$proxy\"")
           fi
         done < "$proxies_file"
-
         if [[ ${#SOCKS_PROXIES[@]} -eq 0 ]]; then
           echo -e "${RED}Proxies file $proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
           exit 1
         fi
-
       	cat > "$earn_fm_config_file" <<-EOF
 	{
 	  "apiKey": "$EARN_FM_API",
@@ -1011,13 +1007,13 @@ start_containers() {
 	EOF
         if [ ! -f "$earn_fm_config_file" ]; then
           echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
-	      exit 1;
+          exit 1
         fi
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v $PWD/$earn_fm_config_file:/app/config.json earnfm/fleetshare:latest)
         execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
-	    echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
-        exit 1;
+        echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+        exit 1
       fi
     fi
   else
