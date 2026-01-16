@@ -779,6 +779,25 @@ start_containers() {
     fi
   fi
 
+  # Starting AntGain container
+  if [[ $ANTGAIN_API_KEY ]]; then
+    echo -e "${GREEN}Starting AntGain container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull --platform=linux/amd64 pinors/antgain-cli:latest
+    fi
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY pinors/antgain-cli:latest run); then
+      echo "$CONTAINER_ID" | tee -a $containers_file
+      echo "antgain$UNIQUE_ID$i" | tee -a $container_names_file
+    else
+      echo -e "${RED}Failed to start container for AntGain. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}AntGain API is not configured. Ignoring AntGain..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting WizardGain container
   if [[ $WIZARD_GAIN_EMAIL ]]; then
     echo -e "${GREEN}Starting WizardGain container..${NOCOLOUR}"
