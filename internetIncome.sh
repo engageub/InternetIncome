@@ -246,7 +246,8 @@ start_containers() {
     DNS_VOLUME="";
   fi
 
-  if [ "$container_pulled" = false ]; then
+   if [[ "$container_pulled" = false && "$START_ONLY" != true ]]; then
+
     # For users with Docker-in-Docker, the PWD path is on the host where Docker is installed.
     # The files are created in the same path as the inner Docker path.
     printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\n' > $dns_resolver_file;
@@ -284,7 +285,7 @@ start_containers() {
     CPU_PARAM="--cpus=$CPU"
   fi
 
-  if [[ $i && $proxy ]]; then
+  if [[ $i && $proxy && "$START_ONLY" != true ]]; then
     NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
 
     if [ "$MYSTERIUM" = true ]; then
@@ -471,6 +472,16 @@ start_containers() {
       fi
       docker_parameters=($LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.6.0)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+    fi
+  fi
+  
+  if [ "$START_ONLY" = true ]; then
+    if [ "$vpn_enabled" = true ];then
+      NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
+    elif [ "$vpn_enabled" = false ];then
+      NETWORK_TUN="--network=multi$UNIQUE_ID$i"
+    else
+      NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
     fi
   fi
 
@@ -1364,6 +1375,108 @@ if ! command -v docker &> /dev/null; then
   exit 1
 fi
 
+if [[ "$1" == "--startOnly" ]]; then
+  shift   # remove --startOnly
+  # Read -e arguments and export variables to the current shell
+  while [[ $# -gt 0 ]]; do
+    # Look only for -e
+    if [[ "$1" == "-e" ]]; then
+      shift
+      line="$1"
+      # Split the line at the first occurrence of =
+      key="${line%%=*}"
+      value="${line#*=}"
+      # Trim leading and trailing whitespace from key and value
+      key="${key%"${key##*[![:space:]]}"}"
+      value="${value%"${value##*[![:space:]]}"}"
+      # Ignore lines without a value after =
+      if [[ -n $value ]]; then
+          # Replace variables with their values 
+          value=$(eval "echo $value")
+          # Export the key-value pairs as variables
+          export "$key"="$value"
+      fi
+    fi
+    shift
+  done
+  # Check if container names file exists
+  if [ ! -f "$container_names_file" ]; then
+    echo -e "${RED}Required file $container_names_file does not exist. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  # Read the first line of the file
+  first_line=$(head -n 1 "$container_names_file")
+  # Use Bash regex to extract CURRENT_ID
+  if [[ $first_line =~ ^(gluetun)(.*).$ ]]; then
+    CURRENT_ID="${BASH_REMATCH[2]}"
+  fi
+  if [[ ! -n "$CURRENT_ID" && -f $networks_file ]]; then
+    # Read the first line of the file
+    first_line=$(head -n 1 "$networks_file")
+    # Use Bash regex to extract CURRENT_ID
+    if [[ $first_line =~ ^(multi)(.*).$ ]]; then
+      CURRENT_ID="${BASH_REMATCH[2]}"
+    fi
+  fi
+  if [[ ! -n "$CURRENT_ID" ]]; then
+    # Read the first line of the file
+    first_line=$(head -n 1 "$container_names_file")
+    # Use Bash regex to extract CURRENT_ID
+    if [[ $first_line =~ ^(tun)(.*).$ ]]; then
+      CURRENT_ID="${BASH_REMATCH[2]}"
+    fi
+  fi
+  if [ -n "$CURRENT_ID" ]; then
+    UNIQUE_ID=$CURRENT_ID
+  else
+    echo -e "${RED}startOnly parameter works only with proxy, IP or VPN containers. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  i=0;
+  START_ONLY=true
+  for container in `cat $container_names_file | grep ^gluetun`
+  do
+    i=`expr $i + 1`
+    start_containers "$i" "$container" "true"
+  done
+  MULTI_IP_CONTAINER_COUNT=0
+  if [ -f $networks_file ]; then
+    # Count containers whose names start with 'multi'
+    MULTI_IP_CONTAINER_COUNT=$(grep -c '^multi' "$networks_file")
+  fi
+  if [ "$MULTI_IP_CONTAINER_COUNT" -gt 0 ]; then
+    # Check if container names file exists
+    if [ ! -f "$multi_ip_file" ]; then
+      echo -e "${RED}Required file $multi_ip_file does not exist. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+    MULTI_IP_COUNT=0
+    while IFS= read -r line || [ -n "$line" ]; do
+      # Ignore lines starting with #
+      if [[ "$line" =~ ^[^#].* ]]; then
+        MULTI_IP_COUNT=$((MULTI_IP_COUNT + 1))
+      fi
+    done < $multi_ip_file
+    # Check if both IP count and container count matches
+    if [ "$MULTI_IP_CONTAINER_COUNT" -ne "$MULTI_IP_COUNT" ]; then
+      echo -e "${RED}Multi IP Count does not match with the number of running containers. Exiting..${NOCOLOUR}"
+      exit 1
+    fi
+    while IFS= read -r line || [ -n "$line" ]; do
+      if [[ "$line" =~ ^[^#].* ]]; then
+        i=`expr $i + 1`
+        start_containers "$i" "$line" "false"
+      fi
+    done < $multi_ip_file
+  fi
+  for container in `cat $container_names_file | grep ^tun`
+  do
+    i=`expr $i + 1`
+    start_containers "$i" "$container"
+  done
+  exit 1
+fi
+
 # Start the containers
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
@@ -1674,4 +1787,4 @@ if [[ "$1" == "--deleteBackup" ]]; then
   exit 1
 fi
 
-echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}, ${RED}--stop${NOCOLOUR}, ${RED}--restart${NOCOLOUR}"
+echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--startOnly${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}, ${RED}--stop${NOCOLOUR}, ${RED}--restart${NOCOLOUR}"
