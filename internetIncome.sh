@@ -1392,7 +1392,7 @@ if [[ "$1" == "--startOnly" ]]; then
       # Ignore lines without a value after =
       if [[ -n $value ]]; then
           # Replace variables with their values 
-          value=$(eval "echo $value")
+          value="$value"
           # Export the key-value pairs as variables
           export "$key"="$value"
       fi
