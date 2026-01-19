@@ -62,8 +62,9 @@ proxyrack_file="proxyrack.txt"
 cloudflare_file="cloudflared"
 dns_resolver_file="resolv.conf"
 earn_fm_config_file="earnfm_config.json"
+connection_state_file="connection_state.txt"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file)
+files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $dns_resolver_file)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -87,7 +88,7 @@ first_octet=192
 second_octet=168
 third_octet=32
 
-#Unique Id
+#Unique ID
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 
 # Use banner if exists
@@ -480,8 +481,10 @@ start_containers() {
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network=multi$UNIQUE_ID$i"
-    else
+    elif [ $proxy ]; then
       NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
+    else
+      NETWORK_TUN=""
     fi
   fi
 
@@ -1399,41 +1402,29 @@ if [[ "$1" == "--startOnly" ]]; then
     fi
     shift
   done
+  # Check if connection state file exists
+  if [ ! -f "$connection_state_file" ]; then
+    echo -e "${RED}Required file $connection_state_file does not exist. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
   # Check if container names file exists
   if [ ! -f "$container_names_file" ]; then
     echo -e "${RED}Required file $container_names_file does not exist. Exiting..${NOCOLOUR}"
     exit 1
   fi
   # Read the first line of the file
-  first_line=$(head -n 1 "$container_names_file")
-  # Use Bash regex to extract CURRENT_ID
-  if [[ $first_line =~ ^(gluetun)(.*).$ ]]; then
-    CURRENT_ID="${BASH_REMATCH[2]}"
-  fi
-  if [[ ! -n "$CURRENT_ID" && -f $networks_file ]]; then
-    # Read the first line of the file
-    first_line=$(head -n 1 "$networks_file")
-    # Use Bash regex to extract CURRENT_ID
-    if [[ $first_line =~ ^(multi)(.*).$ ]]; then
-      CURRENT_ID="${BASH_REMATCH[2]}"
-    fi
-  fi
-  if [[ ! -n "$CURRENT_ID" ]]; then
-    # Read the first line of the file
-    first_line=$(head -n 1 "$container_names_file")
-    # Use Bash regex to extract CURRENT_ID
-    if [[ $first_line =~ ^(tun)(.*).$ ]]; then
-      CURRENT_ID="${BASH_REMATCH[2]}"
-    fi
-  fi
+  CURRENT_ID=$(head -n 1 "$connection_state_file")
   if [ -n "$CURRENT_ID" ]; then
     UNIQUE_ID=$CURRENT_ID
   else
-    echo -e "${RED}startOnly parameter works only with proxy, IP or VPN containers. Exiting..${NOCOLOUR}"
+    echo -e "${RED}Unique ID is not present in $connection_state_file. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  i=0;
   START_ONLY=true
+  if grep -q "DIRECT_CONNECTION_ENABLED" "$connection_state_file"; then
+    start_containers
+  fi
+  i=0
   for container in `cat $container_names_file | grep ^gluetun`
   do
     i=`expr $i + 1`
@@ -1543,8 +1534,12 @@ if [[ "$1" == "--start" ]]; then
     DEVICE_NAME=ubuntu
   fi
 
+  # Write Unique ID to file
+  echo $UNIQUE_ID > $connection_state_file
+
   # Use direct Connection
   if [ "$USE_DIRECT_CONNECTION" = true ]; then
+     echo "DIRECT_CONNECTION_ENABLED" >> $connection_state_file
      STATUS=1
      echo -e "${GREEN}USE_DIRECT_CONNECTION is enabled, using direct internet connection..${NOCOLOUR}"
      start_containers
@@ -1552,6 +1547,7 @@ if [[ "$1" == "--start" ]]; then
 
   # Use Vpns
   if [ "$USE_VPNS" = true ]; then
+    echo "VPN_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}"
     if [ ! -f "$vpns_file" ]; then
@@ -1575,6 +1571,7 @@ if [[ "$1" == "--start" ]]; then
 
   # Use Multi IPs
   if [ "$USE_MULTI_IP" = true ]; then
+    echo "MULTI_IP_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}"
     if [ ! -f "$multi_ip_file" ]; then
@@ -1598,6 +1595,7 @@ if [[ "$1" == "--start" ]]; then
 
   # Use Proxies
   if [ "$USE_PROXIES" = true ]; then
+    echo "PROXY_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}"
     if [ ! -f "$proxies_file" ]; then
