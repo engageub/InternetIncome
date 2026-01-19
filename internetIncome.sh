@@ -88,7 +88,7 @@ first_octet=192
 second_octet=168
 third_octet=32
 
-#Unique ID
+# Unique ID
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 
 # Use banner if exists
