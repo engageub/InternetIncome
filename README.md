@@ -14,7 +14,7 @@ For advanced users, please use the [test](https://github.com/engageub/InternetIn
 - Use code **RESI2025** to get 50% off on Residential Plans.
 - Use code **ASHBURN2025** to get 50% on ISP Plans.
 
-### <ins> [Click here to get Static Residential Proxies starting at $1.50](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
+### <ins> [Click here to get Static Residential Proxies starting at $1](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
 
 File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
