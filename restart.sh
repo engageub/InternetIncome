@@ -168,7 +168,7 @@ elif [[ "$1" == "--restartURnetwork" ]]; then
     docker restart $container
   done
 
-  elif [[ "$1" == "--restartTraffmonetizer" ]]; then
+elif [[ "$1" == "--restartTraffmonetizer" ]]; then
   # Restarting Traffmonetizer Nodes
   for container in `cat containernames.txt | grep ^traffmon`
   do
