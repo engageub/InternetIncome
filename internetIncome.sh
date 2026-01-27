@@ -183,7 +183,11 @@ start_containers() {
     echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
-      sudo docker pull xjasonlyu/tun2socks:v2.6.0
+      if [ "$USE_SOCKS5_DNS" = true ]; then
+        sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:latest
+      else
+        sudo docker pull xjasonlyu/tun2socks:v2.6.0
+      fi
     fi
     if [ "$USE_SOCKS5_DNS" = true ]; then
       TUN_DNS_VOLUME="$DNS_VOLUME"
@@ -193,12 +197,41 @@ start_containers() {
       TUN_DNS_VOLUME="$DNS_VOLUME"
       EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
     fi
-    if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.6.0); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
-      exit 1
+    if [[ "$USE_SOCKS5_DNS" == "true" && "$proxy" == socks5://* ]]; then
+      SOCKS_PROXY=$proxy
+      # Strip scheme
+      SOCKS_NO_SCHEME="${SOCKS_PROXY#socks5://}"
+      # If auth exists, split it
+      if [[ "$SOCKS_NO_SCHEME" == *@* ]]; then
+        SOCKS_CREDS="${SOCKS_NO_SCHEME%@*}"
+        SOCKS_HOSTPORT="${SOCKS_NO_SCHEME#*@}"
+        SOCKS_USER="${SOCKS_CREDS%%:*}"
+        SOCKS_PASS="${SOCKS_CREDS#*:}"
+      else
+        SOCKS_HOSTPORT="$SOCKS_NO_SCHEME"
+        SOCKS_USER=""
+        SOCKS_PASS=""
+      fi
+      SOCKS_ADDR="${SOCKS_HOSTPORT%%:*}"
+      SOCKS_PORT="${SOCKS_HOSTPORT##*:}"
+      if [[ "$ENABLE_LOGS" != true ]]; then
+        TUN_LOG_PARAM="warn"
+      fi
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOG_LEVEL=$TUN_LOG_PARAM -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -d ghcr.io/heiher/hev-socks5-tunnel:latest); then
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+    else 
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.6.0); then
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
     fi
     sleep 1
   fi
