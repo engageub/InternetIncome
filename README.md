@@ -29,12 +29,9 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
 | [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
-| [PacketSDK](https://t.co/MWQ3piePsK)| :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
-| [CastarSDK](https://t.co/CWeXsOqOmH) | :heavy_check_mark:	  | :x: |No limit|1| Paypal, Crypto|
 | [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| [Nodepay](https://app.nodepay.ai/register?ref=jQKVeB8MZjYfTcq) | :heavy_check_mark:	  | :x: |3|1| Rewards|
 | [Gradient Network](https://app.gradient.network/signup?code=OKM7KM) | :heavy_check_mark: | :x: |No limit|1| Rewards|
 | [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| Crypto, Paypal|
 | [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| Paypal, Stripe|
