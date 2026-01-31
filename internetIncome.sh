@@ -54,8 +54,10 @@ earn_fm_config_file="earnfm_config.json"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
+ur_proxies_file="ur_proxies.txt"
+ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($earn_fm_config_file $dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file)
+files_to_be_removed=($earn_fm_config_file $dns_resolver_file $containers_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file $ur_proxies_file $ur_data_proxies_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
@@ -957,21 +959,75 @@ start_containers() {
           exit 1
         fi
       fi
-      if CONTAINER_ID=$(sudo docker run -d --name dindurnetwork$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/urnetwork docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done'); then
-        echo "URnetwork restart container started"
-        echo "$CONTAINER_ID" | tee -a $containers_file
-        echo "dindurnetwork$UNIQUE_ID$i" | tee -a $container_names_file
-      else
-        echo -e "${RED}Failed to start container for URnetwork restart. Exiting..${NOCOLOUR}"
-        exit 1
+      if [ "$UR_NETWORK_PROXY_MODE" = true ]; then
+        if [ -f "$proxies_file" ]; then
+          SOCKS_PROXIES=()
+          while IFS= read -r line; do
+            # Skip empty lines
+            [[ -z "$line" ]] && continue
+            if [[ "$line" == socks5://* ]]; then
+              # Remove socks5:// prefix for config format
+              SOCKS_PROXY=$line
+              # Strip scheme
+              SOCKS_NO_SCHEME="${SOCKS_PROXY#socks5://}"
+              # If auth exists, split it
+              if [[ "$SOCKS_NO_SCHEME" == *@* ]]; then
+                SOCKS_CREDS="${SOCKS_NO_SCHEME%@*}"
+                SOCKS_HOSTPORT="${SOCKS_NO_SCHEME#*@}"
+                SOCKS_USER="${SOCKS_CREDS%%:*}"
+                SOCKS_PASS="${SOCKS_CREDS#*:}"
+              else
+                SOCKS_HOSTPORT="$SOCKS_NO_SCHEME"
+                SOCKS_USER=""
+                SOCKS_PASS=""
+              fi
+              SOCKS_ADDR="${SOCKS_HOSTPORT%%:*}"
+              SOCKS_PORT="${SOCKS_HOSTPORT##*:}"
+	          if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
+                echo "$SOCKS_ADDR:$SOCKS_PORT:$SOCKS_USER:$SOCKS_PASS" >> $ur_proxies_file
+              else
+                echo "$SOCKS_ADDR:$SOCKS_PORT" >> $ur_proxies_file
+              fi
+            fi
+          done < "$proxies_file"
+        fi
+        if [ ! -f "$ur_proxies_file" ]; then
+          echo -e "${RED}Proxies file $ur_proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+	# Generate proxy file using urnetwork
+	sudo docker run --rm $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" -v "$PWD/$ur_proxies_file:/root/ur_proxy.txt" bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
+	sleep 1
+	if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
+          echo -e "${RED}Proxy file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+        if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
+          echo "$CONTAINER_ID" | tee -a $containers_file
+          echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
+        else
+          echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+      else 
+        if CONTAINER_ID=$(sudo docker run -d --name dindurnetwork$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/urnetwork docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done'); then
+          echo "URnetwork restart container started"
+          echo "$CONTAINER_ID" | tee -a $containers_file
+          echo "dindurnetwork$UNIQUE_ID$i" | tee -a $container_names_file
+        else
+          echo -e "${RED}Failed to start container for URnetwork restart. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
       fi
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
-      echo "$CONTAINER_ID" | tee -a $containers_file
-      echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
-    else
-      echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
-      exit 1
+    if [ "$UR_NETWORK_PROXY_MODE" != true ]; then
+      if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide); then
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "urnetwork$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
