@@ -966,7 +966,7 @@ start_containers() {
               fi
               SOCKS_ADDR="${SOCKS_HOSTPORT%%:*}"
               SOCKS_PORT="${SOCKS_HOSTPORT##*:}"
-	      if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
+	          if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
                 echo "$SOCKS_ADDR:$SOCKS_PORT:$SOCKS_USER:$SOCKS_PASS" >> $ur_proxies_file
               else
                 echo "$SOCKS_ADDR:$SOCKS_PORT" >> $ur_proxies_file
@@ -974,18 +974,18 @@ start_containers() {
             fi
           done < "$proxies_file"
         fi
-	if [ ! -f "$ur_proxies_file" ]; then
+	    if [ ! -f "$ur_proxies_file" ]; then
           echo -e "${RED}Proxies file $ur_proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
           exit 1
         fi
-	# Generate proxy file using urnetwork
-	sudo docker run --rm $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" -v "$PWD/$ur_proxies_file:/root/ur_proxy.txt"  bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
-	sleep 1
-	if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
+	    # Generate proxy file using urnetwork
+	    sudo docker run --rm $DNS_VOLUME -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" -v "$PWD/$ur_proxies_file:/root/ur_proxy.txt" bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
+	    sleep 1
+	    if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
           echo -e "${RED}Proxy file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
           exit 1
         fi
-	docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide)
+	    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v "$PWD/$urnetwork_data_folder/data/.urnetwork:/root/.urnetwork" bringyour/community-provider:latest provide)
         execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
       else 
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:/urnetwork docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
