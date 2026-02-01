@@ -790,9 +790,9 @@ start_containers() {
   if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
     echo -e "${GREEN}Starting Wipter container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:9b1a7742bfbbd68e86eea1719f606c7d10c884e2578a4fb35f109eed387619cd
+      sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:0b85e2380684ccae3ea2ef7431d6b67bb6245f83fb475cccc075ddeda5dcc16d
     fi
-    if CONTAINER_ID=$(sudo docker run -d --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:9b1a7742bfbbd68e86eea1719f606c7d10c884e2578a4fb35f109eed387619cd); then
+    if CONTAINER_ID=$(sudo docker run -d --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/adfly8470/wipter/wipter@sha256:0b85e2380684ccae3ea2ef7431d6b67bb6245f83fb475cccc075ddeda5dcc16d); then
       echo "$CONTAINER_ID" | tee -a $containers_file
       echo "wipter$UNIQUE_ID$i" | tee -a $container_names_file
     else
