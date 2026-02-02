@@ -1,4 +1,4 @@
-# 💻 Internet Income 💸 (Multi-Proxy, Multi-IP, Multi-VPN Support) 🏰	
+# 💻 Internet Income 💸 Multi-Proxy . Multi-IP . Multi-VPN 🏰	
 
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
