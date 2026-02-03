@@ -187,6 +187,8 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       if [ "$USE_SOCKS5_DNS" = true ]; then
         sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:latest
+      elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
+        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.19
       else
         sudo docker pull xjasonlyu/tun2socks:v2.6.0
       fi
@@ -195,6 +197,7 @@ start_containers() {
       TUN_DNS_VOLUME="$DNS_VOLUME"
     elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
       EXTRA_COMMANDS='echo -e "options use-vc\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
+      DNS_OPTION="--dns over-tcp"
     else
       TUN_DNS_VOLUME="$DNS_VOLUME"
       EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
@@ -220,6 +223,19 @@ start_containers() {
         TUN_LOG_PARAM="warn"
       fi
       if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOG_LEVEL=$TUN_LOG_PARAM -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -d --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:latest); then
+        echo "$CONTAINER_ID" | tee -a $containers_file
+        echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
+      else
+        echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+    elif [[ "$USE_DNS_OVER_HTTPS" == "true" && "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
+      if [[ "$ENABLE_LOGS" != true ]]; then
+        TUN_LOG_PARAM="off"
+      else
+        TUN_LOG_PARAM="trace"
+      fi
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.19 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
         echo "$CONTAINER_ID" | tee -a $containers_file
         echo "tun$UNIQUE_ID$i" | tee -a $container_names_file
       else
