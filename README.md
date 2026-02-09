@@ -9,6 +9,8 @@ Your income depends on the number of proxies used and the proxy location. If you
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, please use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
 
+**Note**: Collecting and reading publicly available data from the internet is usually protected by free speech rights under the First Amendment of the US Constitution.
+
 ### **Special Offer** on [Ashburn Proxies](https://ashburnproxies.com/?via=internetincome)
 
 - Use code **RESI2025** to get 50% off on Residential Plans.
