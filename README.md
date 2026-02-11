@@ -40,7 +40,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
 | [WizardGain](https://t.co/NBMM8abxi0) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal, Crypto|
 | [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [PacketShare](https://www.packetshare.io/?code=2B7D5FCA803BF802) | :heavy_check_mark:	  | :heavy_check_mark: |10|1| Paypal|
 | [Titan Network](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
 | [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
 | [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
