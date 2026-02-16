@@ -117,7 +117,7 @@ start_containers() {
 
   local i=$1
   local proxy=$2
-  local DNS_VOLUME="-v $PWD/$dns_resolver_file:/etc/resolv.conf:ro"
+  local DNS_VOLUME="--mount type=bind,source=$PWD/$dns_resolver_file,target=/etc/resolv.conf,readonly"
   local TUN_DNS_VOLUME
 
   if [ "$container_pulled" = false ]; then
