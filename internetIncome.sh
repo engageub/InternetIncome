@@ -1741,24 +1741,19 @@ fi
 # Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
-
-    # Check if there is already a running process
+  # Check if there is already a running process
   if [ -f "$process_id_file" ]; then
     PID=$(cat "$process_id_file")
     PROC_DIR=$(pwdx "$PID" 2>/dev/null | awk '{print $2}')
-
     if [ "$PROC_DIR" = "$PWD" ]; then
       echo "There is already a running process (PID $PID)."
       echo "Do you want to stop it and continue? (yes/no)"
-
       # Prompt with 60-second timeout
       read -r -t 60 ANSWER
-
       if [ $? -ne 0 ]; then
         echo "No response within 60 seconds. Exiting."
         exit 1
       fi
-
       case "$ANSWER" in
         yes|y|Y)
           echo "Stopping process $PID..."
