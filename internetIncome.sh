@@ -65,8 +65,9 @@ earn_fm_config_file="earnfm_config.json"
 connection_state_file="connection_state.txt"
 ur_proxies_file="ur_proxies.txt"
 ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
+process_id_file="process.pid"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file)
+files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -213,6 +214,15 @@ execute_docker_command() {
   fi
   
   echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
+  # Check if container exists
+  if sudo docker inspect $container_name >/dev/null 2>&1; then
+    echo -e "${RED}A container with name $container_name already exists..${NOCOLOUR}"
+    echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
+    exit 1
+  else
+    echo "$container_name" | tee -a "$container_names_file"
+  fi
+
   if [[ "$app_name" == "VPN" ]]; then
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
@@ -221,7 +231,7 @@ execute_docker_command() {
 
   # Check if the container started successfully
   if [[ -n "$CONTAINER_ID" ]]; then
-    echo "$container_name" | tee -a "$container_names_file"
+    echo -e "${GREEN}Container $container_name started successfully.${NOCOLOUR}"
   else
     echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
     exit 1
@@ -1592,6 +1602,9 @@ if [[ "$1" == "--start" ]]; then
   # CPU architecture to get docker images
   CPU_ARCH=`uname -m`
 
+  # Write current PID to file
+  echo "$$" > $process_id_file
+
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
     # Ignore lines that start with #
@@ -1719,12 +1732,52 @@ if [[ "$1" == "--start" ]]; then
       execute_docker_command "Internet Income Watch Tower" "$WATCH_TOWER_NAME" "${docker_parameters[@]}"
     fi
   fi
+
+  # Remove Process file
+  rm $process_id_file
   exit 1
 fi
 
 # Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
+
+    # Check if there is already a running process
+  if [ -f "$process_id_file" ]; then
+    PID=$(cat "$process_id_file")
+    PROC_DIR=$(pwdx "$PID" 2>/dev/null | awk '{print $2}')
+
+    if [ "$PROC_DIR" = "$PWD" ]; then
+      echo "There is already a running process (PID $PID)."
+      echo "Do you want to stop it and continue? (yes/no)"
+
+      # Prompt with 60-second timeout
+      read -r -t 60 ANSWER
+
+      if [ $? -ne 0 ]; then
+        echo "No response within 60 seconds. Exiting."
+        exit 1
+      fi
+
+      case "$ANSWER" in
+        yes|y|Y)
+          echo "Stopping process $PID..."
+          kill "$PID" 2>/dev/null
+          sleep 2
+          rm -f "$process_id_file"
+          echo "Process stopped. Continuing..."
+          ;;
+        no|n|N)
+          echo "Operation cancelled."
+          exit 1
+          ;;
+        *)
+          echo "Invalid response. Exiting."
+          exit 1
+          ;;
+      esac
+    fi
+  fi
 
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
