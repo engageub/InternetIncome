@@ -199,7 +199,7 @@ start_containers() {
     fi
 
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
-    echo -e "${GREEN}Starting Proxy container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Proxy container..${NOCOLOUR}"
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       if [ "$USE_SOCKS5_DNS" = true ]; then
@@ -273,7 +273,7 @@ start_containers() {
 
   # Starting Mysterium container
   if [[ "$MYSTERIUM" = true ]]; then
-    echo -e "${GREEN}Starting Mysterium container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Mysterium container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
@@ -374,7 +374,7 @@ start_containers() {
       echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
       exit 1
     fi
-    echo -e "${GREEN}Starting Ebesucher container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Ebesucher container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
@@ -440,7 +440,7 @@ start_containers() {
       echo -e "${RED}Adnade and Ebesucher are not supported now in Docker-in-Docker. Please use custom chrome or custom firefox in test branch and login manually. Exiting..${NOCOLOUR}";
       exit 1
     fi
-    echo -e "${GREEN}Starting Adnade container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Adnade container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
@@ -501,7 +501,7 @@ start_containers() {
 
   # Starting BitPing container
   if [[ $BITPING_EMAIL && $BITPING_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Bitping container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Bitping container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull bitping/bitpingd:latest
     fi
@@ -526,7 +526,7 @@ start_containers() {
 
   # Starting Repocket container
   if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
-    echo -e "${GREEN}Starting Repocket container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Repocket container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket
     fi
@@ -546,7 +546,7 @@ start_containers() {
 
   # Starting Earn FM container
   if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" != true ]]; then
-    echo -e "${GREEN}Starting EarnFM container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting EarnFM container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull earnfm/earnfm-client:latest
     fi
@@ -566,7 +566,7 @@ start_containers() {
   # Starting Earn FM Fleetshare container
   if [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]]; then
     if [ "$container_pulled" = false ]; then
-      echo -e "${GREEN}Starting EarnFM Fleetshare container..${NOCOLOUR}"
+      echo -e "${YELLOW}Starting EarnFM Fleetshare container..${NOCOLOUR}"
       sudo docker pull earnfm/fleetshare:latest
       if [ -f "$proxies_file" ]; then
 	SOCKS_PROXIES=()
@@ -617,7 +617,7 @@ start_containers() {
 
   # Starting Gaganode container
   if [[ $GAGANODE_TOKEN ]]; then
-    echo -e "${GREEN}Starting Gaganode container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Gaganode container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull xterna/gaga-node
     fi
@@ -636,7 +636,7 @@ start_containers() {
 
   # Starting Traffmonetizer container
   if [[ $TRAFFMONETIZER_TOKEN ]]; then
-    echo -e "${GREEN}Starting Traffmonetizer container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Traffmonetizer container..${NOCOLOUR}"
     if [ "$CPU_ARCH" == "aarch64" ] || [ "$CPU_ARCH" == "arm64" ]; then
       traffmonetizer_image="traffmonetizer/cli_v2:arm64v8"
     elif [ "$CPU_ARCH" == "armv7l" ]; then
@@ -665,7 +665,7 @@ start_containers() {
 
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
-    echo -e "${GREEN}Starting Proxyrack container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Proxyrack container..${NOCOLOUR}"
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for ProxyRack. Exiting..${NOCOLOUR}"
@@ -712,7 +712,7 @@ start_containers() {
 
   # Starting ProxyBase container
   if [[ "$PROXYBASE_ACCOUNT_ID" ]]; then
-    echo -e "${GREEN}Starting Proxybase container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Proxybase container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxybase/proxybase
     fi
@@ -731,7 +731,7 @@ start_containers() {
 
   # Starting IPRoyals pawns container
   if [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]]; then
-    echo -e "${GREEN}Starting IPRoyals container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting IPRoyals container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull iproyal/pawns-cli:latest
     fi
@@ -750,7 +750,7 @@ start_containers() {
 
   # Starting Wipter container
   if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Wipter container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Wipter container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull ghcr.io/adfly8470/wipter/wipter@sha256:0b85e2380684ccae3ea2ef7431d6b67bb6245f83fb475cccc075ddeda5dcc16d
     fi
@@ -769,7 +769,7 @@ start_containers() {
 
   # Starting PacketShare container
   if [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]]; then
-    echo -e "${GREEN}Starting PacketShare container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting PacketShare container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetshare/packetshare
     fi
@@ -812,7 +812,7 @@ start_containers() {
 
   # Starting Honeygain container
   if [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]]; then
-    echo -e "${GREEN}Starting Honeygain container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Honeygain container..${NOCOLOUR}"
     if [[ $NETWORK_TUN ]]; then
       if [ "$CPU_ARCH" == "x86_64" ] || [ "$CPU_ARCH" == "amd64" ]; then
         honeygain_image="honeygain/honeygain:0.6.6"
@@ -840,7 +840,7 @@ start_containers() {
 
   # Starting Peer2Profit container
   if [[ $PEER2PROFIT_EMAIL ]]; then
-    echo -e "${GREEN}Starting Peer2Profit container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Peer2Profit container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 enwaiax/peer2profit
     fi
@@ -859,7 +859,7 @@ start_containers() {
 
   # Starting AntGain container
   if [[ $ANTGAIN_API_KEY ]]; then
-    echo -e "${GREEN}Starting AntGain container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting AntGain container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 pinors/antgain-cli:latest
     fi
@@ -878,7 +878,7 @@ start_containers() {
 
   # Starting WizardGain container
   if [[ $WIZARD_GAIN_EMAIL ]]; then
-    echo -e "${GREEN}Starting WizardGain container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting WizardGain container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull wizardgain/worker:latest
     fi
@@ -897,7 +897,7 @@ start_containers() {
 
   # Starting PacketStream container
   if [[ $PACKETSTREAM_CID ]]; then
-    echo -e "${GREEN}Starting PacketStream container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting PacketStream container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull packetstream/psclient:latest
     fi
@@ -916,7 +916,7 @@ start_containers() {
 
   # Starting Proxylite container
   if [[ $PROXYLITE_USER_ID ]]; then
-    echo -e "${GREEN}Starting Proxylite container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Proxylite container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice
     fi
@@ -935,7 +935,7 @@ start_containers() {
 
   # Starting URnetwork container
   if [[ $UR_AUTH_TOKEN ]]; then
-    echo -e "${GREEN}Starting URnetwork container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting URnetwork container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull bringyour/community-provider:latest
       # Create URnetwork folder
@@ -1050,7 +1050,7 @@ start_containers() {
 
   # Starting Earnapp container
   if [ "$EARNAPP" = true ]; then
-    echo -e "${GREEN}Starting Earnapp container..${NOCOLOUR}"
+    echo -e "${YELLOW}Starting Earnapp container..${NOCOLOUR}"
     echo -e "${GREEN}Copy the following node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
     for loop_count in {1..500}; do
