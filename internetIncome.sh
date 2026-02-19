@@ -213,7 +213,7 @@ execute_docker_command() {
     WATCH_TOWER_LABEL='--label=com.centurylinklabs.watchtower.enable=true'
   fi
   
-  echo -e "${GREEN}Starting $app_name container..${NOCOLOUR}"
+  echo -e "${YELLOW}Starting $app_name container..${NOCOLOUR}"
   # Check if container exists
   if sudo docker inspect $container_name >/dev/null 2>&1; then
     echo -e "${RED}A container with name $container_name already exists..${NOCOLOUR}"
