@@ -55,8 +55,9 @@ network3_data_folder="network3-data"
 titan_data_folder="titan-data"
 ur_proxies_file="ur_proxies.txt"
 ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
+process_id_file="process.pid"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($earn_fm_config_file $dns_resolver_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file $ur_proxies_file $ur_data_proxies_file)
+files_to_be_removed=($earn_fm_config_file $dns_resolver_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
 back_up_files=($earnapp_file $proxyrack_file)
@@ -1166,6 +1167,9 @@ if [[ "$1" == "--start" ]]; then
   # CPU architecture to get docker images
   CPU_ARCH=`uname -m`
 
+  # Write current PID to file
+  echo "$$" > $process_id_file
+
   # Read the properties file and export variables to the current shell
   while IFS= read -r line; do
     # Ignore lines that start with #
@@ -1213,12 +1217,46 @@ if [[ "$1" == "--start" ]]; then
     echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}"
     start_containers
   fi
+  # Remove Process file
+  rm $process_id_file
   exit 1
 fi
 
 # Delete containers and networks
 if [[ "$1" == "--delete" ]]; then
   echo -e "\n\nDeleting Containers and networks.."
+  # Check if there is already a running process
+  if [ -f "$process_id_file" ]; then
+    PID=$(cat "$process_id_file")
+    PROC_DIR=$(pwdx "$PID" 2>/dev/null | awk '{print $2}')
+    if [ "$PROC_DIR" = "$PWD" ]; then
+      echo "There is already a running process (PID $PID)."
+      echo "Do you want to stop it and continue? (yes/no)"
+      # Prompt with 60-second timeout
+      read -r -t 60 ANSWER
+      if [ $? -ne 0 ]; then
+        echo "No response within 60 seconds. Exiting."
+        exit 1
+      fi
+      case "$ANSWER" in
+        yes|y|Y)
+          echo "Stopping process $PID..."
+          kill "$PID" 2>/dev/null
+          sleep 2
+          rm -f "$process_id_file"
+          echo "Process stopped. Continuing..."
+          ;;
+        no|n|N)
+          echo "Operation cancelled."
+          exit 1
+          ;;
+        *)
+          echo "Invalid response. Exiting."
+          exit 1
+          ;;
+      esac
+    fi
+  fi
 
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
