@@ -435,7 +435,7 @@ start_containers() {
       # Starting tun2socks containers
       if [ "$container_pulled" = false ]; then
         if [ "$USE_SOCKS5_DNS" = true ]; then
-          sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.14.3
+          sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.14.4
         else
           sudo docker pull xjasonlyu/tun2socks:v2.6.0
         fi
@@ -508,7 +508,7 @@ start_containers() {
         if [[ "$ENABLE_LOGS" != true ]]; then
           TUN_LOG_PARAM="warn"
         fi
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.14.3)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM -v '/dev/net/tun:/dev/net/tun' --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.14.4)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.6.0)
