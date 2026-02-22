@@ -75,9 +75,6 @@ restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95
 container_pulled=false
 docker_in_docker_detected=false
 
-# WatchTower container name
-WATCH_TOWER_NAME="internetincomewatchtower"
-
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
 ebesucher_first_port=3000
@@ -209,8 +206,8 @@ execute_docker_command() {
   
   # Enable Watchtower auto-update for containers using the ':latest' tag,
   # but skip Watchtower itself to avoid recursive self-updating.
-  if [[ "$AUTO_UPDATE_CONTAINERS" == true && "${container_parameters[@]:2}" == *":latest"* && "$container_name" != "$WATCH_TOWER_NAME" ]]; then
-    WATCH_TOWER_LABEL='--label=com.centurylinklabs.watchtower.enable=true'
+  if [[ "$AUTO_UPDATE_CONTAINERS" == true && "${container_parameters[@]:2}" == *":latest"* ]]; then
+    WATCH_TOWER_LABEL="--label=com.centurylinklabs.watchtower.scope=$UNIQUE_ID"
   fi
   
   echo -e "${YELLOW}Starting $app_name container..${NOCOLOUR}"
@@ -1441,6 +1438,17 @@ start_containers() {
     fi
   fi
 
+  if [ "$AUTO_UPDATE_CONTAINERS" = true ]; then
+    if [ "$container_pulled" = false ]; then
+      # Check if watch tower container exists
+      if ! sudo docker inspect internetincomewatchtower$UNIQUE_ID$i >/dev/null 2>&1; then
+        sudo docker pull containrrr/watchtower:1.7.1
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -e WATCHTOWER_CLEANUP=true -v /var/run/docker.sock:/var/run/docker.sock --no-healthcheck containrrr/watchtower:1.7.1 --scope $UNIQUE_ID --interval 86400)
+        execute_docker_command "Internet Income Watch Tower" "internetincomewatchtower$UNIQUE_ID$i" "${docker_parameters[@]}"
+      fi
+    fi
+  fi    
+
   container_pulled=true
 }
 
@@ -1721,16 +1729,6 @@ if [[ "$1" == "--start" ]]; then
 
   if [[ $STATUS == 0 ]]; then
     echo -e "${RED}No Network configuration is specified. Script will not start unless specified in properties.conf ..Exiting..${NOCOLOUR}"
-  fi
-
-  if [ "$AUTO_UPDATE_CONTAINERS" = true ]; then
-    # Check if watch tower container exists
-    if sudo docker inspect $WATCH_TOWER_NAME >/dev/null 2>&1; then
-      echo "InternetIncome Watchtower is already present on the host. One Watchtower container is enough to update all the containers. Not creating another instance to avoid redundant updates and resource usage."
-    else
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e WATCHTOWER_CLEANUP=true -v /var/run/docker.sock:/var/run/docker.sock --no-healthcheck containrrr/watchtower --label-enable --interval 86400)
-      execute_docker_command "Internet Income Watch Tower" "$WATCH_TOWER_NAME" "${docker_parameters[@]}"
-    fi
   fi
 
   # Remove Process file
