@@ -88,7 +88,7 @@ Follow this [tutorial](https://www.youtube.com/watch?v=2ezNqqaSjq8) till 7.30 mi
   
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)  
 ### Want to try Docker for free without installation?
-If you like to use Docker directly for free, you can use [Play with Docker](https://labs.play-with-docker.com/). It resets every 2 hours. Please use the [tunproxy](https://github.com/engageub/InternetIncome/tree/tunproxy) branch to test it using proxies.
+If you like to use Docker directly for free, you can use [iximiuz](https://labs.iximiuz.com/playgrounds/docker). It resets every 1 hour. Please use the [tunproxy](https://github.com/engageub/InternetIncome/tree/tunproxy) branch to test it using proxies.
 ## 👇	Next steps❓	
 Download the code and edit the configuration file properties.conf with your account details.  
 If you don't have GUI access but have terminal access, you can use the following commands to download the code.
