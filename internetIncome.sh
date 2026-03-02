@@ -566,7 +566,7 @@ start_containers() {
   # Starting Uprock container
   if [ "$UPROCK" = true ]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull --platform=linux/amd64 ghcr.io/bhavishyadahiya/uprock-docker/uprock@sha256:e31e5bd0ce46884ddef1a90ed743d278096f4249e8ca1cd835159638cc23b17c
+      sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9
     fi
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       uprock_first_port=$(check_open_ports $uprock_first_port)
@@ -577,7 +577,7 @@ start_containers() {
       fi
       uprock_container_port="-p $local_IP_address:$uprock_first_port:5111"
     fi
-    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $uprock_container_port -e VNC_PORT=5722 -e WEBSOCKIFY_PORT=5111 -e VNC_PASSWORD="internetincome" ghcr.io/bhavishyadahiya/uprock-docker/uprock@sha256:e31e5bd0ce46884ddef1a90ed743d278096f4249e8ca1cd835159638cc23b17c)
+    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $uprock_container_port -e VNC_PORT=5722 -e WEBSOCKIFY_PORT=5111 -e VNC_PASSWORD="internetincome" ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9)
     execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
