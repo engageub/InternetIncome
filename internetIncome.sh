@@ -1349,9 +1349,9 @@ start_containers() {
   # Starting CastarSDK container
   if [[ $CASTAR_SDK_KEY ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/bhavishyadahiya/castarsdk-docker/castarsdk@sha256:249a098b4da0a52be412cd05f312447d7ec348d8cb8cfb6a3ed61b44f9f4af40
+      sudo docker pull ghcr.io/bhavishyadahiya/castarsdk-docker/castarsdk@sha256:82a07de860b970a66cbb5cdcd6d169cfd113aafcd997d8d16fbda5a69424ae8f
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e KEY=$CASTAR_SDK_KEY ghcr.io/bhavishyadahiya/castarsdk-docker/castarsdk@sha256:249a098b4da0a52be412cd05f312447d7ec348d8cb8cfb6a3ed61b44f9f4af40)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e KEY=$CASTAR_SDK_KEY ghcr.io/bhavishyadahiya/castarsdk-docker/castarsdk@sha256:82a07de860b970a66cbb5cdcd6d169cfd113aafcd997d8d16fbda5a69424ae8f)
     execute_docker_command "CastarSDK" "castarsdk$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
