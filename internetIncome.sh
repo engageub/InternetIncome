@@ -148,6 +148,7 @@ start_containers() {
       echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
       exit 1;
     fi
+    sudo docker pull docker:18.06.2-dind
     if sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
       docker_in_docker_detected=true
     fi
