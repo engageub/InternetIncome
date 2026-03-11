@@ -214,11 +214,10 @@ start_containers() {
     if [ "$USE_SOCKS5_DNS" = true ]; then
       TUN_DNS_VOLUME="$DNS_VOLUME"
     elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-      EXTRA_COMMANDS='echo -e "options use-vc\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf;ip rule add iif lo ipproto udp dport 53 lookup main;'
       DNS_OPTION="--dns over-tcp"
     else
       TUN_DNS_VOLUME="$DNS_VOLUME"
-      EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
+      DNS_OPTION="--dns virtual"
     fi
     if [[ "$USE_SOCKS5_DNS" == "true" && "$proxy" == socks5://* ]]; then
       SOCKS_PROXY=$proxy
@@ -260,9 +259,22 @@ start_containers() {
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
         exit 1
       fi
+    elif [[ "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
+      if [[ "$ENABLE_LOGS" != true ]]; then
+        TUN_LOG_PARAM="off"
+      else
+        TUN_LOG_PARAM="trace"
+      fi
+      check_container_exists tun$UNIQUE_ID$i
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.19 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
+        echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+      else
+        echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
     else
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.6.0); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.6.0); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
