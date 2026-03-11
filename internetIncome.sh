@@ -436,6 +436,8 @@ start_containers() {
       if [ "$container_pulled" = false ]; then
         if [ "$USE_SOCKS5_DNS" = true ]; then
           sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.14.4
+        elif [[ "$USE_SOCKS5_DNS" != "true" && "$USE_DNS_OVER_HTTPS" != "true" && "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
+          sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.19
         else
           sudo docker pull xjasonlyu/tun2socks:v2.6.0
         fi
@@ -475,7 +477,6 @@ start_containers() {
         EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf; chmod +x /cloudflare/cloudflared;/cloudflare/cloudflared proxy-dns --upstream "https://8.8.8.8/dns-query" --upstream "https://8.8.4.4/dns-query" --upstream "https://1.1.1.1/dns-query" --upstream "https://1.0.0.1/dns-query" --max-upstream-conns 0 &'
       else
         TUN_DNS_VOLUME="$DNS_VOLUME"
-        EXTRA_COMMANDS='ip rule add iif lo ipproto udp dport 53 lookup main;'
       fi
       if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
         echo -e "${GREEN}Creating new network..${NOCOLOUR}"
@@ -509,6 +510,15 @@ start_containers() {
           TUN_LOG_PARAM="warn"
         fi
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.14.4)
+        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+      elif [[ "$USE_SOCKS5_DNS" != "true" && "$USE_DNS_OVER_HTTPS" != "true" && "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
+        if [[ "$ENABLE_LOGS" != true ]]; then
+          TUN_LOG_PARAM="off"
+        else
+          TUN_LOG_PARAM="trace"
+        fi
+        dns_option="--dns virtual"
+        docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.19 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:v2.6.0)
