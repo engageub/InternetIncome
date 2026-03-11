@@ -207,6 +207,8 @@ start_containers() {
         sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:latest
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.19
+	  elif [[ "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
+	    sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.19
       else
         sudo docker pull xjasonlyu/tun2socks:v2.6.0
       fi
