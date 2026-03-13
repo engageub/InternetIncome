@@ -4,6 +4,7 @@
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
 The main advantage of this script is the use of multiple proxies through docker containers. 
+Running the applications inside Docker is recommended, as it provides an isolated environment that keeps your host system clean, avoids dependency conflicts, and prevents interference with system configurations or future updates.
 This script has been tested on Linux amd64, armv7, arm64, and aarch64 platforms. 
 Your income depends on the number of proxies used and the proxy location. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy and demand.
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
