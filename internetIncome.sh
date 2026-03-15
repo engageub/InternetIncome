@@ -132,6 +132,74 @@ check_container_exists() {
   fi
 }
 
+# Validate proxies format
+validate_proxies() {
+  local lineno=0
+  local proxy
+  while IFS= read -r proxy || [[ -n "$proxy" ]]; do
+    ((lineno++))
+    [[ -z "$proxy" || "$proxy" == \#* ]] && continue
+    local valid=false
+    # Strip whitespace
+    proxy=$(echo "$proxy" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    # Must have a protocol
+    if echo "$proxy" | grep -qE "^[a-zA-Z0-9+-]+://"; then
+      local protocol="${proxy%%://*}"
+      protocol=$(echo "$protocol" | tr '[:upper:]' '[:lower:]')
+      local rest="${proxy#*://}"
+      # Split on last @ to handle special chars (including @) in passwords
+      local hostport credentials
+      if echo "$rest" | grep -q "@"; then
+        hostport="${rest##*@}"
+        credentials="${rest%@*}"
+      else
+        hostport="$rest"
+        credentials=""
+      fi
+      # Validate host:port
+      if echo "$hostport" | grep -qE "^[a-zA-Z0-9._-]+:[0-9]{1,5}$"; then
+        local port="${hostport##*:}"
+        if (( port >= 1 && port <= 65535 )); then
+          case "$protocol" in
+            http|https)
+              [[ -z "$credentials" ]] && valid=true
+              if [[ -n "$credentials" ]]; then
+                local user="${credentials%%:*}"
+                local pass="${credentials#*:}"
+                [[ -n "$user" && "$credentials" == *":"* && -n "$pass" ]] && valid=true
+              fi
+              ;;
+            socks4|socks4a)
+              [[ -z "$credentials" || -n "$credentials" ]] && valid=true
+              ;;
+            socks5|socks5h)
+              [[ -z "$credentials" ]] && valid=true
+              if [[ -n "$credentials" ]]; then
+                local user="${credentials%%:*}"
+                local pass="${credentials#*:}"
+                [[ -n "$user" && "$credentials" == *":"* && -n "$pass" ]] && valid=true
+              fi
+              ;;
+            ss)
+              if [[ -n "$credentials" ]]; then
+                local method="${credentials%%:*}"
+                local pass="${credentials#*:}"
+                [[ -n "$method" && "$credentials" == *":"* && -n "$pass" ]] && valid=true
+                echo "$credentials" | grep -qE "^[A-Za-z0-9+/=]+$" && valid=true
+              fi
+              ;;
+          esac
+        fi
+      fi
+    fi
+    if [[ "$valid" == false ]]; then
+      echo -e "${RED}Error: Invalid proxy format on line ${lineno}: '${proxy}'${NOCOLOUR}"
+      echo -e "${RED}Expected: protocol://host:port or protocol://user:password@IP:PORT${NOCOLOUR}"
+      exit 1
+    fi
+  done < "$proxies_file"
+}
+
 # Start all containers
 start_containers() {
 
@@ -1218,9 +1286,10 @@ if [[ "$1" == "--start" ]]; then
       exit 1
     fi
 
-    # Remove special characters ^M from proxies file
+    # Remove special character ^M and trim space from proxies file
     sed -i 's/\r//g' $proxies_file
-
+    sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
+    validate_proxies
     i=0;
     while IFS= read -r line || [ -n "$line" ]; do
       if [[ "$line" =~ ^[^#].* ]]; then
