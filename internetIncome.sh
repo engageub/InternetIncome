@@ -1341,19 +1341,6 @@ start_containers() {
     fi
   fi
 
-  # Starting Gaganode container
-  if [[ $GAGANODE_TOKEN ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull xterna/gaga-node:latest
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e TOKEN=$GAGANODE_TOKEN xterna/gaga-node:latest)
-    execute_docker_command "Gaganode" "gaganode$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Gaganode Token is not configured. Ignoring Gaganode..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Titan Network container
   if [[ $TITAN_HASH ]]; then
     if [ "$container_pulled" = false ]; then
