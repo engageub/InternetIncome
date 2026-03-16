@@ -54,7 +54,6 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
 | [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
-| [GagaNode](https://t.co/UO6hnDCv4M) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 
 * [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
