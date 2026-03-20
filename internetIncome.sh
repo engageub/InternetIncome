@@ -259,6 +259,35 @@ validate_proxies() {
   done < "$proxies_file"
 }
 
+# Validate multi-IPs format
+validate_multi_ips() {
+  local lineno=0
+  local entry
+  while IFS= read -r entry || [[ -n "$entry" ]]; do
+    ((lineno++))
+    [[ -z "$entry" || "$entry" == \#* ]] && continue
+    local valid=false
+    # Strip whitespace
+    entry=$(echo "$entry" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    # Validate IPv4 address
+    if echo "$entry" | grep -qE "^([0-9]{1,3}\.){3}[0-9]{1,3}$"; then
+      local IFS='.'
+      read -r o1 o2 o3 o4 <<< "$entry"
+      if (( o1 <= 255 && o2 <= 255 && o3 <= 255 && o4 <= 255 )); then
+        valid=true
+      fi
+    # Validate IPv6 address
+    elif echo "$entry" | grep -qE "^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$"; then
+      valid=true
+    fi
+    if [[ "$valid" == false ]]; then
+      echo -e "${RED}Error: Invalid IP format on line ${lineno}: '${entry}'${NOCOLOUR}"
+      echo -e "${RED}Expected: IPv4 (e.g. 192.168.1.1) or IPv6 (e.g. 2001:db8::1)${NOCOLOUR}"
+      exit 1
+    fi
+  done < "$multi_ip_file"
+}
+
 # Execute docker command
 execute_docker_command() {
   # Store parameters as an array
@@ -1753,6 +1782,7 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from multi ip file
     sed -i 's/\r//g' $multi_ip_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $multi_ip_file
+    validate_multi_ips
     if [ -z "${i}" ]; then
       i=0;
     fi
