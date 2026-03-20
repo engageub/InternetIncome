@@ -288,6 +288,126 @@ validate_multi_ips() {
   done < "$multi_ip_file"
 }
 
+# Validate VPNs file format
+validate_vpns() {
+  local lineno=0 entry valid error_msg single double i ch escaped key value vol mount_val mount_type bad_type kv k token mount_invalid raw first last
+  local bind_src_pattern='(^|,)(src|source)=("[^"]*"|'"'"'[^'"'"']*'"'"'|\$\{?[a-zA-Z_][a-zA-Z0-9_]*\}?[^ ,]*|\.{1,2}/[^ ,]*|/[^,]+)'
+  local dst_pattern='(^|,)(dst|destination|target)=("[^"]*"|'"'"'[^'"'"']*'"'"'|\$\{?[a-zA-Z_][a-zA-Z0-9_]*\}?[^ ,]*|/[^,]+)'
+  local var_vol_pattern='^\$\{?[a-zA-Z_][a-zA-Z0-9_]*\}?[^ ]*:/'
+  local full_var_vol_pattern='^\$\{?[a-zA-Z_][a-zA-Z0-9_]*\}?[^ ]*:/[^:]+(:([a-zA-Z]+)(,[a-zA-Z]+)*)?$'
+  local sq_val_pattern='^'"'"'([^'"'"'\\]|\\.)*'"'"'$'
+  local dq_val_pattern='^"([^"\\]|\\.)*"$'
+  local either_quoted_pattern='^'"'"'([^'"'"'\\]|\\.)*'"'"'$|^"([^"\\]|\\.)*"$'
+  local token_pattern='\-\-mount[= ][^ ]+|\-e [^= ]+='"'"'([^'"'"'\\]|\\.)*'"'"'|\-e [^= ]+="([^"\\]|\\.)*"|\-e [^= ]+=[^ ]*|\-v ('"'"'[^'"'"']*'"'"'|"[^"]*"|[^ ]+)'
+  local line_struct_pattern
+  line_struct_pattern=$(printf "%s" \
+    '^((' \
+    '-e [^= ]+=' \
+    "('[^'\\\\]*(?:\\\\.[^'\\\\]*)*'" \
+    '|"[^"\\]*(?:\\.[^"\\]*)*"' \
+    "|[^'\" ][^ ]*" \
+    '|[^ ]?)' \
+    '|-v ' \
+    "('[^']*'" \
+    '|"[^"]*"|[^ ]+)' \
+    '|--mount[= ][^ ]+)' \
+    '( (?=-))?)+$')
+  while IFS= read -r entry || [[ -n "$entry" ]]; do
+    ((lineno++))
+    entry=$(echo "$entry" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    [[ -z "$entry" || "$entry" == \#* ]] && continue
+    valid=true; error_msg=""
+    single=0; double=0; escaped=0
+    for (( i=0; i<${#entry}; i++ )); do
+      ch="${entry:$i:1}"
+      if [[ "$escaped" -eq 1 ]]; then escaped=0; continue; fi
+      if [[ "$ch" == "\\" ]]; then escaped=1; continue; fi
+      if [[ "$ch" == "'" && "$double" -eq 0 ]]; then (( single = single == 0 ? 1 : 0 ))
+      elif [[ "$ch" == '"' && "$single" -eq 0 ]]; then (( double = double == 0 ? 1 : 0 )); fi
+    done
+    if [[ "$single" -eq 1 ]]; then valid=false; error_msg="Unclosed single quote — every opening ' must have a matching closing '"
+    elif [[ "$double" -eq 1 ]]; then valid=false; error_msg="Unclosed double quote — every opening \" must have a matching closing \""; fi
+    if [[ "$valid" == true ]] && ! echo "$entry" | grep -qE "^(-e [^=]+=|-v |--mount[ =])"; then
+      valid=false; error_msg="Line must start with '-e KEY=VALUE', '-v', or '--mount' — no other content allowed"
+    fi
+    if [[ "$valid" == true ]] && ! echo "$entry" | grep -qP "$line_struct_pattern"; then
+      valid=false; error_msg="Line contains invalid content — only '-e KEY=VALUE', '-v', and '--mount' tokens are allowed"
+    fi
+    if [[ "$valid" == true ]]; then
+      while IFS= read -r token; do
+        token=$(echo "$token" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [[ -z "$token" ]] && continue
+        if echo "$token" | grep -qE "^-e "; then
+          key=$(echo "$token" | sed "s/^-e //;s/=.*//")
+          value=$(echo "$token" | sed "s/^-e [^=]*=//")
+          if ! echo "$key" | grep -qE "^[a-zA-Z_][a-zA-Z0-9_]*$"; then valid=false; error_msg="Invalid env var name '${key}' — must start with a letter or underscore, followed by letters, digits, or underscores"; break; fi
+          if [[ -z "$value" ]]; then valid=false; error_msg="Empty value for '${key}' — a value must be provided"; break; fi
+          if echo "$value" | grep -qE "^(''|\"\")$"; then valid=false; error_msg="Empty quoted value for '${key}' — quotes must contain a non-empty value"; break; fi
+          if echo "$value" | grep -qE "^'" && ! echo "$value" | grep -qP "$sq_val_pattern"; then valid=false; error_msg="Malformed single-quoted value for '${key}' — ensure all inner single quotes are escaped with \\'"; break; fi
+          if echo "$value" | grep -qE '^"' && ! echo "$value" | grep -qP "$dq_val_pattern"; then valid=false; error_msg="Malformed double-quoted value for '${key}' — ensure all inner double quotes are escaped with \\\""; break; fi
+          if echo "$value" | grep -qE "^['\"]" && ! echo "$value" | grep -qP "$either_quoted_pattern"; then valid=false; error_msg="Mismatched quotes for '${key}' — value starts with a quote but does not properly close it"; break; fi
+          if echo "$value" | grep -qE " " && ! echo "$value" | grep -qP "$either_quoted_pattern"; then valid=false; error_msg="Value for '${key}' contains spaces but is not quoted — use: -e ${key}='your value'"; break; fi
+        elif echo "$token" | grep -qE "^-v "; then
+          raw=$(echo "$token" | sed "s/^-v //")
+          first="${raw:0:1}"; last="${raw: -1}"
+          if [[ ("$first" == "'" && "$last" == "'") || ("$first" == '"' && "$last" == '"') ]]; then vol="${raw:1:${#raw}-2}"; else vol="$raw"; fi
+          local valid_opts="(ro|rw|z|Z|shared|slave|private|rprivate|rshared|rslave)"
+          if [[ -z "$vol" ]]; then valid=false; error_msg="Empty volume path after '-v' — a path must be provided"; break; fi
+          if echo "$vol" | grep -qE "^/" && echo "$vol" | grep -q ":"; then
+            if ! echo "$vol" | grep -qE "^/[^:]+:/[^:]+(:(${valid_opts}(,${valid_opts})*)?)?$"; then valid=false; error_msg="Invalid bind mount '${vol}' — expected: /host/path:/container/path[:ro|rw|z|Z|shared|...]"; break; fi
+          elif echo "$vol" | grep -qE "^/"; then
+            : # anonymous volume
+          elif echo "$vol" | grep -qE "^[a-zA-Z0-9_.-]+:/"; then
+            if ! echo "$vol" | grep -qE "^[a-zA-Z0-9_.-]+:/[^:]+(:(${valid_opts}(,${valid_opts})*)?)?$"; then valid=false; error_msg="Invalid named volume '${vol}' — expected: volumename:/container/path[:opts]"; break; fi
+          elif echo "$vol" | grep -qP "$var_vol_pattern"; then
+            if ! echo "$vol" | grep -qP "$full_var_vol_pattern"; then valid=false; error_msg="Invalid variable volume '${vol}' — expected: \$VAR:/container/path[:opts]"; break; fi
+          else
+            valid=false; error_msg="Invalid -v format '${vol}' — expected /host:/container, volumename:/container, \$VAR:/container, or /container/path"; break
+          fi
+        elif echo "$token" | grep -qE "^--mount"; then
+          mount_val=$(echo "$token" | sed 's/^--mount[= ]//')
+          if [[ -z "$mount_val" ]]; then valid=false; error_msg="Empty value after '--mount' — key=value pairs must be provided"; break; fi
+          if ! echo "$mount_val" | grep -qP "$dst_pattern"; then valid=false; error_msg="--mount missing required destination — use: dst=, destination=, or target=/container/path (quoted values also accepted)"; break; fi
+          if echo "$mount_val" | grep -qE "(^|,)type=" && ! echo "$mount_val" | grep -qE "(^|,)type=(bind|volume|tmpfs)"; then
+            bad_type=$(echo "$mount_val" | grep -oE "(^|,)type=[^,]+" | grep -oE "[^=]+$")
+            valid=false; error_msg="Unknown --mount type '${bad_type}' — valid types: bind, volume, tmpfs"; break
+          fi
+          mount_type=$(echo "$mount_val" | grep -oE "(^|,)type=(bind|volume|tmpfs)" | grep -oE "(bind|volume|tmpfs)")
+          if [[ "$mount_type" == "bind" ]] && ! echo "$mount_val" | grep -qP "$bind_src_pattern"; then
+            valid=false; error_msg="--mount type=bind missing required source — use: src= or source=/host/path (or \$VAR/path, quoted values also accepted)"; break
+          fi
+          if [[ "$mount_type" == "tmpfs" ]] && echo "$mount_val" | grep -qE "(^|,)(src|source)="; then
+            valid=false; error_msg="--mount type=tmpfs must not have a source — tmpfs has no host path"; break
+          fi
+          mount_invalid=false
+          while IFS= read -r kv; do
+            k=$(echo "$kv" | cut -d= -f1)
+            if ! echo "$k" | grep -qE "^(type|src|source|dst|destination|target|readonly|ro|volume-nocopy|bind-propagation|bind-recursive|volume-subpath|tmpfs-size|tmpfs-mode|consistency)$"; then
+              valid=false; error_msg="Unknown --mount key '${k}' — valid keys: type, src/source, dst/destination/target, readonly, bind-propagation, tmpfs-size, tmpfs-mode, etc."; mount_invalid=true; break
+            fi
+          done < <(echo "$mount_val" | tr ',' '\n')
+          [[ "$mount_invalid" == true ]] && break
+        fi
+      done < <(echo "$entry" | grep -oP "$token_pattern")
+    fi
+    if [[ "$valid" == false ]]; then
+      echo -e "${RED}Error: Invalid VPN config on line ${lineno}: '${entry}'${NOCOLOUR}"
+      echo -e "${RED}Reason: ${error_msg}${NOCOLOUR}"
+      echo -e "${RED}Valid format examples:${NOCOLOUR}"
+      echo -e "${RED}  -e VPN_TYPE=openvpn -e OPENVPN_USER=myuser -e OPENVPN_PASSWORD=mypass${NOCOLOUR}"
+      echo -e "${RED}  -e VPN_TYPE=openvpn -e OPENVPN_USER='myuser' -e OPENVPN_PASSWORD='my\\'pass'${NOCOLOUR}"
+      echo -e "${RED}  -e VPN_TYPE=openvpn -e OPENVPN_USER=\"myuser\" -e OPENVPN_PASSWORD=\"my\\\"pass\"${NOCOLOUR}"
+      echo -e "${RED}  -e SERVER_COUNTRIES='Isle of Man' -v /host/path:/container/path:ro${NOCOLOUR}"
+      echo -e "${RED}  -v 'config:/container/path' or -v \$VAR:/container/path${NOCOLOUR}"
+      echo -e "${RED}  --mount type=bind,source=/host/path,target=/container/path,readonly${NOCOLOUR}"
+      echo -e "${RED}  --mount type=bind,source=\"\$PWD/dns_file\",target=\"/etc/resolv.conf\",readonly${NOCOLOUR}"
+      echo -e "${RED}  --mount type=volume,src=gluetun_data,dst=/gluetun${NOCOLOUR}"
+      echo -e "${RED}  --mount type=tmpfs,dst=/tmp,tmpfs-size=104857600${NOCOLOUR}"
+      exit 1
+    fi
+  done < "$vpns_file"
+}
+
 # Execute docker command
 execute_docker_command() {
   # Store parameters as an array
@@ -1758,6 +1878,7 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from vpn file
     sed -i 's/\r//g' $vpns_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $vpns_file
+    validate_vpns
     if [ -z "${i}" ]; then
       i=0;
     fi
