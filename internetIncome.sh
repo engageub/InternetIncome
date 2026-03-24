@@ -59,7 +59,9 @@ chrome_profile_zipfile="chromeprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 titan_data_folder="titan-data"
 proxyrack_file="proxyrack.txt"
-cloudflare_file="cloudflared"
+dnscrypt_file="dnscrypt-proxy"
+dnscrypt_tar_file="dnscrypt-proxy.tar.gz"
+dnscrypt_config_file="dns-config.toml"
 dns_resolver_file="resolv.conf"
 earn_fm_config_file="earnfm_config.json"
 connection_state_file="connection_state.txt"
@@ -67,7 +69,7 @@ ur_proxies_file="ur_proxies.txt"
 ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
 process_id_file="process.pid"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($dns_resolver_file $cloudflare_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
+files_to_be_removed=($dns_resolver_file $dnscrypt_tar_file $dnscrypt_file $dnscrypt_config_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -664,19 +666,26 @@ start_containers() {
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
 
-        # Set the download URL based on the architecture
+	# Set the download URL based on the architecture
+	    DNSCRYPT_VERSION="2.1.15"
+        DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
+
         case "$CPU_ARCH" in
           x86_64 | amd64)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-amd64"
+            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_x86_64-${DNSCRYPT_VERSION}.tar.gz"
+            DNSCRYPT_DIR="linux-x86_64"
             ;;
           i686 | i386)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-386"
+            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_i386-${DNSCRYPT_VERSION}.tar.gz"
+            DNSCRYPT_DIR="linux-i386"
             ;;
           armv7l | armv6l | armhf)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-arm"
+            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm-${DNSCRYPT_VERSION}.tar.gz"
+            DNSCRYPT_DIR="linux-arm"
             ;;
           arm64 | aarch64)
-            CF_URL="https://github.com/cloudflare/cloudflared/releases/download/2025.11.1/cloudflared-linux-arm64"
+            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm64-${DNSCRYPT_VERSION}.tar.gz"
+            DNSCRYPT_DIR="linux-arm64"
             ;;
           *)
             echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
@@ -684,15 +693,35 @@ start_containers() {
             ;;
         esac
 
-        wget -O cloudflared $CF_URL
-
-        if [ ! -f cloudflared ]; then
-          echo -e "${RED}There is a problem downloading cloudflared. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+        wget -O $dnscrypt_tar_file "$DNSCRYPT_URL"
+        if [ ! -f $dnscrypt_tar_file ]; then
+          echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
           exit 1;
         fi
-        sudo chmod 777 cloudflared
-        cloudflare_volume="--mount type=bind,source=$PWD/cloudflared,target=/cloudflare/cloudflared"
-        EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf; chmod +x /cloudflare/cloudflared;/cloudflare/cloudflared proxy-dns --upstream "https://8.8.8.8/dns-query" --upstream "https://8.8.4.4/dns-query" --upstream "https://1.1.1.1/dns-query" --upstream "https://1.0.0.1/dns-query" --max-upstream-conns 0 &'
+        tar -xzf $dnscrypt_tar_file
+        mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
+        rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
+	cat > $dnscrypt_config_file << 'EOF'
+listen_addresses = ['127.0.0.1:53']
+server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2']
+log_level = 6
+cache = true
+cache_size = 4096
+cache_min_ttl = 2400
+cache_max_ttl = 86400
+
+[static]
+  [static.google1]
+  stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
+  [static.google2]
+  stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
+  [static.cloudflare1]
+  stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
+  [static.cloudflare2]
+  stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
+EOF
+        dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
+        EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
       else
         TUN_DNS_VOLUME="$DNS_VOLUME"
       fi
@@ -739,7 +768,7 @@ start_containers() {
         docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.19 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $cloudflare_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:dev)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:dev)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       fi
     fi
