@@ -703,7 +703,7 @@ start_containers() {
         rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
 	cat > $dnscrypt_config_file << 'EOF'
 listen_addresses = ['127.0.0.1:53']
-server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2']
+server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
 log_level = 6
 cache = true
 cache_size = 4096
@@ -719,6 +719,8 @@ cache_max_ttl = 86400
   stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
   [static.cloudflare2]
   stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
+  [static.quad9]
+  stamp = 'sdns://AgcAAAAAAAAABzkuOS45LjkABzkuOS45LjkKL2Rucy1xdWVyeQ'
 EOF
         dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
         EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
