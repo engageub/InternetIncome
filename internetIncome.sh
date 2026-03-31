@@ -665,63 +665,64 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
+        if [ "$container_pulled" = false ]; then
+	  # Set the download URL based on the architecture
+	  DNSCRYPT_VERSION="2.1.15"
+          DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
 
-	# Set the download URL based on the architecture
-	    DNSCRYPT_VERSION="2.1.15"
-        DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
+          case "$CPU_ARCH" in
+            x86_64 | amd64)
+              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_x86_64-${DNSCRYPT_VERSION}.tar.gz"
+              DNSCRYPT_DIR="linux-x86_64"
+              ;;
+            i686 | i386)
+              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_i386-${DNSCRYPT_VERSION}.tar.gz"
+              DNSCRYPT_DIR="linux-i386"
+              ;;
+            armv7l | armv6l | armhf)
+              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm-${DNSCRYPT_VERSION}.tar.gz"
+              DNSCRYPT_DIR="linux-arm"
+              ;;
+            arm64 | aarch64)
+              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm64-${DNSCRYPT_VERSION}.tar.gz"
+              DNSCRYPT_DIR="linux-arm64"
+              ;;
+            *)
+              echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+              exit 1
+              ;;
+          esac
 
-        case "$CPU_ARCH" in
-          x86_64 | amd64)
-            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_x86_64-${DNSCRYPT_VERSION}.tar.gz"
-            DNSCRYPT_DIR="linux-x86_64"
-            ;;
-          i686 | i386)
-            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_i386-${DNSCRYPT_VERSION}.tar.gz"
-            DNSCRYPT_DIR="linux-i386"
-            ;;
-          armv7l | armv6l | armhf)
-            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm-${DNSCRYPT_VERSION}.tar.gz"
-            DNSCRYPT_DIR="linux-arm"
-            ;;
-          arm64 | aarch64)
-            DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm64-${DNSCRYPT_VERSION}.tar.gz"
-            DNSCRYPT_DIR="linux-arm64"
-            ;;
-          *)
-            echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
-            exit 1
-            ;;
-        esac
+          wget -O $dnscrypt_tar_file "$DNSCRYPT_URL"
+          if [ ! -f $dnscrypt_tar_file ]; then
+            echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+            exit 1;
+          fi
+          tar -xzf $dnscrypt_tar_file
+          mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
+          rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
+	  cat > $dnscrypt_config_file <<-EOF
+	listen_addresses = ['127.0.0.1:53']
+	server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
+	log_level = 6
+	cache = true
+	cache_size = 4096
+	cache_min_ttl = 2400
+	cache_max_ttl = 86400
 
-        wget -O $dnscrypt_tar_file "$DNSCRYPT_URL"
-        if [ ! -f $dnscrypt_tar_file ]; then
-          echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
-          exit 1;
+	[static]
+	  [static.google1]
+	  stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
+	  [static.google2]
+	  stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
+	  [static.cloudflare1]
+	  stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
+	  [static.cloudflare2]
+	  stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
+	  [static.quad9]
+	  stamp = 'sdns://AgcAAAAAAAAABzkuOS45LjkABzkuOS45LjkKL2Rucy1xdWVyeQ'
+	EOF
         fi
-        tar -xzf $dnscrypt_tar_file
-        mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
-        rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
-	cat > $dnscrypt_config_file << 'EOF'
-listen_addresses = ['127.0.0.1:53']
-server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
-log_level = 6
-cache = true
-cache_size = 4096
-cache_min_ttl = 2400
-cache_max_ttl = 86400
-
-[static]
-  [static.google1]
-  stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
-  [static.google2]
-  stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
-  [static.cloudflare1]
-  stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
-  [static.cloudflare2]
-  stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
-  [static.quad9]
-  stamp = 'sdns://AgcAAAAAAAAABzkuOS45LjkABzkuOS45LjkKL2Rucy1xdWVyeQ'
-EOF
         dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
         EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
       else
