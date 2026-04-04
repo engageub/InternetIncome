@@ -1,5 +1,7 @@
 # :computer:	Internet Income :money_with_wings:	(Multiproxy Support) :european_castle:	
-
+> ⚠️ **This branch is no longer maintained.**
+> The `main` branch now uses **tun2proxy** by default. This branch will not receive further updates.
+> Please switch to the [main branch](../../tree/main) for the latest changes.
 <img src="https://i.ibb.co/DKbwPN1/imgonline-com-ua-twotoone-2ck-Xl1-JPvw2t-D1.jpg" width="100%" height="300"/>
 
 This script lets you earn income by sharing your internet bandwidth. The income is passive and you don't have to do anything after the setup but keep getting payouts to your account.
