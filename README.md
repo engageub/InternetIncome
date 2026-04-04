@@ -12,10 +12,6 @@ To maximize earnings, you may use the [test](https://github.com/engageub/Interne
 
 **Note**: Collecting and reading publicly available data from the internet is usually protected by free speech rights under the First Amendment of the US Constitution.
 
-### **Special Offer** on [Ashburn Proxies](https://ashburnproxies.com/?via=internetincome)
-
-- Use code **ASHBURN2026** to get 50% on ISP Plans.
-
 ### <ins> [Click here to get Static Residential Proxies starting at $1](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
 
 File Internet Crime Complaints World Wide here: https://www.ic3.gov/
