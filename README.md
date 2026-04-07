@@ -8,7 +8,7 @@ Running the applications inside Docker is recommended, as it provides an isolate
 Your income depends on the number of proxies used and the proxy location. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy and demand.
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, it is recommended to use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
-To maximize earnings, you may use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS_OVER_HTTPS enabled.
+To maximize earnings, you may use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled.
 
 **Note**: Collecting and reading publicly available data from the internet is usually protected by free speech rights under the First Amendment of the US Constitution.
 
@@ -22,7 +22,7 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | 10|1| Paypal, Gift Card |
+| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
 | [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
 | [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
