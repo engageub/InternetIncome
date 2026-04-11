@@ -591,7 +591,6 @@ start_containers() {
       uprock_port="-p $uprock_first_port:5111 "
     fi
 
-
     if [ "$CUSTOM_FIREFOX" = true ];then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -692,7 +691,7 @@ start_containers() {
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         if [ "$container_pulled" = false ]; then
 	  # Set the download URL based on the architecture
-	  DNSCRYPT_VERSION="2.1.15"
+	      DNSCRYPT_VERSION="2.1.15"
           DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
 
           case "$CPU_ARCH" in
@@ -726,7 +725,7 @@ start_containers() {
           tar -xzf $dnscrypt_tar_file
           mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
           rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
-	  if [ ! -f $dnscrypt_config_file ]; then
+          if [ ! -f $dnscrypt_config_file ]; then
             create_dnscrypt_config
           fi
         fi
@@ -855,7 +854,6 @@ start_containers() {
       echo -e "${RED}Uprock is not enabled. Ignoring Uprock..${NOCOLOUR}"
     fi
   fi
-
 
   # Starting Custom Firefox container
   if [[ "$CUSTOM_FIREFOX" = true  ]]; then
