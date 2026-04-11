@@ -410,6 +410,31 @@ validate_vpns() {
   done < "$vpns_file"
 }
 
+# Create DNScrypt config
+create_dnscrypt_config() {
+  cat > "$dnscrypt_config_file" <<-EOF
+listen_addresses = ['127.0.0.1:53']
+server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
+log_level = 6
+cache = true
+cache_size = 4096
+cache_min_ttl = 2400
+cache_max_ttl = 86400
+max_clients = 500
+[static]
+  [static.google1]
+  stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
+  [static.google2]
+  stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
+  [static.cloudflare1]
+  stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
+  [static.cloudflare2]
+  stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
+  [static.quad9]
+  stamp = 'sdns://AgcAAAAAAAAABzkuOS45LjkABzkuOS45LjkKL2Rucy1xdWVyeQ'
+EOF
+}
+
 # Execute docker command
 execute_docker_command() {
   # Store parameters as an array
@@ -701,27 +726,9 @@ start_containers() {
           tar -xzf $dnscrypt_tar_file
           mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
           rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
-	  cat > $dnscrypt_config_file <<-EOF
-	listen_addresses = ['127.0.0.1:53']
-	server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
-	log_level = 6
-	cache = true
-	cache_size = 4096
-	cache_min_ttl = 2400
-	cache_max_ttl = 86400
-
-	[static]
-	  [static.google1]
-	  stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
-	  [static.google2]
-	  stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
-	  [static.cloudflare1]
-	  stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
-	  [static.cloudflare2]
-	  stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
-	  [static.quad9]
-	  stamp = 'sdns://AgcAAAAAAAAABzkuOS45LjkABzkuOS45LjkKL2Rucy1xdWVyeQ'
-	EOF
+	  if [ ! -f $dnscrypt_config_file ]; then
+            create_dnscrypt_config
+          fi
         fi
         dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
         EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
@@ -1373,7 +1380,11 @@ start_containers() {
           echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
           exit 1
         fi
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json earnfm/fleetshare:latest)
+        if [ ! -f $dnscrypt_config_file ]; then
+          create_dnscrypt_config
+        fi
+
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json  --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --cap-add=NET_ADMIN --entrypoint /bin/sh earnfm/fleetshare:latest -c "apk add --no-cache iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && dnscrypt-proxy -config /proxy-dns/dns-config.toml & /app/main")
         execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
         echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
