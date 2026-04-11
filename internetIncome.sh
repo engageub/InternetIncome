@@ -843,7 +843,27 @@ start_containers() {
       fi
       uprock_container_port="-p $local_IP_address:$uprock_first_port:5111"
     fi
-    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $uprock_container_port -e VNC_PORT=5722 -e WEBSOCKIFY_PORT=5111 -e VNC_PASSWORD="internetincome" ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9)
+    docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $uprock_container_port \
+  -e VNC_PORT=5722 \
+  -e WEBSOCKIFY_PORT=5111 \
+  -e VNC_PASSWORD="internetincome" \
+  --entrypoint /bin/bash \
+  ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9 \
+  -c "
+    apt-get update -y && \
+    apt-get install -y --no-install-recommends wget jq ca-certificates && \
+    wget -q -O /tmp/update.json https://edge.uprock.com/v1/app-download/update.json && \
+    DEB_URL=\$(jq -r '.platforms[] | select(.os == \"linux\" and .arch == \"amd64\") | .filename' /tmp/update.json) && \
+    wget -q -O /tmp/uprockmining.deb \"\$DEB_URL\" && \
+    dpkg -i /tmp/uprockmining.deb && \
+    apt-get install -y --fix-broken --no-install-recommends && \
+    rm /tmp/uprockmining.deb /tmp/update.json && \
+    apt-get purge -y wget jq && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    exec /usr/bin/tini -s /root/start.sh
+  ")
     execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
