@@ -1292,18 +1292,21 @@ start_containers() {
             fi
           done < "$proxies_file"
         fi
-	    if [ ! -f "$ur_proxies_file" ]; then
+        if [ ! -f "$ur_proxies_file" ]; then
           echo -e "${RED}Proxies file $ur_proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
           exit 1
         fi
-	    # Generate proxy file using urnetwork
-	    sudo docker run --rm $DNS_VOLUME --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/$ur_proxies_file,target=/root/ur_proxy.txt bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
-	    sleep 1
-	    if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
+        # Generate proxy file using urnetwork
+        sudo docker run --rm $DNS_VOLUME --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/$ur_proxies_file,target=/root/ur_proxy.txt bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
+        sleep 1
+        if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
           echo -e "${RED}Proxy file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
           exit 1
         fi
-	    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork bringyour/community-provider:latest provide)
+	    if [ ! -f $dnscrypt_config_file ]; then
+          create_dnscrypt_config
+        fi
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
         execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
       else 
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
