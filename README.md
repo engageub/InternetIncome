@@ -10,6 +10,8 @@ Please read the respective apps' legal terms or FAQ section if you have any quer
 For advanced users, it is recommended to use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
 To maximize earnings, you may use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled.
 
+[🚀 Got 100+ SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
+
 **Note**: Collecting and reading publicly available data from the internet is usually protected by free speech rights under the First Amendment of the US Constitution.
 
 ### <ins> [Click here to get Static Residential Proxies starting at $1](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
