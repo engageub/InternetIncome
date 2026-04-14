@@ -806,6 +806,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull mysteriumnetwork/myst:latest
     fi
+    local myst_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -834,6 +835,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9
     fi
+    local uprock_container_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       uprock_first_port=$(check_open_ports $uprock_first_port)
       if ! expr "$uprock_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -880,7 +882,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox:latest
     fi
-
+    local cf_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -919,7 +921,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull lscr.io/linuxserver/chromium:latest
     fi
-
+    local cc_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -977,6 +979,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
+    local eb_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -1047,7 +1050,7 @@ start_containers() {
     sudo chown -R 911:911 $PWD/$chrome_profile_data
     sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
-
+    local eb_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -1104,6 +1107,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$firefox_profile_data
     cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
     sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
+    local ad_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
@@ -1166,7 +1170,7 @@ start_containers() {
     sudo chown -R 911:911 $PWD/$chrome_profile_data
     sudo cp -r $PWD/$chrome_profile_data $PWD/$adnade_data_folder/data$i
     sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
-
+    local ad_port
     if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
