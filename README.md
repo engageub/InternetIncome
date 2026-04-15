@@ -8,7 +8,8 @@ Running the applications inside Docker is recommended, as it provides an isolate
 Your income depends on the number of proxies used and the proxy location. If you use all the apps mentioned, you can earn about $50 per month or more from 1 IP depending on the location of the proxy and demand.
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, it is recommended to use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
-To maximize earnings, you may use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled.
+
+To maximize earnings, you can use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled for proxies. DNS caching is also enabled by default in this configuration, which helps reduce the number of DNS queries.
 
 [🚀 Got 100+ SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
 
