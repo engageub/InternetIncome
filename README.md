@@ -9,7 +9,7 @@ Your income depends on the number of proxies used and the proxy location. If you
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, it is recommended to use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
 
-To maximize earnings, you can use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled for proxies. DNS caching is also enabled by default in this configuration, which helps reduce the number of DNS queries.
+To maximize earnings, you can use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with DNS over HTTPS enabled for proxies. DNS caching is also enabled by default in this configuration, which reduces the number of DNS queries and helps lower latency.
 
 [🚀 Got 100+ SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
 
