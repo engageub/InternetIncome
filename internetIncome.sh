@@ -868,6 +868,7 @@ start_containers() {
   ")
     execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
+	echo -e "${GREEN}Please wait at least one minute before accessing the URL to ensure the service is fully initialized.${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
     echo "http://$localhost_address:$uprock_first_port" |tee -a $uprock_file
     uprock_first_port=`expr $uprock_first_port + 1`
