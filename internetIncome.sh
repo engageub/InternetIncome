@@ -375,10 +375,11 @@ start_containers() {
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
     check_container_exists  myst$UNIQUE_ID$i
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --sysctl net.ipv4.conf.all.route_localnet=1 --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo -e "${GREEN}Container myst$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
+      sudo docker exec myst$UNIQUE_ID$i sh -c "iptables -t nat -A PREROUTING -p tcp --dport 4449 -j DNAT --to-destination 127.0.0.1:4449;iptables -A FORWARD -p tcp -d 127.0.0.1 --dport 4449 -j ACCEPT"
     else
       echo -e "${RED}Failed to start container for Mysterium. Exiting..${NOCOLOUR}"
       exit 1
