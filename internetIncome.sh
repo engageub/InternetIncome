@@ -818,12 +818,13 @@ start_containers() {
     fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN $NETWORK_TUN --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions)
+    docker_parameters=(--sysctl net.ipv4.conf.all.route_localnet=1 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN $NETWORK_TUN --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions)
     execute_docker_command "Mysterium" "myst$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
     echo "http://$localhost_address:$mysterium_first_port" |tee -a $mysterium_file
     mysterium_first_port=`expr $mysterium_first_port + 1`
+	sudo docker exec myst$UNIQUE_ID$i sh -c "iptables -t nat -A PREROUTING -p tcp --dport 4449 -j DNAT --to-destination 127.0.0.1:4449;iptables -A FORWARD -p tcp -d 127.0.0.1 --dport 4449 -j ACCEPT"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
