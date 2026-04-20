@@ -1203,10 +1203,7 @@ start_containers() {
     # Create bitping folder
     mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
-    if [ ! -f "$PWD/$bitping_data_folder/data$i/.bitpingd/node.db" ]; then
-        sudo docker run --rm $NETWORK_TUN --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd --entrypoint /app/bitpingd bitping/bitpingd:latest login --email $BITPING_EMAIL --password $BITPING_PASSWORD
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd bitping/bitpingd:latest)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWORD=$BITPING_PASSWORD bitping/bitpingd:latest)
     execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
