@@ -275,9 +275,9 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:latest
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.19
+        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.21
 	  elif [[ "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
-	    sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.19
+	    sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.7.21
       else
         sudo docker pull xjasonlyu/tun2socks:v2.6.0
       fi
@@ -324,7 +324,7 @@ start_containers() {
         TUN_LOG_PARAM="trace"
       fi
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.19 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.21 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -337,7 +337,7 @@ start_containers() {
         TUN_LOG_PARAM="trace"
       fi
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.19 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.21 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
