@@ -63,13 +63,16 @@ dnscrypt_file="dnscrypt-proxy"
 dnscrypt_tar_file="dnscrypt-proxy.tar.gz"
 dnscrypt_config_file="dns-config.toml"
 dns_resolver_file="resolv.conf"
+libmnl_apk_file="libmnl.apk"
+libnftnl_apk_file="libnftnl.apk"
+iptables_apk_file="iptables.apk"
 earn_fm_config_file="earnfm_config.json"
 connection_state_file="connection_state.txt"
 ur_proxies_file="ur_proxies.txt"
 ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
 process_id_file="process.pid"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $generate_device_ids_file)
-files_to_be_removed=($dns_resolver_file $dnscrypt_tar_file $dnscrypt_file $dnscrypt_config_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
+files_to_be_removed=($libmnl_apk_file $libnftnl_apk_file $iptables_apk_file $dns_resolver_file $dnscrypt_tar_file $dnscrypt_file $dnscrypt_config_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
 back_up_files=($proxyrack_file $earnapp_file)
@@ -435,6 +438,83 @@ max_clients = 500
 EOF
 }
 
+# Download DNScrypt file
+download_dnscrypt() {
+  # Set the download URL based on the architecture
+  DNSCRYPT_VERSION="2.1.15"
+  DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
+  case "$CPU_ARCH" in
+    x86_64 | amd64)
+      DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_x86_64-${DNSCRYPT_VERSION}.tar.gz"
+      DNSCRYPT_DIR="linux-x86_64"
+      ;;
+    i686 | i386)
+      DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_i386-${DNSCRYPT_VERSION}.tar.gz"
+      DNSCRYPT_DIR="linux-i386"
+      ;;
+    armv7l | armv6l | armhf)
+      DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm-${DNSCRYPT_VERSION}.tar.gz"
+      DNSCRYPT_DIR="linux-arm"
+      ;;
+    arm64 | aarch64)
+      DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm64-${DNSCRYPT_VERSION}.tar.gz"
+      DNSCRYPT_DIR="linux-arm64"
+      ;;
+    *)
+      echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+      exit 1
+      ;;
+  esac
+  wget -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
+  if [ ! -f "$dnscrypt_tar_file" ]; then
+    echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  tar -xzf "$dnscrypt_tar_file"
+  mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
+  rm -rf "$dnscrypt_tar_file" "${DNSCRYPT_DIR}"
+}
+
+# Download IPtables file
+download_iptables() {
+  ALPINE_VERSION="3.23"
+  ALPINE_MIRROR="https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main"
+  case "$CPU_ARCH" in
+    x86_64 | amd64)
+      IPTABLES_ARCH="x86_64"
+      ;;
+    i686 | i386)
+      IPTABLES_ARCH="x86"
+      ;;
+    armv7l | armv6l | armhf)
+      IPTABLES_ARCH="armv7"
+      ;;
+    arm64 | aarch64)
+      IPTABLES_ARCH="aarch64"
+      ;;
+    *)
+      echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+      exit 1
+      ;;
+  esac
+  BASE_URL="${ALPINE_MIRROR}/${IPTABLES_ARCH}"
+  wget -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
+  if [ ! -f "$libmnl_apk_file" ]; then
+    echo -e "${RED}There is a problem downloading libmnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  wget -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.0-r0.apk"
+  if [ ! -f "$libnftnl_apk_file" ]; then
+    echo -e "${RED}There is a problem downloading libnftnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  wget -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.11-r1.apk"
+  if [ ! -f "$iptables_apk_file" ]; then
+    echo -e "${RED}There is a problem downloading iptables. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+}
+
 # Execute docker command
 execute_docker_command() {
   # Store parameters as an array
@@ -690,43 +770,14 @@ start_containers() {
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         if [ "$container_pulled" = false ]; then
-	  # Set the download URL based on the architecture
-	      DNSCRYPT_VERSION="2.1.15"
-          DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
-
-          case "$CPU_ARCH" in
-            x86_64 | amd64)
-              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_x86_64-${DNSCRYPT_VERSION}.tar.gz"
-              DNSCRYPT_DIR="linux-x86_64"
-              ;;
-            i686 | i386)
-              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_i386-${DNSCRYPT_VERSION}.tar.gz"
-              DNSCRYPT_DIR="linux-i386"
-              ;;
-            armv7l | armv6l | armhf)
-              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm-${DNSCRYPT_VERSION}.tar.gz"
-              DNSCRYPT_DIR="linux-arm"
-              ;;
-            arm64 | aarch64)
-              DNSCRYPT_URL="${DNSCRYPT_BASE}/dnscrypt-proxy-linux_arm64-${DNSCRYPT_VERSION}.tar.gz"
-              DNSCRYPT_DIR="linux-arm64"
-              ;;
-            *)
-              echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
-              exit 1
-              ;;
-          esac
-
-          wget -O $dnscrypt_tar_file "$DNSCRYPT_URL"
-          if [ ! -f $dnscrypt_tar_file ]; then
-            echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
-            exit 1;
+          if [ ! -f $dnscrypt_file ]; then
+            download_dnscrypt
           fi
-          tar -xzf $dnscrypt_tar_file
-          mv "${DNSCRYPT_DIR}/dnscrypt-proxy" ./dnscrypt-proxy
-          rm -rf $dnscrypt_tar_file "${DNSCRYPT_DIR}"
           if [ ! -f $dnscrypt_config_file ]; then
             create_dnscrypt_config
+          fi
+          if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
+            download_iptables
           fi
         fi
         dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
@@ -775,6 +826,29 @@ start_containers() {
         fi
         dns_option="--dns virtual"
         docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.7.21 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+      elif [[ "$USE_DNS_OVER_HTTPS" == "true" && "$proxy" == socks5://* ]]; then
+        SOCKS_PROXY=$proxy
+        # Strip scheme
+        SOCKS_NO_SCHEME="${SOCKS_PROXY#socks5://}"
+        # If auth exists, split it
+        if [[ "$SOCKS_NO_SCHEME" == *@* ]]; then
+          SOCKS_CREDS="${SOCKS_NO_SCHEME%@*}"
+          SOCKS_HOSTPORT="${SOCKS_NO_SCHEME#*@}"
+          SOCKS_USER="${SOCKS_CREDS%%:*}"
+          SOCKS_PASS="${SOCKS_CREDS#*:}"
+        else
+          SOCKS_HOSTPORT="$SOCKS_NO_SCHEME"
+          SOCKS_USER=""
+          SOCKS_PASS=""
+        fi
+        SOCKS_ADDR="${SOCKS_HOSTPORT%%:*}"
+        SOCKS_PORT="${SOCKS_HOSTPORT##*:}"
+        if [[ "$ENABLE_LOGS" != true ]]; then
+          TUN_LOG_PARAM="warn"
+        fi
+	dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:main -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:dev)
