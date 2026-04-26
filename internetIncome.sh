@@ -1045,7 +1045,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:18.06.2-dind /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
       execute_docker_command "Firefox Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
 
@@ -1116,7 +1116,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:18.06.2-dind /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
       execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
 
@@ -1173,7 +1173,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:18.06.2-dind /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
       execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
 
@@ -1235,7 +1235,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:18.06.2-dind /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
       execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "${docker_parameters[@]}"
 
     fi
@@ -1385,7 +1385,7 @@ start_containers() {
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
         execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
       else 
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork docker:18.06.2-dind /bin/sh -c 'apk add --no-cache bash && cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork --network none docker:18.06.2-dind /bin/sh -c 'cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
         execute_docker_command "URnetwork Restart" "dindurnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
       fi
     fi 
