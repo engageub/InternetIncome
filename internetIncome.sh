@@ -2133,7 +2133,7 @@ if [[ "$1" == "--delete" ]]; then
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
     for i in `cat $container_names_file`; do
-        sudo docker rm -f $i
+      sudo docker rm -f $i
     done
     # Delete the container file
     rm $container_names_file
