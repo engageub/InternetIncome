@@ -153,8 +153,8 @@ elif [ "$1" = "--restartURnetwork" ]; then
     docker restart $container
   done
 
-elif [ "$1" = "--restartTraffmonetizer" ]; then
-  for container in $(cat containernames.txt | grep "^traffmon")
+elif [ "$1" = "--restartEarnFM" ]; then
+  for container in $(cat containernames.txt | grep "^earnfm")
   do
     docker restart $container
   done
