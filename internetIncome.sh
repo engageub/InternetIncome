@@ -1483,6 +1483,9 @@ start_containers() {
           create_dnscrypt_config
         fi
 
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/earnfm --network none docker:18.06.2-dind /bin/sh -c 'cd /earnfm && chmod +x /earnfm/restart.sh && while true; do sleep 86400; /earnfm/restart.sh --restartEarnFM; done')
+        execute_docker_command "EarnFM Restart" "dindearnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json  --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --cap-add=NET_ADMIN --entrypoint /bin/sh earnfm/fleetshare:latest -c "apk add --no-cache iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /app/main")
         execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
