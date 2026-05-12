@@ -780,10 +780,10 @@ start_containers() {
   if [[ "$PROXYBASE_ACCOUNT_ID" ]]; then
     echo -e "${YELLOW}Starting Proxybase container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull proxybase/proxybase
+      sudo docker pull ghcr.io/proxybase-org-company/peer-cli:latest
     fi
     check_container_exists proxybase$UNIQUE_ID$i
-    if CONTAINER_ID=$(sudo docker run -d --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e DEVICE_NAME=$DEVICE_NAME$i -e USER_ID=$PROXYBASE_ACCOUNT_ID proxybase/proxybase); then
+    if CONTAINER_ID=$(sudo docker run -d --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always ghcr.io/proxybase-org-company/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i); then
       echo -e "${GREEN}Container proxybase$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Proxybase. Exiting..${NOCOLOUR}"
