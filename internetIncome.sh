@@ -929,7 +929,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull --platform=linux/amd64 pinors/antgain-cli:latest
     fi
-    check_container_exists antgain$UNIQUE_ID$
+    check_container_exists antgain$UNIQUE_ID$i
     if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run); then
       echo -e "${GREEN}Container antgain$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
