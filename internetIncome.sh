@@ -2099,7 +2099,7 @@ if [[ "$1" == "--start" ]]; then
 
   # Remove Process file
   rm $process_id_file
-  exit 1
+  exit 0
 fi
 
 # Delete containers and networks
