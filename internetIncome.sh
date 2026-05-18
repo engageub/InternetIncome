@@ -1428,11 +1428,11 @@ if [[ "$1" == "--deleteBackup" ]]; then
     parent=${netmode#container:}
     if ! sudo docker inspect "$parent" >/dev/null 2>&1; then
         clean_name="${name#/}"
-        echo "🗑️  DELETING stale container: $clean_name ($status) → $netmode | Image: $child_image"
+        echo -e "${YELLOW}DELETING stale containers using deleted parent network: $clean_name ($status) → $netmode | Image: $child_image${NOCOLOUR}"
         sudo docker rm -f "$id"
     fi
   done
-  echo "✅ Stale container cleanup completed."
+  echo -e "${GREEN}Stale containers cleanup completed.${NOCOLOUR}"
   exit 0
 fi
 
