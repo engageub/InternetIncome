@@ -2190,14 +2190,25 @@ if [[ "$1" == "--delete" ]]; then
 
   # Delete stale containers using deleted parent network (network_mode: container:<parent> where parent no longer exists)
   echo -e "${YELLOW}Deleting stale containers. This may take a few minutes...${NOCOLOUR}"
-  sudo docker ps -a -q | xargs -r docker inspect --format='{{.Id}} {{.Name}} {{.State.Status}} {{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null | grep ' container:' | while read -r id name status netmode child_image; do
+  declare -A existing
+  container_ids=()
+  # Store ALL existing container IDs + names
+  while read -r cid cname; do
+    cname="${cname#/}"
+    existing["$cid"]=1
+    existing["$cname"]=1
+    container_ids+=("$cid")
+  done < <(sudo docker inspect $(sudo docker ps -aq) --format '{{.Id}} {{.Name}}' 2>/dev/null)
+  # Reuse same container list instead of calling docker ps again
+  sudo docker inspect "${container_ids[@]}" --format '{{.Id}} {{.Name}} {{.State.Status}} {{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null | grep ' container:' | while read -r id name status netmode child_image; do
     parent=${netmode#container:}
-    if ! sudo docker inspect "$parent" >/dev/null 2>&1; then
-      container_name="${name#/}"
+    container_name="${name#/}"
+    # Parent container no longer exists
+    if [[ -z "${existing[$parent]}" ]]; then
       echo -e "${YELLOW}Removing stale container:${NOCOLOUR} ${container_name} (${status})"
       echo -e "${YELLOW}Network Mode:${NOCOLOUR} ${netmode}"
       echo -e "${YELLOW}Image:${NOCOLOUR} ${child_image}"
-      sudo docker rm -f "$id"
+      sudo docker rm -f $container_name
     fi
   done
   echo -e "${GREEN}Stale container deletion completed successfully.${NOCOLOUR}"
