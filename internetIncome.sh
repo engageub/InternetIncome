@@ -1328,13 +1328,7 @@ if [[ "$1" == "--delete" ]]; then
   # Delete containers by container names
   if [ -f "$container_names_file" ]; then
     for i in `cat $container_names_file`; do
-      # Check if container exists
-      if sudo docker inspect $i >/dev/null 2>&1; then
-        # Stop and Remove container
-        sudo docker rm -f $i
-      else
-        echo "Container $i does not exist"
-      fi
+      sudo docker rm -f $i
     done
     # Delete the container file
     rm $container_names_file
@@ -1343,12 +1337,7 @@ if [[ "$1" == "--delete" ]]; then
   # Delete networks
   if [ -f "$networks_file" ]; then
     for i in `cat $networks_file`; do
-      # Check if network exists and delete
-      if sudo docker network inspect $i > /dev/null 2>&1; then
-        sudo docker network rm $i
-      else
-        echo "Network $i does not exist"
-      fi
+      sudo docker network rm $i
     done
     # Delete network file
     rm $networks_file
