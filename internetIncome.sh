@@ -246,14 +246,10 @@ validate_proxies() {
               ;;
             ss)
               if [[ -n "$credentials" ]]; then
-                # Check base64 encoded credentials (encoded method:password)
+                local method="${credentials%%:*}"
+                local pass="${credentials#*:}"
+                [[ -n "$method" && "$credentials" == *":"* && -n "$pass" ]] && valid=true
                 echo "$credentials" | grep -qE "^[A-Za-z0-9+/=]+$" && valid=true
-                # Otherwise validate as plaintext method:password
-                if [[ "$valid" != true && "$credentials" == *":"* ]]; then
-                  local method="${credentials%%:*}"
-                  local pass="${credentials#*:}"
-                  [[ -n "$method" && -n "$pass" ]] && valid=true
-                fi
               fi
               ;;
           esac
