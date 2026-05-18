@@ -2189,6 +2189,7 @@ if [[ "$1" == "--delete" ]]; then
   sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
 
   # Delete stale containers using deleted parent network (network_mode: container:<parent> where parent no longer exists)
+  echo -e "${YELLOW}Deleting stale containers. This may take a few minutes...${NOCOLOUR}"
   sudo docker ps -a -q | xargs -r docker inspect --format='{{.Id}} {{.Name}} {{.State.Status}} {{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null | grep ' container:' | while read -r id name status netmode child_image; do
     parent=${netmode#container:}
     if ! sudo docker inspect "$parent" >/dev/null 2>&1; then
