@@ -2188,7 +2188,7 @@ if [[ "$1" == "--delete" ]]; then
   # Delete folders for Docker-in-Docker
   sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
 
-  exit 1
+  exit 0
 fi
 
 # Stop containers
@@ -2207,7 +2207,7 @@ if [[ "$1" == "--stop" ]]; then
       fi
     done
   fi
-  exit 1
+  exit 0
 fi
 
 # Restart containers
@@ -2226,7 +2226,7 @@ if [[ "$1" == "--restart" ]]; then
       fi
     done
   fi
-  exit 1
+  exit 0
 fi
 
 # Delete backup files and folders
@@ -2274,7 +2274,17 @@ if [[ "$1" == "--deleteBackup" ]]; then
   # Delete backup folders for Docker-in-Docker
   sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${back_up_folders[@]}"
 
-  exit 1
+  # Delete stale containers using deleted parent network (network_mode: container:<parent> where parent no longer exists)
+  sudo docker ps -a -q | xargs -r docker inspect --format='{{.Id}} {{.Name}} {{.State.Status}} {{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null | grep ' container:' | while read -r id name status netmode child_image; do
+    parent=${netmode#container:}
+    if ! sudo docker inspect "$parent" >/dev/null 2>&1; then
+        clean_name="${name#/}"
+        echo -e "${YELLOW}DELETING stale containers using deleted parent network: $clean_name ($status) → $netmode | Image: $child_image${NOCOLOUR}"
+        sudo docker rm -f "$id"
+    fi
+  done
+  echo -e "${GREEN}Stale containers cleanup completed.${NOCOLOUR}"
+  exit 0
 fi
 
 echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--startOnly${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}, ${RED}--stop${NOCOLOUR}, ${RED}--restart${NOCOLOUR}"
