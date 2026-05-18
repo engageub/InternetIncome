@@ -2074,7 +2074,9 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from proxies file
     sed -i 's/\r//g' $proxies_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
-    validate_proxies
+	if [[ "$VALIDATE_PROXIES" != false ]]; then
+      validate_proxies
+	fi
     if [ -z "${i}" ]; then
       i=0;
     fi
