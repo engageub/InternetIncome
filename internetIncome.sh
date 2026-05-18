@@ -1423,7 +1423,17 @@ if [[ "$1" == "--deleteBackup" ]]; then
   # Delete backup folders for Docker-in-Docker
   sudo docker run --rm --mount type=bind,source="$PWD",target=/output docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${back_up_folders[@]}"
 
-  exit 1
+  # Delete stale containers using deleted parent network (network_mode: container:<parent> where parent no longer exists)
+  sudo docker ps -a -q | xargs -r docker inspect --format='{{.Id}} {{.Name}} {{.State.Status}} {{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null | grep ' container:' | while read -r id name status netmode child_image; do
+    parent=${netmode#container:}
+    if ! sudo docker inspect "$parent" >/dev/null 2>&1; then
+        clean_name="${name#/}"
+        echo "🗑️  DELETING stale container: $clean_name ($status) → $netmode | Image: $child_image"
+        sudo docker rm -f "$id"
+    fi
+  done
+  echo "✅ Stale container cleanup completed."
+  exit 0
 fi
 
 echo -e "Valid options are: ${RED}--start${NOCOLOUR}, ${RED}--delete${NOCOLOUR}, ${RED}--deleteBackup${NOCOLOUR}"
