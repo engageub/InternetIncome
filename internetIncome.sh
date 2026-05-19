@@ -196,6 +196,24 @@ find_next_available_subnet() {
   done
 }
 
+# Check if a docker network with name already exists
+check_network_exists() {
+  local network_name="$1"
+  # Validate input
+  if [ -z "$network_name" ]; then
+    echo -e "${RED}Error: network_name is required. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  # Check if network exists
+  if sudo docker inspect --type network "$network_name" >/dev/null 2>&1; then
+    echo -e "${RED}A network with name $network_name already exists. Exiting..${NOCOLOUR}"
+    exit 1
+  else
+    # Append to networks file
+    echo "$network_name" | tee -a "$networks_file"
+  fi
+}
+
 # Validate proxies format
 validate_proxies() {
   local lineno=0
@@ -713,8 +731,9 @@ start_containers() {
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network=multi$UNIQUE_ID$i"
       new_subnet=$(find_next_available_subnet)
+      check_network_exists multi$UNIQUE_ID$i
       if NETWORK_ID=$(sudo docker network create multi$UNIQUE_ID$i --driver bridge --subnet $new_subnet); then
-        echo "multi$UNIQUE_ID$i" | tee -a $networks_file
+        echo -e "${GREEN}Network multi$UNIQUE_ID$i created successfully.${NOCOLOUR}"
         if sudo iptables -t nat -I POSTROUTING -s $new_subnet -j SNAT --to-source $proxy; then
           echo "$new_subnet" "$proxy" | tee -a $subnets_file
         else
@@ -742,12 +761,13 @@ start_containers() {
       else
          dns_option="--dns virtual"
       fi
-      if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
+      if [ "$USE_CUSTOM_NETWORK" = true ] && { [ -z "$CUSTOM_NETWORK" ] || [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
         echo -e "${GREEN}Creating new network..${NOCOLOUR}"
         network_name="net$UNIQUE_ID$i"
         CUSTOM_NETWORK="--network=$network_name"
+        check_network_exists $network_name
         if NETWORK_ID=$(sudo docker network create $network_name); then
-          echo "$network_name" | tee -a $networks_file
+          echo -e "${GREEN}Network $network_name created successfully.${NOCOLOUR}"
         else
           echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}"
           exit 1
@@ -787,12 +807,13 @@ start_containers() {
       else
         TUN_DNS_VOLUME="$DNS_VOLUME"
       fi
-      if [ "$USE_CUSTOM_NETWORK" = true ] && { [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
+      if [ "$USE_CUSTOM_NETWORK" = true ] && { [ -z "$CUSTOM_NETWORK" ] || [ "$i" -eq 1 ] || [ "$((i % 1000))" -eq 0 ]; }; then
         echo -e "${GREEN}Creating new network..${NOCOLOUR}"
         network_name="net$UNIQUE_ID$i"
         CUSTOM_NETWORK="--network=$network_name"
+        check_network_exists $network_name
         if NETWORK_ID=$(sudo docker network create $network_name); then
-          echo "$network_name" | tee -a $networks_file
+          echo -e "${GREEN}Network $network_name created successfully.${NOCOLOUR}"
         else
           echo -e "${RED}Failed to create network $network_name..Exiting..${NOCOLOUR}"
           exit 1
@@ -2149,11 +2170,98 @@ if [[ "$1" == "--delete" ]]; then
 
   # Delete networks
   if [ -f "$networks_file" ]; then
-    for i in `cat $networks_file`; do
-      sudo docker network rm $i
-    done
-    # Delete network file
-    rm $networks_file
+    failed_networks=()
+    networks_with_endpoints=()
+    force_remove=0
+    if [ ! -f "$networks_file" ]; then
+      return 0
+    fi
+    # First pass — attempt clean removal, collect networks with active endpoints
+    while IFS= read -r network; do
+      [ -z "$network" ] && continue
+      if sudo docker network rm "$network" 2>/dev/null; then
+        echo -e "${GREEN}Network $network removed successfully.${NOCOLOUR}"
+      else
+        endpoints=$(sudo docker network inspect "$network" --format '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$endpoints" ]; then
+          networks_with_endpoints+=("$network")
+        else
+          rm_err=$(sudo docker network rm "$network" 2>&1)
+          if echo "$rm_err" | grep -q "No such network"; then
+            echo -e "${YELLOW}Network $network no longer exists, skipping.${NOCOLOUR}"
+          else
+            echo -e "${RED}Failed to remove network $network: $rm_err${NOCOLOUR}"
+            failed_networks+=("$network")
+          fi
+        fi
+      fi
+    done < "$networks_file"
+    # If any networks have active endpoints, prompt once
+    if [ ${#networks_with_endpoints[@]} -gt 0 ]; then
+      echo -e "${YELLOW}The following networks could not be deleted as containers are still attached:${NOCOLOUR}"
+      for network in "${networks_with_endpoints[@]}"; do
+        echo -e "${YELLOW}  Network: $network${NOCOLOUR}"
+        sudo docker network inspect "$network" --format '{{range .Containers}}    - {{.Name}}{{println}}{{end}}' 2>/dev/null
+      done
+      echo -e "${YELLOW}Do you want to force remove all attached containers and delete these networks? (yes/no)${NOCOLOUR}"
+      read -r -t 60 choice </dev/tty
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}No response within 60 seconds. Skipping all affected networks.${NOCOLOUR}"
+        failed_networks+=("${networks_with_endpoints[@]}")
+      else
+        case "$choice" in
+          yes|y|Y)
+            force_remove=1
+            ;;
+          no|n|N)
+            echo -e "${YELLOW}Skipping all affected networks.${NOCOLOUR}"
+            failed_networks+=("${networks_with_endpoints[@]}")
+            ;;
+          *)
+            echo -e "${RED}Invalid response. Skipping all affected networks.${NOCOLOUR}"
+            failed_networks+=("${networks_with_endpoints[@]}")
+            ;;
+        esac
+      fi
+    fi
+    # Second pass — force remove if user agreed
+    if [ "$force_remove" -eq 1 ]; then
+      for network in "${networks_with_endpoints[@]}"; do
+        endpoints=$(sudo docker network inspect "$network" --format '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null | tr ' ' '\n' | grep -v '^$')
+        force_failed=0
+        for container in $endpoints; do
+          echo -e "${YELLOW}Removing container: $container${NOCOLOUR}"
+          if ! sudo docker rm -f "$container" >/dev/null 2>&1; then
+            echo -e "${YELLOW}Could not remove $container, disconnecting instead..${NOCOLOUR}"
+            if ! sudo docker network disconnect -f "$network" "$container" >/dev/null 2>&1; then
+              echo -e "${RED}Failed to disconnect $container from $network.${NOCOLOUR}"
+              force_failed=1
+            fi
+          fi
+        done
+        if [ "$force_failed" -eq 0 ]; then
+          if sudo docker network rm "$network" 2>/dev/null; then
+            echo -e "${GREEN}Network $network removed successfully.${NOCOLOUR}"
+          else
+            echo -e "${RED}Failed to remove network $network even after disconnecting containers.${NOCOLOUR}"
+            failed_networks+=("$network")
+          fi
+        else
+          echo -e "${RED}Could not fully clear endpoints. Skipping removal of network $network.${NOCOLOUR}"
+          failed_networks+=("$network")
+        fi
+      done
+    fi
+    # Report failures
+    if [ ${#failed_networks[@]} -gt 0 ]; then
+      echo -e "${RED}The following networks could not be removed:${NOCOLOUR}"
+      for n in "${failed_networks[@]}"; do
+        echo -e "${RED}  - $n${NOCOLOUR}"
+      done
+      exit 1
+    fi
+    rm "$networks_file"
+    echo -e "${GREEN}All networks removed successfully.${NOCOLOUR}"
   fi
 
   # Delete IP tables
