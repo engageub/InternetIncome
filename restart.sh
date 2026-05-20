@@ -112,4 +112,11 @@ elif [ "$1" = "--restartURnetwork" ]; then
   do
     docker restart $container
   done
+
+elif [ "$1" = "--restartProxylite" ]; then
+  # Restarting Proxylite Nodes
+  for container in $(grep '^proxylite' containernames.txt)
+  do
+    docker restart $container
+  done
 fi
