@@ -158,5 +158,11 @@ elif [ "$1" = "--restartEarnFM" ]; then
   do
     docker restart $container
   done
+  
+elif [ "$1" = "--restartProxylite" ]; then
+  for container in $(cat containernames.txt | grep "^proxylite")
+  do
+    docker restart $container
+  done
 
 fi
