@@ -985,6 +985,13 @@ start_containers() {
     echo -e "${YELLOW}Starting Proxylite container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice
+      check_container_exists dindproxylite$UNIQUE_ID$i
+      if CONTAINER_ID=$(sudo docker run -d --name dindproxylite$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/proxylite --network none docker:18.06.2-dind /bin/sh -c 'cd /proxylite && chmod +x /proxylite/restart.sh && while true; do sleep 86400; /proxylite/restart.sh --restartProxylite; done'); then
+         echo -e "${GREEN}Container dindproxylite$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+      else
+        echo -e "${RED}Failed to start container for Proxylite restart. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
     fi
     check_container_exists proxylite$UNIQUE_ID$i
     if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice); then
