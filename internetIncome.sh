@@ -117,19 +117,44 @@ check_open_ports() {
 # Check if a container with name already exists
 check_container_exists() {
   local container_name="$1"
+  local prefix="$2"
+  local image="$3"
   # Validate input
   if [ -z "$container_name" ]; then
-    echo -e "${RED}Error: container_name is required.Exiting..${NOCOLOUR}"
+    echo -e "${RED}Error: container_name is required. Exiting..${NOCOLOUR}"
     exit 1
   fi
   # Check if container exists
   if sudo docker inspect --type container $container_name >/dev/null 2>&1; then
-    echo -e "${RED}A container with name $container_name already exists.Exiting..${NOCOLOUR}"
+    echo -e "${RED}A container with name $container_name already exists. Exiting..${NOCOLOUR}"
     exit 1
-  else
-    # Append to file if provided
-    echo "$container_name" | tee -a "$container_names_file"
   fi
+  # If prefix is provided, find and delete any existing direct-connection (bridge) containers
+  if [ -n "$prefix" ]; then
+    while IFS= read -r cname; do
+      [[ -z "$cname" ]] && continue
+      # Extract trailing hex run — exactly 32 chars means direct mode (no proxy index appended)
+      trailing=$(echo "$cname" | grep -oE '[a-f0-9]+$')
+      if [ ${#trailing} -ne 32 ]; then
+        continue
+      fi
+      # Inspect once and extract both network mode and image
+      read -r network container_image <<< $(sudo docker inspect --type container "$cname" --format '{{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null)
+      # Skip if network is not bridge
+      if [ "$network" != "bridge" ]; then
+        continue
+      fi
+      # If image parameter is provided, skip if image does not match
+      if [ -n "$image" ] && [ "$container_image" != "$image" ]; then
+        continue
+      fi
+      echo -e "${YELLOW}Existing direct-connection container found: $cname (Image: $container_image). Deleting..${NOCOLOUR}"
+      sudo docker rm -f "$cname"
+      echo -e "${GREEN}Deleted container $cname successfully.${NOCOLOUR}"
+    done < <(sudo docker ps --format '{{.Names}}' | grep "^${prefix}")
+  fi
+  # Append container name to tracking file
+  echo "$container_name" | tee -a "$container_names_file"
 }
 
 # Validate proxies format
@@ -926,7 +951,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull pinors/antgain-cli:latest
     fi
-    check_container_exists antgain$UNIQUE_ID$i
+    check_container_exists antgain$UNIQUE_ID$i antgain pinors/antgain-cli:latest
     if CONTAINER_ID=$(sudo docker run -d --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run); then
       echo -e "${GREEN}Container antgain$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
