@@ -747,7 +747,7 @@ start_containers() {
     elif [ "$USE_TUN2PROXY" = true ];then
       # Starting tun2proxy containers
       if [ "$container_pulled" = false ]; then
-        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.0
+        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.1
       fi
       if [[ "$ENABLE_LOGS" != true ]]; then
         TUN_LOG_PARAM="off"
@@ -773,7 +773,7 @@ start_containers() {
           exit 1
         fi
       fi
-      docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.0 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+      docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.1 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
@@ -781,7 +781,7 @@ start_containers() {
         if [ "$USE_SOCKS5_DNS" = true ]; then
           sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.15.0
         elif [[ "$USE_SOCKS5_DNS" != "true" && "$USE_DNS_OVER_HTTPS" != "true" && "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
-          sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.0
+          sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.1
         elif [[ "$USE_DNS_OVER_HTTPS" == "true" && "$proxy" == socks5://* ]]; then
           sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.15.0
         else
@@ -848,7 +848,7 @@ start_containers() {
           TUN_LOG_PARAM="trace"
         fi
         dns_option="--dns virtual"
-        docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.0 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.1 $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       elif [[ "$USE_DNS_OVER_HTTPS" == "true" && "$proxy" == socks5://* ]]; then
         SOCKS_PROXY=$proxy
