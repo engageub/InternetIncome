@@ -1888,6 +1888,11 @@ if [[ "$1" == "--startOnly" ]]; then
     fi
     shift
   done
+  # Setting Device name
+  if [[ ! $DEVICE_NAME ]]; then
+    echo -e "${RED}Device Name is not configured. Using default name ${NOCOLOUR}ubuntu"
+    DEVICE_NAME=ubuntu
+  fi
   # Check if connection state file exists
   if [ ! -f "$connection_state_file" ]; then
     echo -e "${RED}Required file $connection_state_file does not exist. Exiting..${NOCOLOUR}"
