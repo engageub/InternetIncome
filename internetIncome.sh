@@ -607,11 +607,11 @@ start_containers() {
       echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}";
       exit 1;
     fi
-    sudo docker pull docker:18.06.2-dind
-    if sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
+    sudo docker pull docker:dind
+    if sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then exit 0; else exit 1; fi"; then
       docker_in_docker_detected=true
     fi
-    sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
+    sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:dind sh -c "if [ ! -f /output/$dns_resolver_file ]; then printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\n' > /output/$dns_resolver_file; printf 'Docker-in-Docker is detected. The script runs with limited features.\nThe files and folders are created in the same path on the host where your parent docker is installed.\n'; fi"
   fi
 
   if [[ "$ENABLE_LOGS" != true ]]; then
@@ -1068,7 +1068,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:18.06.2-dind /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:dind /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
       execute_docker_command "Firefox Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
 
@@ -1139,7 +1139,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:18.06.2-dind /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:dind /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
       execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
 
@@ -1196,7 +1196,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:18.06.2-dind /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:dind /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
       execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
 
@@ -1258,7 +1258,7 @@ start_containers() {
         exit 1
       fi
 
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:18.06.2-dind /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:dind /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
       execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "${docker_parameters[@]}"
 
     fi
@@ -1408,7 +1408,7 @@ start_containers() {
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
         execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
       else 
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork --network none docker:18.06.2-dind /bin/sh -c 'cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork --network none docker:dind /bin/sh -c 'cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
         execute_docker_command "URnetwork Restart" "dindurnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
       fi
     fi 
@@ -1504,7 +1504,7 @@ start_containers() {
           create_dnscrypt_config
         fi
 
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/earnfm --network none docker:18.06.2-dind /bin/sh -c 'cd /earnfm && chmod +x /earnfm/restart.sh && while true; do sleep 86400; /earnfm/restart.sh --restartEarnFM; done')
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/earnfm --network none docker:dind /bin/sh -c 'cd /earnfm && chmod +x /earnfm/restart.sh && while true; do sleep 86400; /earnfm/restart.sh --restartEarnFM; done')
         execute_docker_command "EarnFM Restart" "dindearnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
 
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json  --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --cap-add=NET_ADMIN --entrypoint /bin/sh earnfm/fleetshare:latest -c "apk add --no-cache iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /app/main")
@@ -1757,7 +1757,7 @@ start_containers() {
   if [[ $PROXYLITE_USER_ID ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice:latest
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/proxylite --network none docker:18.06.2-dind /bin/sh -c 'cd /proxylite && chmod +x /proxylite/restart.sh && while true; do sleep 86400; /proxylite/restart.sh --restartProxylite; done')
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/proxylite --network none docker:dind /bin/sh -c 'cd /proxylite && chmod +x /proxylite/restart.sh && while true; do sleep 86400; /proxylite/restart.sh --restartProxylite; done')
       execute_docker_command "Proxylite Restart" "dindproxylite$UNIQUE_ID$i" "${docker_parameters[@]}"
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice:latest)
@@ -2290,7 +2290,7 @@ if [[ "$1" == "--delete" ]]; then
   done
 
   # Delete files for Docker-in-Docker
-  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${files_to_be_removed[@]}"
+  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${files_to_be_removed[@]}"
 
   # Delete folders
   folders_to_be_removed+=("${files_to_be_removed[@]}")
@@ -2301,7 +2301,7 @@ if [[ "$1" == "--delete" ]]; then
   done
 
   # Delete folders for Docker-in-Docker
-  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
+  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
 
   # Delete stale containers using deleted parent network (network_mode: container:<parent> where parent no longer exists)
   echo -e "${YELLOW}Deleting stale containers. This may take a few minutes...${NOCOLOUR}"
@@ -2401,7 +2401,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
   done
 
   # Delete backup files for Docker-in-Docker
-  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${back_up_files[@]}"
+  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:dind sh -c 'for file in "$@"; do if [ -f "/output/$file" ]; then rm "/output/$file"; fi; done' sh "${back_up_files[@]}"
 
   # Delete backup folders
   back_up_folders+=("${back_up_files[@]}")
@@ -2412,7 +2412,7 @@ if [[ "$1" == "--deleteBackup" ]]; then
   done
 
   # Delete backup folders for Docker-in-Docker
-  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:18.06.2-dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${back_up_folders[@]}"
+  sudo docker run --rm --mount type=bind,source=$PWD,target=/output docker:dind sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${back_up_folders[@]}"
   exit 0
 fi
 
