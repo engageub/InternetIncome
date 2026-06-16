@@ -92,10 +92,10 @@ Download the code and edit the configuration file properties.conf with your acco
 If you don't have GUI access but have terminal access, you can use the following commands to download the code.
 ### Download the code
 ```
-wget -O main.zip https://github.com/engageub/InternetIncome/archive/refs/heads/main.zip
+wget -O main.zip https://github.com/engageub/InternetIncome/archive/refs/heads/podman.zip
 sudo apt-get install unzip
-unzip -o main.zip
-cd InternetIncome-main
+unzip -o podman.zip
+cd InternetIncome-podman
 ```
 * Please edit the "properties.conf" file using the following instructions and save the changes.  
 * If you are using proxies, please set the `USE_PROXIES` value to `true`.
