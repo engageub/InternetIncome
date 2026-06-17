@@ -1826,7 +1826,7 @@ start_containers() {
       # Check if watch tower container exists
       if ! sudo docker inspect internetincomewatchtower$UNIQUE_ID >/dev/null 2>&1; then
         sudo docker pull ghcr.io/nicholas-fedor/watchtower:nightly
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -e WATCHTOWER_CLEANUP=true --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --no-healthcheck ghcr.io/nicholas-fedor/watchtower:nightly --scope $UNIQUE_ID --interval 86400)
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -e WATCHTOWER_CLEANUP=true -e WATCHTOWER_ROLLING_RESTART=true --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --no-healthcheck ghcr.io/nicholas-fedor/watchtower:nightly --scope $UNIQUE_ID --interval 86400)
         execute_docker_command "Internet Income Watch Tower" "internetincomewatchtower$UNIQUE_ID" "${docker_parameters[@]}"
       fi
     fi
