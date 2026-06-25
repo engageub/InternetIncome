@@ -58,6 +58,7 @@ chrome_profile_data="chromeprofiledata"
 chrome_profile_zipfile="chromeprofiledata.zip"
 traffmonetizer_data_folder="traffmonetizerdata"
 titan_data_folder="titan-data"
+antgain_file="antgain.txt"
 proxyrack_file="proxyrack.txt"
 dnscrypt_file="dnscrypt-proxy"
 dnscrypt_tar_file="dnscrypt-proxy.tar.gz"
@@ -75,7 +76,7 @@ required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_
 files_to_be_removed=($libmnl_apk_file $libnftnl_apk_file $iptables_apk_file $dns_resolver_file $dnscrypt_tar_file $dnscrypt_file $dnscrypt_config_file $container_names_file $subnets_file $networks_file $mysterium_file $ebesucher_file $adnade_file $firefox_containers_file $chrome_containers_file $adnade_containers_file $custom_chrome_file $custom_firefox_file $uprock_file $earn_fm_config_file $connection_state_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
 folders_to_be_removed=($firefox_data_folder $firefox_profile_data $adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder)
 back_up_folders=($titan_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $custom_chrome_data_folder $custom_firefox_data_folder)
-back_up_files=($proxyrack_file $earnapp_file)
+back_up_files=($antgain_file $proxyrack_file $earnapp_file)
 restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 137 139 143 161 179 389 427 465 512 513 514 515 526 530 531 532 540 548 554 556 563 587 601 636 993 995 1719 1720 1723 2049 3659 4045 5060 5061 6000 6566 6665 6666 6667 6668 6669 6697 10080)
 container_pulled=false
 docker_in_docker_detected=false
@@ -1535,7 +1536,7 @@ start_containers() {
 
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
-     for loop_count in {1..500}; do
+    for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for ProxyRack. Exiting..${NOCOLOUR}"
         exit 1
@@ -1677,11 +1678,44 @@ start_containers() {
 
   # Starting AntGain container
   if [[ $ANTGAIN_API_KEY ]]; then
+    for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Unique UUID cannot be generated for Antgain. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
+      if [ -f $antgain_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$antgain_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     if [ "$container_pulled" = false ]; then
       sudo docker pull pinors/antgain-cli:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run)
+    sequence=$i
+    if [ "$USE_DIRECT_CONNECTION" = true ]; then
+      sequence=$((1 + i))
+    fi
+    if [ -f $antgain_file ] && antgain_uuid=$(sed "${sequence}q;d" $antgain_file);then
+      if [[ $antgain_uuid ]];then
+        echo $antgain_uuid
+      else
+        echo "Antgain UUID does not exist, creating UUID"
+        antgain_uuid=$RANDOM_ID
+        printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+      fi
+    else
+      echo "Antgain UUID does not exist, creating UUID"
+      antgain_uuid=$RANDOM_ID
+      printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+    fi
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e ANTGAIN_DEVICE_ID=$antgain_uuid -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run)
     execute_docker_command "AntGain" "antgain$UNIQUE_ID$i" "${docker_parameters[@]}"
+    echo -e "${GREEN}Device is automatically addded to your antgain dashboard after few minutes${NOCOLOUR}"
+    echo -e "${GREEN}You will find the uuids in the file $antgain_file in the same folder${NOCOLOUR}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}AntGain API is not configured. Ignoring AntGain..${NOCOLOUR}"
