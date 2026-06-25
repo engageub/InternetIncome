@@ -29,6 +29,7 @@ proxies_file="proxies.txt"
 container_names_file="containernames.txt"
 earnapp_file="earnapp.txt"
 earnapp_data_folder="earnappdata"
+antgain_file="antgain.txt"
 proxyrack_file="proxyrack.txt"
 networks_file="networks.txt"
 mysterium_file="mysterium.txt"
@@ -60,7 +61,7 @@ required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_
 files_to_be_removed=($earn_fm_config_file $dns_resolver_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
 back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
-back_up_files=($earnapp_file $proxyrack_file)
+back_up_files=($antgain_file $earnapp_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
 
@@ -948,11 +949,39 @@ start_containers() {
   # Starting AntGain container
   if [[ $ANTGAIN_API_KEY ]]; then
     echo -e "${YELLOW}Starting AntGain container..${NOCOLOUR}"
+    for loop_count in {1..500}; do
+      if [ "$loop_count" -eq 500 ]; then
+        echo -e "${RED}Unique UUID cannot be generated for AntGain. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+      RANDOM_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
+      if [ -f $antgain_file ]; then
+        if ! grep -qF "$RANDOM_ID" "$antgain_file"; then
+          break
+        fi
+      else
+        break;
+      fi
+    done
     if [ "$container_pulled" = false ]; then
       sudo docker pull pinors/antgain-cli:latest
     fi
+    if [ -f $antgain_file ] && antgain_uuid=$(sed "${i}q;d" $antgain_file);then
+      if [[ $antgain_uuid ]];then
+        echo $antgain_uuid
+      else
+        echo "Antgain UUID does not exist, creating UUID"
+        antgain_uuid=$RANDOM_ID
+        printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+      fi
+    else
+      echo "Antgain UUID does not exist, creating UUID"
+      antgain_uuid=$RANDOM_ID
+      printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+    fi
+
     check_container_exists antgain$UNIQUE_ID$i antgain pinors/antgain-cli:latest
-    if CONTAINER_ID=$(sudo docker run -d --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run); then
+    if CONTAINER_ID=$(sudo docker run -d --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY -e ANTGAIN_DEVICE_ID=$antgain_uuid --no-healthcheck pinors/antgain-cli:latest run); then
       echo -e "${GREEN}Container antgain$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for AntGain. Exiting..${NOCOLOUR}"
