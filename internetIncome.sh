@@ -460,7 +460,7 @@ EOF
 # Download DNScrypt file
 download_dnscrypt() {
   # Set the download URL based on the architecture
-  DNSCRYPT_VERSION="2.1.15"
+  DNSCRYPT_VERSION="2.1.16"
   DNSCRYPT_BASE="https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/${DNSCRYPT_VERSION}"
   case "$CPU_ARCH" in
     x86_64 | amd64)
@@ -802,6 +802,9 @@ start_containers() {
           if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
             download_iptables
           fi
+        fi
+        if [[ "$proxy" == socks5://* ]]; then
+          TUN_DNS_VOLUME="$DNS_VOLUME"
         fi
         dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
         EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
