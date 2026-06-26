@@ -874,7 +874,7 @@ start_containers() {
         if [[ "$ENABLE_LOGS" != true ]]; then
           TUN_LOG_PARAM="warn"
         fi
-	    dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
+        dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:2.15.0 -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
@@ -969,7 +969,7 @@ start_containers() {
   ")
     execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
-	echo -e "${GREEN}Please wait at least one minute before accessing the URL to ensure the service is fully initialized.${NOCOLOUR}"
+    echo -e "${GREEN}Please wait at least one minute before accessing the URL to ensure the service is fully initialized.${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
     echo "http://$localhost_address:$uprock_first_port" |tee -a $uprock_file
     uprock_first_port=`expr $uprock_first_port + 1`
@@ -1387,7 +1387,7 @@ start_containers() {
               fi
               SOCKS_ADDR="${SOCKS_HOSTPORT%%:*}"
               SOCKS_PORT="${SOCKS_HOSTPORT##*:}"
-	          if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
+              if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
                 echo "$SOCKS_ADDR:$SOCKS_PORT:$SOCKS_USER:$SOCKS_PASS" >> $ur_proxies_file
               else
                 echo "$SOCKS_ADDR:$SOCKS_PORT" >> $ur_proxies_file
@@ -1406,7 +1406,7 @@ start_containers() {
           echo -e "${RED}Proxy file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
           exit 1
         fi
-	    if [ ! -f $dnscrypt_config_file ]; then
+        if [ ! -f $dnscrypt_config_file ]; then
           create_dnscrypt_config
         fi
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
@@ -2139,9 +2139,9 @@ if [[ "$1" == "--start" ]]; then
     # Remove special character ^M and trim space from proxies file
     sed -i 's/\r//g' $proxies_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
-	if [[ "$VALIDATE_PROXIES" != false ]]; then
+    if [[ "$VALIDATE_PROXIES" != false ]]; then
       validate_proxies
-	fi
+    fi
     if [ -z "${i}" ]; then
       i=0;
     fi
