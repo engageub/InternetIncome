@@ -786,7 +786,7 @@ start_containers() {
           exit 1
         fi
       fi
-      docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+      docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
       execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
@@ -855,7 +855,7 @@ start_containers() {
         if [[ "$ENABLE_LOGS" != true ]]; then
           TUN_LOG_PARAM="warn"
         fi
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       elif [[ "$USE_SOCKS5_DNS" != "true" && "$USE_DNS_OVER_HTTPS" != "true" && "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
         if [[ "$ENABLE_LOGS" != true ]]; then
@@ -864,7 +864,7 @@ start_containers() {
           TUN_LOG_PARAM="trace"
         fi
         dns_option="--dns virtual"
-        docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.default.disable_ipv6=0 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       elif [[ "$USE_DNS_OVER_HTTPS" == "true" && "$proxy" == socks5://* ]]; then
         SOCKS_PROXY=$proxy
@@ -887,10 +887,10 @@ start_containers() {
           TUN_LOG_PARAM="warn"
         fi
         dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:$TUN2SOCKS_VERSION)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $dnscrypt_volume --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:$TUN2SOCKS_VERSION)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       fi
     fi
