@@ -804,13 +804,11 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-        if [ "$container_pulled" = false ]; then
-          if [ ! -f $dnscrypt_file ]; then
-            download_dnscrypt
-          fi
-          if [ ! -f $dnscrypt_config_file ]; then
-            create_dnscrypt_config
-          fi
+        if [ ! -f $dnscrypt_file ]; then
+          download_dnscrypt
+        fi
+        if [ ! -f $dnscrypt_config_file ]; then
+          create_dnscrypt_config
         fi
         if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
           download_iptables
