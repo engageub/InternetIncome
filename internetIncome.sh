@@ -811,9 +811,9 @@ start_containers() {
           if [ ! -f $dnscrypt_config_file ]; then
             create_dnscrypt_config
           fi
-          if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
-            download_iptables
-          fi
+        fi
+        if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
+          download_iptables
         fi
         if [[ "$proxy" == socks5://* ]]; then
           TUN_DNS_VOLUME="$DNS_VOLUME"
