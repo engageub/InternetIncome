@@ -882,7 +882,7 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-        if [ "$USE_DNSCRYPT" = true ]; then
+        if [ "$USE_DNSCRYPT" != false ]; then
           if [ ! -f $dnscrypt_file ]; then
             download_dnscrypt
           fi
@@ -903,7 +903,7 @@ start_containers() {
         if [[ "$proxy" == socks5://* ]]; then
           TUN_DNS_VOLUME="$DNS_VOLUME"
         fi
-        if [ "$USE_DNSCRYPT" = true ]; then
+        if [ "$USE_DNSCRYPT" != false ]; then
           doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
           EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
         else
@@ -976,7 +976,7 @@ start_containers() {
         if [[ "$ENABLE_LOGS" != true ]]; then
           TUN_LOG_PARAM="warn"
         fi
-        if [ "$USE_DNSCRYPT" = true ]; then
+        if [ "$USE_DNSCRYPT" != false ]; then
           doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
           docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
         else
