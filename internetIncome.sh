@@ -58,7 +58,10 @@ ebesucher_file="ebesucher.txt"
 firefox_containers_file="firefoxcontainers.txt"
 firefox_profile_zipfile="firefoxprofiledata.zip"
 generate_device_ids_file="generateDeviceIds.sh"
+hickory_dns_apk_file="hickory-dns.apk"
+hickory_dns_config_file="hickory-dns-config.toml"
 iptables_apk_file="iptables.apk"
+libgcc_apk_file="libgcc.apk"
 libmnl_apk_file="libmnl.apk"
 libnftnl_apk_file="libnftnl.apk"
 multi_ip_file="multi_ips.txt"
@@ -77,7 +80,7 @@ vpns_file="vpns.txt"
 
 # Arrays
 required_files=($banner_file $firefox_profile_zipfile $generate_device_ids_file $properties_file $restart_file)
-files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $iptables_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
+files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $hickory_dns_apk_file $hickory_dns_config_file $iptables_apk_file $libgcc_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
 folders_to_be_removed=($adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $firefox_data_folder $firefox_profile_data)
 back_up_folders=($bitping_data_folder $custom_chrome_data_folder $custom_firefox_data_folder $mysterium_data_folder $titan_data_folder $traffmonetizer_data_folder $urnetwork_data_folder)
 back_up_files=($antgain_file $earnapp_file $proxyrack_file)
@@ -101,7 +104,7 @@ second_octet=168
 third_octet=32
 
 # Versions
-ALPINE_VERSION="3.23"
+ALPINE_VERSION="3.24"
 DNSCRYPT_VERSION="2.1.16"
 HEVSOCKS_VERSION="2.15.0"
 TUN2PROXY_VERSION="v0.8.2"
@@ -471,6 +474,45 @@ block_ipv6 = true
 EOF
 }
 
+# Create Hickory DNS config
+create_hickory_dns_config() {
+  cat > "$hickory_dns_config_file" <<-EOF
+listen_addrs_ipv4 = ["127.0.0.1"]
+listen_port = 53
+tcp_request_timeout = 5
+[[zones]]
+zone = "."
+zone_type = "External"
+[zones.stores]
+type = "forward"
+[[zones.stores.name_servers]]
+ip = "1.1.1.1"
+[[zones.stores.name_servers.connections]]
+port = 53
+protocol = { type = "tcp" }
+[[zones.stores.name_servers]]
+ip = "1.0.0.1"
+[[zones.stores.name_servers.connections]]
+port = 53
+protocol = { type = "tcp" }
+[[zones.stores.name_servers]]
+ip = "8.8.8.8"
+[[zones.stores.name_servers.connections]]
+port = 53
+protocol = { type = "tcp" }
+[[zones.stores.name_servers]]
+ip = "8.8.4.4"
+[[zones.stores.name_servers.connections]]
+port = 53
+protocol = { type = "tcp" }
+[[zones.stores.name_servers]]
+ip = "9.9.9.9"
+[[zones.stores.name_servers.connections]]
+port = 53
+protocol = { type = "tcp" }
+EOF
+}
+
 # Download DNScrypt file
 download_dnscrypt() {
   # Set the download URL based on the architecture
@@ -507,6 +549,42 @@ download_dnscrypt() {
   rm -rf "$dnscrypt_tar_file" "${DNSCRYPT_DIR}"
 }
 
+# Download Hickory DNS file
+download_hickory_dns() {
+  ALPINE_MIRROR_MAIN="https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main"
+  ALPINE_MIRROR_COMMUNITY="https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/community"
+  case "$CPU_ARCH" in
+    x86_64 | amd64)
+      HICKORY_ARCH="x86_64"
+      ;;
+    i686 | i386)
+      HICKORY_ARCH="x86"
+      ;;
+    armv7l | armv6l | armhf)
+      HICKORY_ARCH="armv7"
+      ;;
+    arm64 | aarch64)
+      HICKORY_ARCH="aarch64"
+      ;;
+    *)
+      echo -e "${RED}Unsupported architecture: $CPU_ARCH. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+      exit 1
+      ;;
+  esac
+  BASE_URL_MAIN="${ALPINE_MIRROR_MAIN}/${HICKORY_ARCH}"
+  BASE_URL_COMMUNITY="${ALPINE_MIRROR_COMMUNITY}/${HICKORY_ARCH}"
+  wget -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
+  if [ ! -f "$libgcc_apk_file" ]; then
+    echo -e "${RED}There is a problem downloading libgcc. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  wget -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
+  if [ ! -f "$hickory_dns_apk_file" ]; then
+    echo -e "${RED}There is a problem downloading hickory-dns. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+}
+
 # Download IPtables file
 download_iptables() {
   ALPINE_MIRROR="https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main"
@@ -534,12 +612,12 @@ download_iptables() {
     echo -e "${RED}There is a problem downloading libmnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.0-r0.apk"
+  wget -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
   if [ ! -f "$libnftnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libnftnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.11-r1.apk"
+  wget -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
   if [ ! -f "$iptables_apk_file" ]; then
     echo -e "${RED}There is a problem downloading iptables. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
@@ -804,11 +882,20 @@ start_containers() {
       if [ "$USE_SOCKS5_DNS" = true ]; then
         TUN_DNS_VOLUME="$DNS_VOLUME"
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
-        if [ ! -f $dnscrypt_file ]; then
-          download_dnscrypt
-        fi
-        if [ ! -f $dnscrypt_config_file ]; then
-          create_dnscrypt_config
+        if [ "$USE_DNSCRYPT" = true ]; then
+          if [ ! -f $dnscrypt_file ]; then
+            download_dnscrypt
+          fi
+          if [ ! -f $dnscrypt_config_file ]; then
+            create_dnscrypt_config
+          fi
+        else
+          if [[ ! -f $hickory_dns_apk_file && "$proxy" == socks5://* ]]; then
+            download_hickory_dns
+          fi
+          if [ ! -f $hickory_dns_config_file ]; then
+            create_hickory_dns_config
+          fi
         fi
         if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
           download_iptables
@@ -816,8 +903,13 @@ start_containers() {
         if [[ "$proxy" == socks5://* ]]; then
           TUN_DNS_VOLUME="$DNS_VOLUME"
         fi
-        dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
-        EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
+        if [ "$USE_DNSCRYPT" = true ]; then
+          doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
+          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
+        else
+          doh_volume="--mount type=bind,source=$PWD/hickory-dns-config.toml,target=/proxy-dns/hickory-dns-config.toml --mount type=bind,source=$PWD/libgcc.apk,target=/iptables/libgcc.apk --mount type=bind,source=$PWD/hickory-dns.apk,target=/iptables/hickory-dns.apk"
+          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;apk add --allow-untrusted --no-network /iptables/libgcc.apk; apk add --allow-untrusted --no-network /iptables/hickory-dns.apk;RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &'
+        fi
       else
         TUN_DNS_VOLUME="$DNS_VOLUME"
       fi
@@ -884,11 +976,16 @@ start_containers() {
         if [[ "$ENABLE_LOGS" != true ]]; then
           TUN_LOG_PARAM="warn"
         fi
-        dnscrypt_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $dnscrypt_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
+        if [ "$USE_DNSCRYPT" = true ]; then
+          doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
+          docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh")
+        else
+          doh_volume="--mount type=bind,source=$PWD/hickory-dns-config.toml,target=/proxy-dns/hickory-dns-config.toml"
+          docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk --mount type=bind,source=$PWD/libgcc.apk,target=/iptables/libgcc.apk --mount type=bind,source=$PWD/hickory-dns.apk,target=/iptables/hickory-dns.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "apk add --allow-untrusted --no-network /iptables/libmnl.apk && apk add --allow-untrusted --no-network /iptables/libnftnl.apk && apk add --allow-untrusted --no-network /iptables/iptables.apk && apk add --allow-untrusted --no-network /iptables/libgcc.apk && apk add --allow-untrusted --no-network /iptables/hickory-dns.apk && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &) && /entrypoint.sh")
+        fi
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       else
-        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $dnscrypt_volume --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:$TUN2SOCKS_VERSION)
+        docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $doh_volume --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:$TUN2SOCKS_VERSION)
         execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
       fi
     fi
