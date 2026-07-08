@@ -450,11 +450,13 @@ validate_vpns() {
 
 # Create DNScrypt config
 create_dnscrypt_config() {
+  # Default to enabled if not already set
+  local cache_enabled="${USE_DNS_CACHE:-true}"
   cat > "$dnscrypt_config_file" <<-EOF
 listen_addresses = ['127.0.0.1:53']
 server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
 log_level = 6
-cache = true
+cache = ${cache_enabled}
 cache_size = 4096
 cache_min_ttl = 2400
 cache_max_ttl = 86400
