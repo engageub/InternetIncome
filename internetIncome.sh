@@ -1695,9 +1695,9 @@ start_containers() {
   # Starting ProxyBase container
   if [[ "$PROXYBASE_ACCOUNT_ID" ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/proxybase-org-company/peer-cli:latest
+      sudo docker pull ghcr.io/proxybaseorg/peer-cli:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN ghcr.io/proxybase-org-company/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN ghcr.io/proxybaseorg/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i)
     execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
