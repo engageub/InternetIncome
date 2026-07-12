@@ -39,7 +39,8 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
 | [WizardGain](https://t.co/NBMM8abxi0) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal, Crypto|
 | [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [Titan Network](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
+| [Titan Network IP Lease](https://edge.titannet.info/signup?inviteCode=ESTWVWQ2) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto/Rewards |
+| [Titan Network TNT3](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
 | [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
 | [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
 | [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
