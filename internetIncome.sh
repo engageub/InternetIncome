@@ -105,7 +105,7 @@ third_octet=32
 
 # Versions
 ALPINE_VERSION="3.24"
-DNSCRYPT_VERSION="2.1.17"
+DNSCRYPT_VERSION="2.1.15"
 HEVSOCKS_VERSION="2.15.0"
 TUN2PROXY_VERSION="v0.8.2"
 TUN2SOCKS_VERSION="dev"
@@ -481,7 +481,6 @@ create_hickory_dns_config() {
   cat > "$hickory_dns_config_file" <<-EOF
 listen_addrs_ipv4 = ["127.0.0.1"]
 listen_port = 53
-tcp_request_timeout = 5
 [[zones]]
 zone = "."
 zone_type = "External"
