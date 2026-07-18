@@ -106,9 +106,9 @@ third_octet=32
 # Versions
 ALPINE_VERSION="3.24"
 DNSCRYPT_VERSION="2.1.17"
-HEVSOCKS_VERSION="main"
+HEVSOCKS_VERSION="2.16.0"
 TUN2PROXY_VERSION="v0.8.2"
-TUN2SOCKS_VERSION="dev"
+TUN2SOCKS_VERSION="v2.7.0"
 
 # Unique ID
 UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
