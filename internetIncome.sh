@@ -1789,6 +1789,13 @@ start_containers() {
 
   # Starting AntGain container
   if [[ $ANTGAIN_API_KEY ]]; then
+    if [ "$container_pulled" = false ]; then
+      if ! command -v uuidgen &> /dev/null; then
+        echo -e "${RED}uuidgen is not installed. Attempting to install it...${NOCOLOUR}"
+        sudo apt-get update && sudo apt-get -y install uuid-runtime          
+      fi
+      sudo docker pull pinors/antgain-cli:latest
+    fi         
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for Antgain. Exiting..${NOCOLOUR}"
@@ -1803,9 +1810,10 @@ start_containers() {
         break;
       fi
     done
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull pinors/antgain-cli:latest
-    fi
+    if [[ ! $RANDOM_ID ]]; then
+      echo -e "${RED}Unable to install uuidgen automatically. Please install it manually and try again. Exiting...${NOCOLOUR}"
+      exit 1;                                                                   
+    fi    
     sequence=$i
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
       sequence=$((1 + i))
