@@ -302,8 +302,8 @@ start_containers() {
         sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.16.0
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.3
-	  elif [[ "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
-	    sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.3
+      elif [[ "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
+        sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.3
       else
         sudo docker pull xjasonlyu/tun2socks:v2.7.0
       fi
@@ -441,7 +441,7 @@ start_containers() {
       fi
       check_container_exists dind$UNIQUE_ID$i
       if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:cli /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done'); then
-	echo -e "${GREEN}Container dind$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+        echo -e "${GREEN}Container dind$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for ebesucher chrome restart. Exiting..${NOCOLOUR}"
         exit 1
@@ -508,7 +508,7 @@ start_containers() {
       
       check_container_exists dind$UNIQUE_ID$i
       if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:cli /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
-	echo -e "${GREEN}Container dind$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+        echo -e "${GREEN}Container dind$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for ebesucher firefox restart. Exiting..${NOCOLOUR}"
         exit 1
@@ -677,7 +677,7 @@ start_containers() {
       echo -e "${YELLOW}Starting EarnFM Fleetshare container..${NOCOLOUR}"
       sudo docker pull earnfm/fleetshare:latest
       if [ -f "$proxies_file" ]; then
-	SOCKS_PROXIES=()
+        SOCKS_PROXIES=()
         while IFS= read -r line; do
           # Skip empty lines
           [[ -z "$line" ]] && continue
@@ -703,17 +703,17 @@ start_containers() {
 	EOF
         if [ ! -f "$earn_fm_config_file" ]; then
           echo -e "${RED}Config file could not be generated for EarnFM Fleetshare. Exiting..${NOCOLOUR}"
-	  exit 1
+          exit 1
         fi
         check_container_exists earnfm$UNIQUE_ID$i
         if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json earnfm/fleetshare:latest); then
-	  echo -e "${GREEN}Container earnfm$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+          echo -e "${GREEN}Container earnfm$UNIQUE_ID$i started successfully.${NOCOLOUR}"
         else
           echo -e "${RED}Failed to start container for EarnFM. Exiting..${NOCOLOUR}"
           exit 1
         fi
       else
-	echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+        echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
     fi
@@ -914,7 +914,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull $honeygain_image
     fi
-	check_container_exists honey$UNIQUE_ID$i
+    check_container_exists honey$UNIQUE_ID$i
     if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo -e "${GREEN}Container honey$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
@@ -949,6 +949,13 @@ start_containers() {
   # Starting AntGain container
   if [[ $ANTGAIN_API_KEY ]]; then
     echo -e "${YELLOW}Starting AntGain container..${NOCOLOUR}"
+    if [ "$container_pulled" = false ]; then
+      if ! command -v uuidgen &> /dev/null; then
+        echo -e "${RED}uuidgen is not installed. Attempting to install it...${NOCOLOUR}"
+        sudo apt-get update && sudo apt-get -y install uuid-runtime          
+      fi
+      sudo docker pull pinors/antgain-cli:latest
+    fi
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for AntGain. Exiting..${NOCOLOUR}"
@@ -963,8 +970,9 @@ start_containers() {
         break;
       fi
     done
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull pinors/antgain-cli:latest
+    if [[ ! $RANDOM_ID ]]; then
+      echo -e "${RED}Unable to install uuidgen automatically. Please install it manually and try again. Exiting...${NOCOLOUR}"
+      exit 1;                                                                   
     fi
     if [ -f $antgain_file ] && antgain_uuid=$(sed "${i}q;d" $antgain_file);then
       if [[ $antgain_uuid ]];then
@@ -1097,7 +1105,7 @@ start_containers() {
               fi
               SOCKS_ADDR="${SOCKS_HOSTPORT%%:*}"
               SOCKS_PORT="${SOCKS_HOSTPORT##*:}"
-	          if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
+              if [[ $SOCKS_USER && $SOCKS_PASS ]]; then
                 echo "$SOCKS_ADDR:$SOCKS_PORT:$SOCKS_USER:$SOCKS_PASS" >> $ur_proxies_file
               else
                 echo "$SOCKS_ADDR:$SOCKS_PORT" >> $ur_proxies_file
@@ -1109,10 +1117,10 @@ start_containers() {
           echo -e "${RED}Proxies file $ur_proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
           exit 1
         fi
-	    # Generate proxy file using urnetwork
-	    sudo docker run --rm $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork --mount type=bind,source="$PWD/$ur_proxies_file",target=/root/ur_proxy.txt bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
-	    sleep 1
-	    if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
+        # Generate proxy file using urnetwork
+        sudo docker run --rm $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork --mount type=bind,source="$PWD/$ur_proxies_file",target=/root/ur_proxy.txt bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
+        sleep 1
+        if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
           echo -e "${RED}Proxy file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
           exit 1
         fi
