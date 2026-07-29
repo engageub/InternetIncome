@@ -111,9 +111,6 @@ HEVSOCKS_VERSION="2.16.0"
 TUN2PROXY_VERSION="v0.8.3"
 TUN2SOCKS_VERSION="v2.7.0"
 
-# Unique ID
-UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
-
 # Use banner if exists
 if [ -f "$banner_file" ]; then
   for _ in {1..3}; do
@@ -2117,6 +2114,14 @@ fi
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
   STATUS=0;
+  
+  if [ ! -c /dev/urandom ] || [ ! -r /dev/urandom ]; then
+    echo -e "${RED}/dev/urandom is missing or not a readable character device. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+
+  # Unique ID
+  UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
 
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
