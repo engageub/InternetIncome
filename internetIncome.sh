@@ -106,6 +106,7 @@ third_octet=32
 # Versions
 ALPINE_VERSION="3.24"
 DNSCRYPT_VERSION="2.1.18"
+GLUETUN_VERSION="v3.37.0"
 HEVSOCKS_VERSION="2.16.0"
 TUN2PROXY_VERSION="v0.8.3"
 TUN2SOCKS_VERSION="v2.7.0"
@@ -810,7 +811,7 @@ start_containers() {
     if [ "$vpn_enabled" = true ];then
       # Starting vpn containers
       if [ "$container_pulled" = false ]; then
-        sudo docker pull qmcgaw/gluetun:v3.37.0
+        sudo docker pull qmcgaw/gluetun:$GLUETUN_VERSION
       fi
       if  [ "$USE_DNS_OVER_HTTPS" = true ]; then
          dns_option="-e DOT=on"
@@ -818,7 +819,7 @@ start_containers() {
          dns_option="-e DOT=off"
       fi
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
-      docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports --no-healthcheck qmcgaw/gluetun:v3.37.0)
+      docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports --no-healthcheck qmcgaw/gluetun:$GLUETUN_VERSION)
       execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network=multi$UNIQUE_ID$i"
