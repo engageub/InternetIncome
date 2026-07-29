@@ -1651,6 +1651,10 @@ start_containers() {
         exit 1
       fi
       RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'A-F0-9' | dd bs=1 count=64 2>/dev/null`
+      if [ ${#RANDOM_ID} -ne 64 ]; then
+        echo -e "${RED}Failed to generate a valid RANDOM_ID for ProxyRack (expected 64 characters, got ${#RANDOM_ID}). Exiting..${NOCOLOUR}"
+        exit 1
+      fi
       if [ -f $proxyrack_file ]; then
         if ! grep -qF "$RANDOM_ID" "$proxyrack_file"; then
           break
@@ -1800,6 +1804,14 @@ start_containers() {
         exit 1
       fi
       RANDOM_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
+      if [[ ! $RANDOM_ID ]]; then
+        echo -e "${RED}Unable to install uuidgen automatically. Please install it manually and try again. Exiting...${NOCOLOUR}"
+        exit 1;                                                                   
+      fi 
+      if [ ${#RANDOM_ID} -ne 36 ]; then
+        echo -e "${RED}Failed to generate a valid RANDOM_ID for AntGain (expected 36 characters, got ${#RANDOM_ID}). Exiting..${NOCOLOUR}"
+        exit 1
+      fi
       if [ -f $antgain_file ]; then
         if ! grep -qF "$RANDOM_ID" "$antgain_file"; then
           break
@@ -1807,11 +1819,7 @@ start_containers() {
       else
         break;
       fi
-    done
-    if [[ ! $RANDOM_ID ]]; then
-      echo -e "${RED}Unable to install uuidgen automatically. Please install it manually and try again. Exiting...${NOCOLOUR}"
-      exit 1;                                                                   
-    fi    
+    done   
     sequence=$i
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
       sequence=$((1 + i))
@@ -1927,6 +1935,10 @@ start_containers() {
         exit 1
       fi
       RANDOM_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+      if [ ${#RANDOM_ID} -ne 32 ]; then
+        echo -e "${RED}Failed to generate a valid RANDOM_ID for Earnapp (expected 32 characters, got ${#RANDOM_ID}). Exiting..${NOCOLOUR}"
+        exit 1
+      fi
       if [ -f $earnapp_file ]; then
         if ! grep -qF "$RANDOM_ID" "$earnapp_file"; then
           break
@@ -2122,6 +2134,11 @@ if [[ "$1" == "--start" ]]; then
 
   # Unique ID
   UNIQUE_ID=`cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | dd bs=1 count=32 2>/dev/null`
+
+  if [ ${#UNIQUE_ID} -ne 32 ]; then
+    echo -e "${RED}Failed to generate a valid UNIQUE_ID (expected 32 characters, got ${#UNIQUE_ID}). Exiting..${NOCOLOUR}"
+    exit 1
+  fi
 
   # Check if the required files are present
   for required_file in "${required_files[@]}"; do
