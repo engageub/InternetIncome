@@ -538,8 +538,8 @@ download_dnscrypt() {
       exit 1
       ;;
   esac
-  wget -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
-  if [ ! -f "$dnscrypt_tar_file" ]; then
+  wget --tries=3 -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
+  if [ ! -s "$dnscrypt_tar_file" ]; then
     echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
@@ -572,13 +572,13 @@ download_hickory_dns() {
   esac
   BASE_URL_MAIN="${ALPINE_MIRROR_MAIN}/${HICKORY_ARCH}"
   BASE_URL_COMMUNITY="${ALPINE_MIRROR_COMMUNITY}/${HICKORY_ARCH}"
-  wget -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
-  if [ ! -f "$libgcc_apk_file" ]; then
+  wget --tries=3 -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
+  if [ ! -s "$libgcc_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libgcc. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
-  if [ ! -f "$hickory_dns_apk_file" ]; then
+  wget --tries=3 -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
+  if [ ! -s "$hickory_dns_apk_file" ]; then
     echo -e "${RED}There is a problem downloading hickory-dns. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
@@ -606,18 +606,18 @@ download_iptables() {
       ;;
   esac
   BASE_URL="${ALPINE_MIRROR}/${IPTABLES_ARCH}"
-  wget -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
-  if [ ! -f "$libmnl_apk_file" ]; then
+  wget --tries=3 -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
+  if [ ! -s "$libmnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libmnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
-  if [ ! -f "$libnftnl_apk_file" ]; then
+  wget --tries=3 -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
+  if [ ! -s "$libnftnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libnftnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
-  if [ ! -f "$iptables_apk_file" ]; then
+  wget --tries=3 -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
+  if [ ! -s "$iptables_apk_file" ]; then
     echo -e "${RED}There is a problem downloading iptables. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
@@ -1231,11 +1231,12 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
+        wget --tries=3 https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
-      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+      if [ ! -s "$PWD/$chrome_profile_zipfile" ];then
+        rm  "$PWD/$chrome_profile_zipfile"  
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
@@ -1350,11 +1351,12 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
+        wget --tries=3 https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
-      if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
+      if [ ! -s "$PWD/$chrome_profile_zipfile" ];then
+        rm "$PWD/$chrome_profile_zipfile"
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
