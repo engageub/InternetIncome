@@ -539,7 +539,7 @@ download_dnscrypt() {
       ;;
   esac
   wget --tries=3 -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
-  if [ ! -s "$dnscrypt_tar_file" ]; then
+  if [ $? -ne 0 ] || [ ! -s "$dnscrypt_tar_file" ]; then
     echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
@@ -573,12 +573,12 @@ download_hickory_dns() {
   BASE_URL_MAIN="${ALPINE_MIRROR_MAIN}/${HICKORY_ARCH}"
   BASE_URL_COMMUNITY="${ALPINE_MIRROR_COMMUNITY}/${HICKORY_ARCH}"
   wget --tries=3 -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
-  if [ ! -s "$libgcc_apk_file" ]; then
+  if [ $? -ne 0 ] || [ ! -s "$libgcc_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libgcc. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
   wget --tries=3 -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
-  if [ ! -s "$hickory_dns_apk_file" ]; then
+  if [ $? -ne 0 ] || [ ! -s "$hickory_dns_apk_file" ]; then
     echo -e "${RED}There is a problem downloading hickory-dns. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
@@ -607,17 +607,17 @@ download_iptables() {
   esac
   BASE_URL="${ALPINE_MIRROR}/${IPTABLES_ARCH}"
   wget --tries=3 -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
-  if [ ! -s "$libmnl_apk_file" ]; then
+  if [ $? -ne 0 ] || [ ! -s "$libmnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libmnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
   wget --tries=3 -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
-  if [ ! -s "$libnftnl_apk_file" ]; then
+  if [ $? -ne 0 ] || [ ! -s "$libnftnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libnftnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
   wget --tries=3 -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
-  if [ ! -s "$iptables_apk_file" ]; then
+  if [ $? -ne 0 ] || [ ! -s "$iptables_apk_file" ]; then
     echo -e "${RED}There is a problem downloading iptables. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
@@ -1235,7 +1235,7 @@ start_containers() {
       fi
 
       # Exit, if chrome profile zip file is missing
-      if [ ! -s "$PWD/$chrome_profile_zipfile" ];then
+      if [ $? -ne 0 ] || [ ! -s "$PWD/$chrome_profile_zipfile" ]; then
         rm  "$PWD/$chrome_profile_zipfile"  
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
@@ -1355,7 +1355,7 @@ start_containers() {
       fi
 
       # Exit, if chrome profile zip file is missing
-      if [ ! -s "$PWD/$chrome_profile_zipfile" ];then
+      if [ $? -ne 0 ] || [ ! -s "$PWD/$chrome_profile_zipfile" ]; then
         rm "$PWD/$chrome_profile_zipfile"
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
