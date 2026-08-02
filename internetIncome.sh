@@ -446,6 +446,18 @@ validate_vpns() {
   done < "$vpns_file"
 }
 
+# Check wget options
+check_wget_options() {
+  WGET_HELP=$(wget --help 2>&1)
+  WGET_OPTS=()
+  if echo "$WGET_HELP" | grep -q -- "--tries"; then
+    WGET_OPTS+=("--tries=3")
+  fi
+  if echo "$WGET_HELP" | grep -q -- "-4,"; then
+    WGET_OPTS+=("-4")
+  fi
+}
+
 # Create DNScrypt config
 create_dnscrypt_config() {
   # Default to enabled if not already set
@@ -538,7 +550,7 @@ download_dnscrypt() {
       exit 1
       ;;
   esac
-  wget --tries=3 -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
+  wget "${WGET_OPTS[@]}" -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
   if [ $? -ne 0 ] || [ ! -s "$dnscrypt_tar_file" ]; then
     echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
@@ -572,12 +584,12 @@ download_hickory_dns() {
   esac
   BASE_URL_MAIN="${ALPINE_MIRROR_MAIN}/${HICKORY_ARCH}"
   BASE_URL_COMMUNITY="${ALPINE_MIRROR_COMMUNITY}/${HICKORY_ARCH}"
-  wget --tries=3 -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
+  wget "${WGET_OPTS[@]}" -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
   if [ $? -ne 0 ] || [ ! -s "$libgcc_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libgcc. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget --tries=3 -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
+  wget "${WGET_OPTS[@]}" -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
   if [ $? -ne 0 ] || [ ! -s "$hickory_dns_apk_file" ]; then
     echo -e "${RED}There is a problem downloading hickory-dns. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
@@ -606,17 +618,17 @@ download_iptables() {
       ;;
   esac
   BASE_URL="${ALPINE_MIRROR}/${IPTABLES_ARCH}"
-  wget --tries=3 -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
+  wget "${WGET_OPTS[@]}" -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
   if [ $? -ne 0 ] || [ ! -s "$libmnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libmnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget --tries=3 -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
+  wget "${WGET_OPTS[@]}" -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
   if [ $? -ne 0 ] || [ ! -s "$libnftnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libnftnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  wget --tries=3 -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
+  wget "${WGET_OPTS[@]}" -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
   if [ $? -ne 0 ] || [ ! -s "$iptables_apk_file" ]; then
     echo -e "${RED}There is a problem downloading iptables. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
@@ -1231,7 +1243,7 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget --tries=3 https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
+        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
@@ -1351,7 +1363,7 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget --tries=3 https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
+        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
@@ -2076,6 +2088,8 @@ if [[ "$1" == "--startOnly" ]]; then
     echo -e "${RED}Unique ID is not present in $connection_state_file. Exiting..${NOCOLOUR}"
     exit 1
   fi
+  # Check wget options
+  check_wget_options
   START_ONLY=true
   if grep -q "DIRECT_CONNECTION_ENABLED" "$connection_state_file"; then
     start_containers
@@ -2208,6 +2222,9 @@ if [[ "$1" == "--start" ]]; then
 
   # Write Unique ID to file
   echo $UNIQUE_ID > $connection_state_file
+
+  # Check wget options
+  check_wget_options
 
   # Use direct Connection
   if [ "$USE_DIRECT_CONNECTION" = true ]; then
