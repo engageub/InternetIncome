@@ -1431,9 +1431,10 @@ if [[ "$1" == "--delete" ]]; then
   sudo docker run --rm --mount type=bind,source="$PWD",target=/output docker:cli sh -c 'for folder in "$@"; do if [ -d "/output/$folder" ]; then rm -rf "/output/$folder"; fi; done' sh "${folders_to_be_removed[@]}"
 
   # Delete stale containers using deleted parent network (network_mode: container:<parent> where parent no longer exists)
-  echo -e "${YELLOW}Deleting stale containers. This may take a few minutes...${NOCOLOUR}"
+  echo -e "${YELLOW}Checking for stale containers...${NOCOLOUR}"
   declare -A existing
   declare -A container_data  # cid -> "name status netmode image"
+  stale_cids=()
   # Single docker inspect call — add --type container to skip images/networks
   while read -r cid cname status netmode image; do
     cname="${cname#/}"
@@ -1441,20 +1442,52 @@ if [[ "$1" == "--delete" ]]; then
     existing["$cname"]=1
     container_data["$cid"]="$cname $status $netmode $image"
   done < <(sudo docker inspect --type container $(sudo docker ps -aq) --format '{{.Id}} {{.Name}} {{.State.Status}} {{.HostConfig.NetworkMode}} {{.Config.Image}}' 2>/dev/null)
-  # Single pass — no second inspect needed
+
+  # Single pass — identify stale containers first, no deletion yet
   for cid in "${!container_data[@]}"; do
     read -r cname status netmode image <<< "${container_data[$cid]}"
     # Only process containers with network mode referencing another container
     [[ "$netmode" != container:* ]] && continue
     parent="${netmode#container:}"
     if [[ -z "${existing[$parent]}" ]]; then
-      echo -e "${YELLOW}Removing stale container:${NOCOLOUR} $cname ($status)"
-      echo -e "${YELLOW}Network Mode:${NOCOLOUR} $netmode"
-      echo -e "${YELLOW}Image:${NOCOLOUR} $image"
-      sudo docker rm -f "$cname"
+      stale_cids+=("$cid")
     fi
   done
-  echo -e "${GREEN}Stale container deletion completed successfully.${NOCOLOUR}"
+
+  if [ ${#stale_cids[@]} -eq 0 ]; then
+    echo -e "${GREEN}No stale containers found.${NOCOLOUR}"
+  else
+    echo -e "${YELLOW}The following stale containers were found (parent network container no longer exists):${NOCOLOUR}"
+    for cid in "${stale_cids[@]}"; do
+      read -r cname status netmode image <<< "${container_data[$cid]}"
+      echo -e "${YELLOW}  Name:${NOCOLOUR} $cname (${status})"
+      echo -e "${YELLOW}  Network Mode:${NOCOLOUR} $netmode"
+      echo -e "${YELLOW}  Image:${NOCOLOUR} $image"
+    done
+    echo -e "${YELLOW}Do you want to delete these stale containers? (yes/no)${NOCOLOUR}"
+    read -r -t 60 CHOICE </dev/tty
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}No response within 60 seconds. Skipping stale container deletion.${NOCOLOUR}"
+    else
+      case "$CHOICE" in
+        yes|y|Y)
+          echo -e "${YELLOW}Deleting stale containers. This may take a few minutes...${NOCOLOUR}"
+          for cid in "${stale_cids[@]}"; do
+            read -r cname status netmode image <<< "${container_data[$cid]}"
+            echo -e "${YELLOW}Removing stale container:${NOCOLOUR} $cname ($status)"
+            sudo docker rm -f "$cname"
+          done
+          echo -e "${GREEN}Stale container deletion completed successfully.${NOCOLOUR}"
+          ;;
+        no|n|N)
+          echo -e "${YELLOW}Skipping stale container deletion.${NOCOLOUR}"
+          ;;
+        *)
+          echo -e "${RED}Invalid response. Skipping stale container deletion.${NOCOLOUR}"
+          ;;
+      esac
+    fi
+  fi
   exit 0
 fi
 
