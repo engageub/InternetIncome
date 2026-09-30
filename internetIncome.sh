@@ -1433,15 +1433,15 @@ start_containers() {
   fi
 
   # Starting Repocket container
-  if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
+  if [[ $REPOCKET_API ]]; then
     if [ "$container_pulled" = false ]; then
       sudo docker pull repocket/repocket:latest
     fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest)
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest)
     execute_docker_command "Repocket" "repocket$UNIQUE_ID$i" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
+      echo -e "${RED}Repocket API is not configured. Ignoring Repocket..${NOCOLOUR}"
     fi
   fi
 
