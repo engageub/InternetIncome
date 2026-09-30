@@ -299,7 +299,7 @@ start_containers() {
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       if [ "$USE_SOCKS5_DNS" = true ]; then
-        sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.17.1
+        sudo docker pull ghcr.io/heiher/hev-socks5-tunnel:2.18.0
       elif [ "$USE_DNS_OVER_HTTPS" = true ]; then
         sudo docker pull ghcr.io/tun2proxy/tun2proxy:v0.8.3
       elif [[ "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
@@ -337,7 +337,7 @@ start_containers() {
         TUN_LOG_PARAM="warn"
       fi
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' -d --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.17.1); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' -d --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.18.0); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -633,14 +633,14 @@ start_containers() {
   fi
 
   # Starting Repocket container
-  if [[ $REPOCKET_EMAIL && $REPOCKET_API ]]; then
+  if [[ $REPOCKET_API ]]; then
     echo -e "${YELLOW}Starting Repocket container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
-      sudo docker pull repocket/repocket
+      sudo docker pull repocket/repocket:latest
     fi
 
     check_container_exists repocket$UNIQUE_ID$i
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_EMAIL=$REPOCKET_EMAIL -e RP_API_KEY=$REPOCKET_API repocket/repocket); then
+    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest); then
       echo -e "${GREEN}Container repocket$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Repocket. Exiting..${NOCOLOUR}"
@@ -648,7 +648,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Repocket Email or Api is not configured. Ignoring Repocket..${NOCOLOUR}"
+      echo -e "${RED}Repocket API is not configured. Ignoring Repocket..${NOCOLOUR}"
     fi
   fi
 
