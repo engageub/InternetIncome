@@ -1243,7 +1243,7 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
+        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
@@ -1363,7 +1363,7 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/chromeprofiledata/chromeprofiledata.zip
+        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
