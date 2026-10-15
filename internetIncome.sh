@@ -79,8 +79,8 @@ ur_proxies_file="ur_proxies.txt"
 vpns_file="vpns.txt"
 
 # Arrays
-required_files=($banner_file $firefox_profile_zipfile $generate_device_ids_file $properties_file $restart_file)
-files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $hickory_dns_apk_file $hickory_dns_config_file $iptables_apk_file $libgcc_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
+required_files=($banner_file $generate_device_ids_file $properties_file $restart_file)
+files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $chrome_profile_zipfile $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $firefox_profile_zipfile $hickory_dns_apk_file $hickory_dns_config_file $iptables_apk_file $libgcc_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
 folders_to_be_removed=($adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $firefox_data_folder $firefox_profile_data)
 back_up_folders=($bitping_data_folder $custom_chrome_data_folder $custom_firefox_data_folder $mysterium_data_folder $titan_data_folder $traffmonetizer_data_folder $urnetwork_data_folder)
 back_up_files=($antgain_file $earnapp_file $proxyrack_file)
@@ -1175,8 +1175,14 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox:latest
 
-      # Exit, if firefox profile zip file is missing
+      # Download the firefox profile if not present
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
+        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/firefoxprofiledata.zip
+      fi
+
+      # Exit, if firefox profile zip file is missing
+      if [ $? -ne 0 ] || [ ! -s "$PWD/$firefox_profile_zipfile" ]; then
+        rm  "$PWD/$firefox_profile_zipfile"
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
@@ -1304,8 +1310,14 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull jlesage/firefox
 
-      # Exit, if firefox profile zip file is missing
+      # Download the firefox profile if not present
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
+        wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/firefoxprofiledata.zip
+      fi
+
+      # Exit, if firefox profile zip file is missing
+      if [ $? -ne 0 ] || [ ! -s "$PWD/$firefox_profile_zipfile" ]; then
+        rm  "$PWD/$firefox_profile_zipfile"
         echo -e "${RED}Firefox profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
