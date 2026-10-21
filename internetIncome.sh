@@ -123,6 +123,14 @@ check_open_ports() {
 check_container_exists() {
   local container_name="$1"
   local image="$2"
+
+  # Enable Watchtower auto-update only for containers whose image uses the ':latest' tag.
+  # Containers started without an image (tun, helper containers) and Watchtower itself are skipped.
+  WATCH_TOWER_LABEL=""
+  # The architecture specific tags (arm64v8, arm32v7) are included along with ':latest'.
+  if [[ "$AUTO_UPDATE_CONTAINERS" == true && ( "$image" == *":latest"* || "$image" == *":arm64v8"* || "$image" == *":arm32v7"* ) ]]; then
+    WATCH_TOWER_LABEL="--label=com.centurylinklabs.watchtower.scope=$UNIQUE_ID"
+  fi
   # Validate input
   if [ -z "$container_name" ]; then
     echo -e "${RED}Error: container_name is required. Exiting..${NOCOLOUR}"
@@ -423,7 +431,7 @@ start_containers() {
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
     check_container_exists myst$UNIQUE_ID$i mysteriumnetwork/myst:latest
-    if CONTAINER_ID=$(sudo docker run -d --name myst$UNIQUE_ID$i --sysctl net.ipv4.conf.all.route_localnet=1 --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name myst$UNIQUE_ID$i --sysctl net.ipv4.conf.all.route_localnet=1 --cap-add=NET_ADMIN $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node --restart unless-stopped $myst_port mysteriumnetwork/myst:latest service --agreed-terms-and-conditions); then
       echo -e "${GREEN}Container myst$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       if [ "$CLOSE_ALL_PORTS" != true ]; then
         echo "http://127.0.0.1:$mysterium_first_port" |tee -a $mysterium_file
@@ -490,7 +498,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:3000 "
     fi
     check_container_exists ebesucher$UNIQUE_ID$i lscr.io/linuxserver/chromium:latest
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e CUSTOM_USER="$BROWSER_USERNAME" -e PASSWORD="$BROWSER_PASSWORD" --mount type=bind,source=$PWD/$chrome_data_folder/data$i/$chrome_profile_data,target=/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name ebesucher$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e CUSTOM_USER="$BROWSER_USERNAME" -e PASSWORD="$BROWSER_PASSWORD" --mount type=bind,source=$PWD/$chrome_data_folder/data$i/$chrome_profile_data,target=/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest); then
       echo -e "${GREEN}Container ebesucher$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
       if [ "$CLOSE_ALL_PORTS" != true ]; then
@@ -558,7 +566,7 @@ start_containers() {
       eb_port="-p $ebesucher_first_port:5800"
     fi
     check_container_exists ebesucher$UNIQUE_ID$i jlesage/firefox:latest
-    if CONTAINER_ID=$(sudo docker run -d --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -e VNC_PASSWORD="$BROWSER_PASSWORD" --mount type=bind,source=$PWD/$firefox_data_folder/data$i,target=/config $eb_port jlesage/firefox:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name ebesucher$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e VNC_LISTENING_PORT=-1 -e VNC_PASSWORD="$BROWSER_PASSWORD" --mount type=bind,source=$PWD/$firefox_data_folder/data$i,target=/config $eb_port jlesage/firefox:latest); then
       echo -e "${GREEN}Container ebesucher$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
       if [ "$CLOSE_ALL_PORTS" != true ]; then
@@ -625,7 +633,7 @@ start_containers() {
       ad_port="-p $adnade_first_port:5900"
     fi
     check_container_exists adnade$UNIQUE_ID$i jlesage/firefox:latest
-    if CONTAINER_ID=$(sudo docker run -d --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -e VNC_PASSWORD="$BROWSER_PASSWORD" --mount type=bind,source=$PWD/$adnade_data_folder/data$i,target=/config $ad_port jlesage/firefox:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name adnade$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -e VNC_PASSWORD="$BROWSER_PASSWORD" --mount type=bind,source=$PWD/$adnade_data_folder/data$i,target=/config $ad_port jlesage/firefox:latest); then
       echo -e "${GREEN}Container adnade$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
       if [ "$CLOSE_ALL_PORTS" != true ]; then
@@ -652,7 +660,7 @@ start_containers() {
     mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
     check_container_exists bitping$UNIQUE_ID$i bitping/bitpingd:latest
-    if CONTAINER_ID=$(sudo docker run -d --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWORD=$BITPING_PASSWORD bitping/bitpingd:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name bitping$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWORD=$BITPING_PASSWORD bitping/bitpingd:latest); then
       echo -e "${GREEN}Container bitping$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for BitPing. Exiting..${NOCOLOUR}"
@@ -672,7 +680,7 @@ start_containers() {
     fi
 
     check_container_exists repocket$UNIQUE_ID$i repocket/repocket:latest
-    if CONTAINER_ID=$(sudo docker run -d --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name repocket$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest); then
       echo -e "${GREEN}Container repocket$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Repocket. Exiting..${NOCOLOUR}"
@@ -691,7 +699,7 @@ start_containers() {
       sudo docker pull earnfm/earnfm-client:latest
     fi
     check_container_exists earnfm$UNIQUE_ID$i earnfm/earnfm-client:latest
-    if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name earnfm$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest); then
       echo -e "${GREEN}Container earnfm$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for EarnFM. Exiting..${NOCOLOUR}"
@@ -738,7 +746,7 @@ start_containers() {
           exit 1
         fi
         check_container_exists earnfm$UNIQUE_ID$i earnfm/fleetshare:latest
-        if CONTAINER_ID=$(sudo docker run -d --name earnfm$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json earnfm/fleetshare:latest); then
+        if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name earnfm$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json earnfm/fleetshare:latest); then
           echo -e "${GREEN}Container earnfm$UNIQUE_ID$i started successfully.${NOCOLOUR}"
         else
           echo -e "${RED}Failed to start container for EarnFM. Exiting..${NOCOLOUR}"
@@ -774,7 +782,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="--mount type=bind,source=$PWD/$traffmonetizer_data_folder/data$i,target=/.config/traffmonetizer"
     check_container_exists traffmon$UNIQUE_ID$i $traffmonetizer_image_name
-    if CONTAINER_ID=$(sudo  docker run -d --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
+    if CONTAINER_ID=$(sudo  docker run -d $WATCH_TOWER_LABEL --name traffmon$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN); then
       echo -e "${GREEN}Container traffmon$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Traffmonetizer. Exiting..${NOCOLOUR}"
@@ -821,7 +829,7 @@ start_containers() {
     fi
 
     check_container_exists proxyrack$UNIQUE_ID$i proxyrack/pop:latest
-    if CONTAINER_ID=$(sudo docker run -d --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid  -e DEVICE_NAME=$DEVICE_NAME$i -e API_KEY=$PROXYRACK_API proxyrack/pop:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name proxyrack$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always -e UUID=$proxyrack_uuid  -e DEVICE_NAME=$DEVICE_NAME$i -e API_KEY=$PROXYRACK_API proxyrack/pop:latest); then
       echo -e "${GREEN}Container proxyrack$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Proxyrack. Exiting..${NOCOLOUR}"
@@ -840,7 +848,7 @@ start_containers() {
       sudo docker pull ghcr.io/proxybaseorg/peer-cli:latest
     fi
     check_container_exists proxybase$UNIQUE_ID$i ghcr.io/proxybaseorg/peer-cli:latest
-    if CONTAINER_ID=$(sudo docker run -d --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always ghcr.io/proxybaseorg/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name proxybase$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always ghcr.io/proxybaseorg/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i); then
       echo -e "${GREEN}Container proxybase$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Proxybase. Exiting..${NOCOLOUR}"
@@ -859,7 +867,7 @@ start_containers() {
       sudo docker pull iproyal/pawns-cli:latest
     fi
     check_container_exists pawns$UNIQUE_ID$i iproyal/pawns-cli:latest
-    if CONTAINER_ID=$(sudo docker run -d --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
       echo -e "${GREEN}Container pawns$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for IPRoyals. Exiting..${NOCOLOUR}"
@@ -878,7 +886,7 @@ start_containers() {
       sudo docker pull ghcr.io/techroy23/docker-wipter:latest
     fi
     check_container_exists wipter$UNIQUE_ID$i ghcr.io/techroy23/docker-wipter:latest
-    if CONTAINER_ID=$(sudo docker run -d --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/techroy23/docker-wipter:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/techroy23/docker-wipter:latest); then
       echo -e "${GREEN}Container wipter$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Wipter. Exiting..${NOCOLOUR}"
@@ -897,7 +905,7 @@ start_containers() {
       sudo docker pull packetshare/packetshare:latest
     fi
     check_container_exists packetshare$UNIQUE_ID$i packetshare/packetshare:latest
-    if CONTAINER_ID=$(sudo docker run -d --name packetshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN packetshare/packetshare:latest -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name packetshare$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN packetshare/packetshare:latest -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD); then
       echo -e "${GREEN}Container packetshare$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for PacketShare. Exiting..${NOCOLOUR}"
@@ -921,7 +929,7 @@ start_containers() {
       gradient_env="-e GRADIENT_EMAIL=$GRADIENT_EMAIL -e GRADIENT_PASS=$GRADIENT_PASSWORD"
     fi
     check_container_exists depinext$UNIQUE_ID$i carbon2029/dockweb:latest
-    if CONTAINER_ID=$(sudo docker run -d --name depinext$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name depinext$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb:latest); then
       echo -e "${GREEN}Container depinext$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Depin Extensions. Exiting..${NOCOLOUR}"
@@ -949,7 +957,7 @@ start_containers() {
       sudo docker pull $honeygain_image
     fi
     check_container_exists honey$UNIQUE_ID$i $honeygain_image
-    if CONTAINER_ID=$(sudo docker run -d --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name honey$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart=always $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i); then
       echo -e "${GREEN}Container honey$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Honeygain. Exiting..${NOCOLOUR}"
@@ -968,7 +976,7 @@ start_containers() {
       sudo docker pull --platform=linux/amd64 enwaiax/peer2profit:latest
     fi
     check_container_exists peer2profit$UNIQUE_ID$i enwaiax/peer2profit:latest
-    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit:latest); then
+    if CONTAINER_ID=$(sudo docker run -d --platform=linux/amd64 $WATCH_TOWER_LABEL --name peer2profit$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit:latest); then
       echo -e "${GREEN}Container peer2profit$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Peer2Profit. Exiting..${NOCOLOUR}"
@@ -1023,7 +1031,7 @@ start_containers() {
     fi
 
     check_container_exists antgain$UNIQUE_ID$i pinors/antgain-cli:latest
-    if CONTAINER_ID=$(sudo docker run -d --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY -e ANTGAIN_DEVICE_ID=$antgain_uuid --no-healthcheck pinors/antgain-cli:latest run); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name antgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY -e ANTGAIN_DEVICE_ID=$antgain_uuid --no-healthcheck pinors/antgain-cli:latest run); then
       echo -e "${GREEN}Container antgain$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for AntGain. Exiting..${NOCOLOUR}"
@@ -1042,7 +1050,7 @@ start_containers() {
       sudo docker pull wizardgain/worker:latest
     fi
     check_container_exists wizardgain$UNIQUE_ID$i wizardgain/worker:latest
-    if CONTAINER_ID=$(sudo docker run -d --name wizardgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e EMAIL=$WIZARD_GAIN_EMAIL wizardgain/worker:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name wizardgain$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e EMAIL=$WIZARD_GAIN_EMAIL wizardgain/worker:latest); then
       echo -e "${GREEN}Container wizardgain$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for WizardGain. Exiting..${NOCOLOUR}"
@@ -1061,7 +1069,7 @@ start_containers() {
       sudo docker pull packetstream/psclient:latest
     fi
     check_container_exists packetstream$UNIQUE_ID$i packetstream/psclient:latest
-    if CONTAINER_ID=$(sudo docker run -d --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name packetstream$UNIQUE_ID$i $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --restart always -e HTTP_PROXY="" -e HTTPS_PROXY="" -e CID=$PACKETSTREAM_CID packetstream/psclient:latest); then
       echo -e "${GREEN}Container packetstream$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for PacketStream. Exiting..${NOCOLOUR}"
@@ -1087,7 +1095,7 @@ start_containers() {
       fi
     fi
     check_container_exists proxylite$UNIQUE_ID$i proxylite/proxyservice:latest
-    if CONTAINER_ID=$(sudo docker run -d --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name proxylite$UNIQUE_ID$i --platform=linux/amd64 $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME  -e USER_ID=$PROXYLITE_USER_ID --restart=always proxylite/proxyservice:latest); then
       echo -e "${GREEN}Container proxylite$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Proxylite. Exiting..${NOCOLOUR}"
@@ -1159,7 +1167,7 @@ start_containers() {
           exit 1
         fi
         check_container_exists urnetwork$UNIQUE_ID$i bringyour/community-provider:latest
-        if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork bringyour/community-provider:latest provide); then
+        if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name urnetwork$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork bringyour/community-provider:latest provide); then
           echo -e "${GREEN}Container urnetwork$UNIQUE_ID$i started successfully.${NOCOLOUR}"
         else
           echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
@@ -1177,7 +1185,7 @@ start_containers() {
     fi
     if [ "$UR_NETWORK_PROXY_MODE" != true ]; then
       check_container_exists urnetwork$UNIQUE_ID$i bringyour/community-provider:latest
-      if CONTAINER_ID=$(sudo docker run -d --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork bringyour/community-provider:latest provide); then
+      if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork bringyour/community-provider:latest provide); then
         echo -e "${GREEN}Container urnetwork$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for URnetwork. Exiting..${NOCOLOUR}"
@@ -1198,7 +1206,7 @@ start_containers() {
       sudo chmod -R 777 $PWD/$titan_data_folder/data$i
       titan_volume="--mount type=bind,source=$PWD/$titan_data_folder/data$i,target=/root/.titanedge"
       check_container_exists titan$UNIQUE_ID$i nezha123/titan-edge:latest
-      if CONTAINER_ID=$(sudo  docker run -d --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $titan_volume nezha123/titan-edge:latest); then
+      if CONTAINER_ID=$(sudo  docker run -d $WATCH_TOWER_LABEL --name titan$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN $titan_volume nezha123/titan-edge:latest); then
         echo -e "${GREEN}Container titan$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for Titan Network. Exiting..${NOCOLOUR}"
@@ -1254,7 +1262,7 @@ start_containers() {
     fi
 
     check_container_exists earnapp$UNIQUE_ID$i fazalfarhan01/earnapp:lite
-    if CONTAINER_ID=$(sudo docker run -d --health-interval=24h --name earnapp$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always $NETWORK_TUN --mount type=bind,source=$PWD/$earnapp_data_folder/data$i,target=/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
+    if CONTAINER_ID=$(sudo docker run -d --health-interval=24h $WATCH_TOWER_LABEL --name earnapp$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always $NETWORK_TUN --mount type=bind,source=$PWD/$earnapp_data_folder/data$i,target=/etc/earnapp -e EARNAPP_UUID=$uuid fazalfarhan01/earnapp:lite); then
       echo -e "${GREEN}Container earnapp$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Earnapp. Exiting..${NOCOLOUR}"
@@ -1263,6 +1271,21 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting Watchtower container to auto-update containers that use the latest tag
+  if [ "$AUTO_UPDATE_CONTAINERS" = true ]; then
+    if [ "$container_pulled" = false ]; then
+      echo -e "${YELLOW}Starting Internet Income Watchtower container..${NOCOLOUR}"
+      sudo docker pull ghcr.io/nicholas-fedor/watchtower:nightly
+      check_container_exists internetincomewatchtower$UNIQUE_ID
+      if CONTAINER_ID=$(sudo docker run -d --name internetincomewatchtower$UNIQUE_ID $LOGS_PARAM $DNS_VOLUME --restart=always -e WATCHTOWER_CLEANUP=true --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --no-healthcheck ghcr.io/nicholas-fedor/watchtower:nightly --scope $UNIQUE_ID --interval 86400); then
+        echo -e "${GREEN}Container internetincomewatchtower$UNIQUE_ID started successfully.${NOCOLOUR}"
+      else
+        echo -e "${RED}Failed to start container for Watchtower. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
     fi
   fi
 
