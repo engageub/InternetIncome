@@ -14,6 +14,8 @@ To maximize earnings, use the [test](https://github.com/engageub/InternetIncome/
 
 [🚀 Got 100+ SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
 
+[![](https://www.google.com/s2/favicons?domain=birdproxies.com&sz=32)](https://birdproxies.com/en/tools/earnapp-proxy-checker) [Check if your proxies are suitable before using them](https://birdproxies.com/en/tools/earnapp-proxy-checker)
+
 **Note**: Collecting and reading publicly available data from the internet is usually protected by free speech rights under the First Amendment of the US Constitution.
 
 ### <ins> [Click here to get Static Residential Proxies starting at $1](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
