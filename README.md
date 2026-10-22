@@ -26,33 +26,33 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
-| [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
-| [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
-| [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
-| [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
-| [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| Crypto, Paypal|
-| [Trees App](https://t.co/seM26M5ZuM) (Use code `NQLFCITG` to get $2 bonus) | :heavy_check_mark: | :x: |No limit|1| Paypal|
-| [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| Paypal, Stripe|
-| [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
-| [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [Titan Network IP Lease](https://edge.titannet.info/signup?inviteCode=ESTWVWQ2) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto/Rewards |
-| [Titan Network TNT3](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
-| [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
-| [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
-| [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
-| [ProxyBase](https://peer.proxybase.org/dashboard/signup?referral=t5QAXPQ8Q8)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1| Paypal|
-| [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2| Paypal, Wise, Crypto|
-| [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit| Crypto|
-| [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
+| ![](https://www.google.com/s2/favicons?domain=earnapp.com&sz=16) [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
+| ![](https://www.google.com/s2/favicons?domain=packetstream.io&sz=16) [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
+| ![](https://www.google.com/s2/favicons?domain=honeygain.com&sz=16) [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
+| ![](https://www.google.com/s2/favicons?domain=iproyal.com&sz=16) [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
+| ![](https://www.google.com/s2/favicons?domain=ebesucher.com&sz=16) [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
+| ![](https://www.google.com/s2/favicons?domain=getgrass.io&sz=16) [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=uprock.com&sz=16) [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=passiveapp.com&sz=16) [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| Crypto, Paypal|
+| ![](https://www.google.com/s2/favicons?domain=trees.app&sz=16) [Trees App](https://t.co/seM26M5ZuM) (Use code `NQLFCITG` to get $2 bonus) | :heavy_check_mark: | :x: |No limit|1| Paypal|
+| ![](https://www.google.com/s2/favicons?domain=bytebenefit.io&sz=16) [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| Paypal, Stripe|
+| ![](https://www.google.com/s2/favicons?domain=wipter.com&sz=16) [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=antgain.app&sz=16) [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=ur.io&sz=16) [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network IP Lease](https://edge.titannet.info/signup?inviteCode=ESTWVWQ2) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto/Rewards |
+| ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network TNT3](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
+| ![](https://www.google.com/s2/favicons?domain=adnade.net&sz=16) [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
+| ![](https://www.google.com/s2/favicons?domain=earn.fm&sz=16) [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
+| ![](https://www.google.com/s2/favicons?domain=t.me&sz=16) [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
+| ![](https://www.google.com/s2/favicons?domain=proxybase.org&sz=16) [ProxyBase](https://peer.proxybase.org/dashboard/signup?referral=t5QAXPQ8Q8)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| ![](https://www.google.com/s2/favicons?domain=proxyrack.com&sz=16) [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1| Paypal|
+| ![](https://www.google.com/s2/favicons?domain=repocket.com&sz=16) [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2| Paypal, Wise, Crypto|
+| ![](https://www.google.com/s2/favicons?domain=traffmonetizer.com&sz=16) [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit| Crypto|
+| ![](https://www.google.com/s2/favicons?domain=proxylite.ru&sz=16) [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| ![](https://www.google.com/s2/favicons?domain=bitping.com&sz=16) [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| ![](https://www.google.com/s2/favicons?domain=mysterium.network&sz=16) [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
+| ![](https://www.google.com/s2/favicons?domain=bytelixir.com&sz=16) [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=salad.com&sz=16) [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
 
 * [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
@@ -129,7 +129,7 @@ sudo bash internetIncome.sh --deleteBackup
 ## :department_store:	Proxies or Hosting Providers
 [Click here to get proxies or hosting providers with free credits.](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)
 
-**<ins>Note:</ins>** [Bytelixir](https://t.co/MNaVYiALR5), [PassiveApp](https://passiveapp.com/i/KWc0pl) and [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  support proxies in dashboard. You can add your proxies directly in website dashboard instead of running applications. 
+**<ins>Note:</ins>** ![](https://www.google.com/s2/favicons?domain=bytelixir.com&sz=16) [Bytelixir](https://t.co/MNaVYiALR5), ![](https://www.google.com/s2/favicons?domain=passiveapp.com&sz=16) [PassiveApp](https://passiveapp.com/i/KWc0pl) and ![](https://www.google.com/s2/favicons?domain=t.me&sz=16) [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  support proxies in dashboard. You can add your proxies directly in website dashboard instead of running applications. 
 
 
 ## :grey_question: FAQ
@@ -143,4 +143,4 @@ sudo bash internetIncome.sh --deleteBackup
 ## :warning: Disclaimer
 This script is provided "as is" and without warranty of any kind.  
 The author makes no warranties, express or implied, that this script is free of errors, defects, or suitable for any particular purpose.  
-The author shall not  be liable for any damages suffered by any user of this script, whether direct, indirect, incidental, consequential, or special, arising from the use of or inability to use this script or its documentation, even if the author has been advised of the possibility of such damages.  
+The author shall not  be liable for any damages suffered by any user of this script, whether direct, indirect, incidental, consequential, or special, arising from the use of or inability to use this script or its documentation, even if the author has been advised of the possibility of such damages.
