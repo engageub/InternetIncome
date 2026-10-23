@@ -9,8 +9,7 @@ Your income depends on the number of proxies used and the proxy location. If you
 Please read the respective apps' legal terms or FAQ section if you have any queries on the type of traffic sent. 
 For advanced users, it is recommended to use the [test](https://github.com/engageub/InternetIncome/tree/test) branch.
 
-To maximize earnings, use the [test](https://github.com/engageub/InternetIncome/tree/test) with `USE_DNS_OVER_HTTPS` enabled when working with proxies. This configuration also enables DNS caching by default, reducing DNS queries and lowering latency. For direct connections, use the `main` branch, and for proxy-based connections, use the `test` branch.
-
+To maximize earnings, use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with `USE_DNS_OVER_HTTPS` enabled when working with proxies. This configuration also enables DNS caching by default, which reduces repeated DNS queries and can lower latency for frequently accessed domains. For direct connections, use the `main` branch, and for proxy-based connections, use the `test` branch.
 
 [🚀 Got 100+ SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
 
@@ -28,33 +27,33 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
 | App Name | Residential/Home ISP | Datacenter/Hosting/VPS |Limit per Account|Devices per IP| Payment|
 |  :--- |  :---: |  :---: | :---: | :---: | :---: |
-| ![](https://www.google.com/s2/favicons?domain=earnapp.com&sz=16) [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
-| ![](https://www.google.com/s2/favicons?domain=packetstream.io&sz=16) [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
-| ![](https://www.google.com/s2/favicons?domain=honeygain.com&sz=16) [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
-| ![](https://www.google.com/s2/favicons?domain=pawns.app&sz=16) [Pawns App](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
-| ![](https://www.google.com/s2/favicons?domain=ebesucher.com&sz=16) [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
-| ![](https://www.google.com/s2/favicons?domain=getgrass.io&sz=16) [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| ![](https://www.google.com/s2/favicons?domain=uprock.com&sz=16) [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
-| ![](https://www.google.com/s2/favicons?domain=passiveapp.com&sz=16) [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| Crypto, Paypal|
-| ![](https://www.google.com/s2/favicons?domain=trees.app&sz=16) [Trees App](https://t.co/seM26M5ZuM) (Use code `NQLFCITG` to get $2 bonus) | :heavy_check_mark: | :x: |No limit|1| Paypal|
-| ![](https://www.google.com/s2/favicons?domain=bytebenefit.io&sz=16) [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| Paypal, Stripe|
-| ![](https://www.google.com/s2/favicons?domain=wipter.com&sz=16) [Wipter](https://t.co/pHTKvLldaN) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| ![](https://www.google.com/s2/favicons?domain=antgain.app&sz=16) [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
-| ![](https://www.google.com/s2/favicons?domain=ur.io&sz=16) [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network IP Lease](https://edge.titannet.info/signup?inviteCode=ESTWVWQ2) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto/Rewards |
-| ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network TNT3](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Rewards |
-| ![](https://www.google.com/s2/favicons?domain=adnade.net&sz=16) [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1|Crypto, Paypal| 
-| ![](https://www.google.com/s2/favicons?domain=earn.fm&sz=16) [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto, Paypal, Giftcard|
-| ![](https://www.google.com/s2/favicons?domain=t.me&sz=16) [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| Crypto|
-| ![](https://www.google.com/s2/favicons?domain=proxybase.org&sz=16) [ProxyBase](https://peer.proxybase.org/dashboard/signup?referral=t5QAXPQ8Q8)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| ![](https://www.google.com/s2/favicons?domain=proxyrack.com&sz=16) [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1| Paypal|
-| ![](https://www.google.com/s2/favicons?domain=repocket.com&sz=16) [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2| Paypal, Wise, Crypto|
-| ![](https://www.google.com/s2/favicons?domain=traffmonetizer.com&sz=16) [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit| Crypto|
-| ![](https://www.google.com/s2/favicons?domain=proxylite.ru&sz=16) [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| ![](https://www.google.com/s2/favicons?domain=bitping.com&sz=16) [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| ![](https://www.google.com/s2/favicons?domain=mysterium.network&sz=16) [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto|
-| ![](https://www.google.com/s2/favicons?domain=bytelixir.com&sz=16) [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
-| ![](https://www.google.com/s2/favicons?domain=salad.com&sz=16) [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Paypal |
+| ![](https://www.google.com/s2/favicons?domain=earnapp.com&sz=16) [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal, 🎁 Gift Card |
+| ![](https://www.google.com/s2/favicons?domain=packetstream.io&sz=16) [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=honeygain.com&sz=16) [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto, ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=pawns.app&sz=16) [Pawns App](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto, ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=ebesucher.com&sz=16) [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=getgrass.io&sz=16) [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=uprock.com&sz=16) [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=passiveapp.com&sz=16) [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto, ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=trees.app&sz=16) [Trees App](https://t.co/seM26M5ZuM) (Use code `NQLFCITG` to get $2 bonus) | :heavy_check_mark: | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=bytebenefit.io&sz=16) [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal, ![](https://www.google.com/s2/favicons?domain=stripe.com&sz=16) Stripe |
+| ![](https://www.google.com/s2/favicons?domain=wipter.com&sz=16) [Wipter](https://t.co/pHTKvLldaN) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=antgain.app&sz=16) [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=ur.io&sz=16) [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network IP Lease](https://edge.titannet.info/signup?inviteCode=ESTWVWQ2) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto, 🏆 Rewards |
+| ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network TNT3](https://test1.titannet.io/intiveRegister?code=ILOgrq) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| 🏆 Rewards |
+| ![](https://www.google.com/s2/favicons?domain=adnade.net&sz=16) [Adnade](https://t.co/KthcbzPa08)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto, ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=earn.fm&sz=16) [EarnFM](https://t.co/SX6ggtooDW)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto, ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal, 🎁 Giftcard |
+| ![](https://www.google.com/s2/favicons?domain=t.me&sz=16) [Peer2Profit](https://t.me/peer2profit_app_bot?start=163956712261b9cf129932a)  | :heavy_check_mark:	  | :heavy_check_mark:	 | No limit|No limit| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=proxybase.org&sz=16) [ProxyBase](https://peer.proxybase.org/dashboard/signup?referral=t5QAXPQ8Q8)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=proxyrack.com&sz=16) [ProxyRack](https://peer.proxyrack.com/ref/tqkgvytmszxtxafo30miq2dbeeauuopmmup0eklx)  | :heavy_check_mark:	  | :heavy_check_mark: |500|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
+| ![](https://www.google.com/s2/favicons?domain=repocket.com&sz=16) [Repocket](https://link.repocket.co/pV1G)  | :heavy_check_mark:	  | :heavy_check_mark: |No limit|2| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal, ![](https://www.google.com/s2/favicons?domain=wise.com&sz=16) Wise, ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=traffmonetizer.com&sz=16) [Traffmonetizer](https://traffmonetizer.com/?aff=4211) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|No limit| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=proxylite.ru&sz=16) [ProxyLite](https://proxylite.ru/?r=AXLDPNX5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=bitping.com&sz=16) [BitPing](https://app.bitping.com/?r=drPpp600) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=mysterium.network&sz=16) [Mysterium](https://mystnodes.co/?referral_code=xejcELAJ368e6PYnB30VHAnNKn30Aa6wKygVZdam) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=bytelixir.com&sz=16) [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
+| ![](https://www.google.com/s2/favicons?domain=salad.com&sz=16) [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
 
 * [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
