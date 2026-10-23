@@ -31,14 +31,14 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | ![](https://www.google.com/s2/favicons?domain=earnapp.com&sz=16) [EarnApp](https://t.co/k0w7jqLfxq)  | :heavy_check_mark:	  | :x: | No limit|1| Paypal, Gift Card |
 | ![](https://www.google.com/s2/favicons?domain=packetstream.io&sz=16) [PacketStream](https://t.co/FtklOxS7QN)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal |
 | ![](https://www.google.com/s2/favicons?domain=honeygain.com&sz=16) [Honeygain](https://t.co/Xo1FwoUJx1) | :heavy_check_mark:	  | :x: |10|1| Crypto, Paypal |
-| ![](https://www.google.com/s2/favicons?domain=iproyal.com&sz=16) [IPRoyal](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
+| ![](https://www.google.com/s2/favicons?domain=pawns.app&sz=16) [Pawns App](https://t.co/7hZUclQbCd)  | :heavy_check_mark:	  | :x: |No limit|1|Crypto, Paypal|
 | ![](https://www.google.com/s2/favicons?domain=ebesucher.com&sz=16) [Ebesucher](https://www.ebesucher.com/?ref=engageub)  | :heavy_check_mark:	  | :x: |No limit|1| Paypal|
 | ![](https://www.google.com/s2/favicons?domain=getgrass.io&sz=16) [Grass](https://t.co/hpl30lW4cP) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | ![](https://www.google.com/s2/favicons?domain=uprock.com&sz=16) [Uprock](https://t.co/xwUf7kY9U0) | :heavy_check_mark:	  | :x: |No limit|1| Crypto |
 | ![](https://www.google.com/s2/favicons?domain=passiveapp.com&sz=16) [PassiveApp](https://passiveapp.com/i/KWc0pl)  | :heavy_check_mark: | :x: |No limit|1| Crypto, Paypal|
 | ![](https://www.google.com/s2/favicons?domain=trees.app&sz=16) [Trees App](https://t.co/seM26M5ZuM) (Use code `NQLFCITG` to get $2 bonus) | :heavy_check_mark: | :x: |No limit|1| Paypal|
 | ![](https://www.google.com/s2/favicons?domain=bytebenefit.io&sz=16) [Bytebenefit](https://bytebenefit.io/invited?ref=nD8Rtx) | :heavy_check_mark: | :x: |No limit|1| Paypal, Stripe|
-| ![](https://www.google.com/s2/favicons?domain=wipter.com&sz=16) [Wipter](https://wipter.com/register?via=CE5979A505) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
+| ![](https://www.google.com/s2/favicons?domain=wipter.com&sz=16) [Wipter](https://t.co/pHTKvLldaN) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | ![](https://www.google.com/s2/favicons?domain=antgain.app&sz=16) [AntGain](https://t.co/0phceMTJhF)  | :heavy_check_mark:	  | :heavy_check_mark: | No limit|1| Crypto |
 | ![](https://www.google.com/s2/favicons?domain=ur.io&sz=16) [URnetwork](https://ur.io/c?bonus=YSC0T7) (Use refer code `YSC0T7` in settings for bonus) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto |
 | ![](https://www.google.com/s2/favicons?domain=titannet.io&sz=16) [Titan Network IP Lease](https://edge.titannet.info/signup?inviteCode=ESTWVWQ2) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| Crypto/Rewards |
