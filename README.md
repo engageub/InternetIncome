@@ -55,10 +55,10 @@ File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 | ![](https://www.google.com/s2/favicons?domain=bytelixir.com&sz=16) [Bytelixir](https://t.co/MNaVYiALR5) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=bitcoin.org&sz=16) Crypto |
 | ![](https://www.google.com/s2/favicons?domain=salad.com&sz=16) [Salad](https://salad.com/) | :heavy_check_mark:	  | :heavy_check_mark: |No limit|1| ![](https://www.google.com/s2/favicons?domain=paypal.com&sz=16) Paypal |
 
-* [Click here](https://prnt.sc/siTVsNW9QDrL) to view the screenshot above as some browsers don't support checkmarks. 
+* [Click here](https://i.ibb.co/fGQD0THT/comparison-table-screenshot.png) to view the screenshot above as some browsers don't support checkmarks. 
 * No Limit indicates that the website has not mentioned any specifics and multiple proxies were working. Try to use 1 device per IP.
 * To convert crypto to other wallets or currencies, you may use [BestChange](https://www.bestchange.com/?p=1252652).
-* The comparison mentioned above was updated on 25-04-2024 and may be subject to change later.
+* The comparison mentioned above was updated on `23-10-2026` and may be subject to change later.
 
 ### <ins>[Click here to view Browser Extension Based Apps](https://github.com/engageub/InternetIncome/wiki/Browser-Extension-Based-Apps)</ins> 
 
