@@ -17,7 +17,7 @@ To maximize earnings, use the [test](https://github.com/engageub/InternetIncome/
 
 **Note**: Collecting and reading publicly available data from the internet is usually protected by free speech rights under the First Amendment of the US Constitution.
 
-### <ins> [Click here to get Static Residential Proxies starting at $1](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
+### <ins> [Click here to get Static Residential Proxies](https://github.com/engageub/InternetIncome/wiki/Proxies-and-Hosting-Providers)</ins> 
 
 File Internet Crime Complaints World Wide here: https://www.ic3.gov/
 
