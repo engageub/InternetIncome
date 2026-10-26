@@ -472,6 +472,7 @@ cache_min_ttl = 2400
 cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
+blocked_query_response = ""
 [static]
   [static.google1]
   stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
