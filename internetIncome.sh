@@ -636,6 +636,26 @@ download_iptables() {
   fi
 }
 
+# Wait for a process to start inside a container
+wait_for_process() {
+  local container="$1"
+  local process="$2"
+  local started=0
+  local attempt
+  for attempt in $(seq 1 10); do
+    if sudo docker exec "$container" pgrep -x "$process" > /dev/null 2>&1; then
+      started=1
+      break
+    fi
+    echo -e "${YELLOW}Attempt $attempt/10: $process not running yet...${NOCOLOUR}"
+    sleep 1
+  done
+  if [ "$started" -eq 0 ]; then
+    echo -e "${RED}$process did not start in $container within 10 seconds. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+}
+
 # Execute docker command
 execute_docker_command() {
   # Store parameters as an array
@@ -669,6 +689,14 @@ execute_docker_command() {
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
   else
     CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d $WATCH_TOWER_LABEL --name $container_name --restart=always "${container_parameters[@]:2}")
+  fi
+
+  if [[ "${container_parameters[@]:2}" == *"hev-socks5-tunnel"* ]]; then
+    wait_for_process $container_name "hev-socks5-tunnel"
+  fi
+
+  if [[ "${container_parameters[@]:2}" == *"tun2socks"* ]]; then
+    wait_for_process $container_name "tun2socks"
   fi
 
   # Check if the container started successfully
