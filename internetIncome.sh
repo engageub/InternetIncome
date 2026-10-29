@@ -867,7 +867,7 @@ start_containers() {
       sudo docker pull iproyal/pawns-cli:latest
     fi
     check_container_exists pawns$UNIQUE_ID$i iproyal/pawns-cli:latest
-    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name pawns$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name pawns$UNIQUE_ID$i --restart=on-failure:5 $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos); then
       echo -e "${GREEN}Container pawns$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for IPRoyals. Exiting..${NOCOLOUR}"
