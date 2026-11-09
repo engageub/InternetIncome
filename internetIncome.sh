@@ -32,6 +32,7 @@ custom_firefox_data_folder="custom-firefox-data"
 earnapp_data_folder="earnappdata"
 firefox_data_folder="firefoxdata"
 firefox_profile_data="firefoxprofiledata"
+idlepay_data_folder="idlepay-data"
 mysterium_data_folder="mysterium-data"
 titan_data_folder="titan-data"
 traffmonetizer_data_folder="traffmonetizerdata"
@@ -82,7 +83,7 @@ vpns_file="vpns.txt"
 required_files=($banner_file $generate_device_ids_file $properties_file $restart_file)
 files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $chrome_profile_zipfile $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $firefox_profile_zipfile $hickory_dns_apk_file $hickory_dns_config_file $iptables_apk_file $libgcc_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
 folders_to_be_removed=($adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $firefox_data_folder $firefox_profile_data)
-back_up_folders=($bitping_data_folder $custom_chrome_data_folder $custom_firefox_data_folder $mysterium_data_folder $titan_data_folder $traffmonetizer_data_folder $urnetwork_data_folder)
+back_up_folders=($bitping_data_folder $custom_chrome_data_folder $custom_firefox_data_folder $idlepay_data_folder $mysterium_data_folder $titan_data_folder $traffmonetizer_data_folder $urnetwork_data_folder)
 back_up_files=($antgain_file $earnapp_file $proxyrack_file)
 restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 137 139 143 161 179 389 427 465 512 513 514 515 526 530 531 532 540 548 554 556 563 587 601 636 993 995 1719 1720 1723 2049 3659 4045 5060 5061 6000 6566 6665 6666 6667 6668 6669 6697 10080)
 
@@ -1506,6 +1507,35 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
+    fi
+  fi
+
+  # Starting IdlePay container
+  if [[ $IDLEPAY_KEY ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull ghcr.io/idlepay/idlepay:latest
+      if [ "$IDLEPAY_PROXY_MODE" = true ]; then
+        if [ ! -f "$proxies_file" ]; then
+          echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+        # Create IdlePay Proxy folder
+        mkdir -p $PWD/$idlepay_data_folder/data-proxy
+        sudo chmod -R 777 $PWD/$idlepay_data_folder/data-proxy
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$idlepay_data_folder/data-proxy,target=/etc/idlepay --mount type=bind,source=$PWD/proxies.txt,target=/proxies.txt,readonly --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY -e IDLEPAY_DIRECT=off ghcr.io/idlepay/idlepay:latest)
+        execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "${docker_parameters[@]}"
+      fi
+    fi
+    if [ "$IDLEPAY_PROXY_MODE" != true ]; then
+      # Create IdlePay folder
+      mkdir -p $PWD/$idlepay_data_folder/data$i
+      sudo chmod -R 777 $PWD/$idlepay_data_folder/data$i
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$idlepay_data_folder/data$i,target=/etc/idlepay --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY ghcr.io/idlepay/idlepay:latest)
+      execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "${docker_parameters[@]}"
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}IdlePay is not enabled. Ignoring IdlePay..${NOCOLOUR}"
     fi
   fi
 
