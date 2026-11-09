@@ -11,7 +11,7 @@ For advanced users, it is recommended to use the [test](https://github.com/engag
 
 To maximize earnings, use the [test](https://github.com/engageub/InternetIncome/tree/test) branch with `USE_DNS_OVER_HTTPS` enabled when working with proxies. This configuration also enables DNS caching by default, which reduces repeated DNS queries and can lower latency for frequently accessed domains. For direct connections, use the `main` branch, and for proxy-based connections, use the `test` branch.
 
-[🚀 Got 100+ SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
+[🚀 Got 100+ HTTP/SOCKS5 Proxies? Turn Them Into Passive Income! 💰 Click Here](https://github.com/engageub/InternetIncome/wiki/%F0%9F%92%B8-Earn-More-with-Your-SOCKS5-Proxies)
 
 [![](https://www.google.com/s2/favicons?domain=birdproxies.com&sz=32)](https://birdproxies.com/en/tools/earnapp-proxy-checker) [Check if your proxies are suitable before using them](https://github.com/engageub/InternetIncome/wiki/%F0%9F%94%8D-Check-if-your-proxies-are-suitable-before-using-them)
 
