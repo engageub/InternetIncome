@@ -1715,19 +1715,6 @@ start_containers() {
     fi
   fi
 
-  # Starting PacketSDK container
-  if [[ $PACKET_SDK_APP_KEY ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull packetsdk/packetsdk:latest
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN packetsdk/packetsdk:latest -appkey=$PACKET_SDK_APP_KEY)
-    execute_docker_command "PacketSDK" "packetsdk$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}PacketSDK API is not configured. Ignoring PacketSDK..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
     for loop_count in {1..500}; do
@@ -1968,19 +1955,6 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Nodepay cookie is not configured. Ignoring Nodepay..${NOCOLOUR}"
-    fi
-  fi
-
-  # Starting CastarSDK container
-  if [[ $CASTAR_SDK_KEY ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull ghcr.io/bhavishyadahiya/castarsdk-docker/castarsdk@sha256:82a07de860b970a66cbb5cdcd6d169cfd113aafcd997d8d16fbda5a69424ae8f
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e KEY=$CASTAR_SDK_KEY ghcr.io/bhavishyadahiya/castarsdk-docker/castarsdk@sha256:82a07de860b970a66cbb5cdcd6d169cfd113aafcd997d8d16fbda5a69424ae8f)
-    execute_docker_command "CastarSDK" "castarsdk$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}CastarSDK is not configured. Ignoring CastarSDK..${NOCOLOUR}"
     fi
   fi
 
