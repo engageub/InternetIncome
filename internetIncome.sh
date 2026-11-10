@@ -714,6 +714,45 @@ execute_docker_command() {
   fi
 }
 
+# Check if proxy mode is enabled
+is_proxy_mode_enabled() {
+  [[ $IDLEPAY_KEY && "$IDLEPAY_PROXY_MODE" = true ]] && return 0
+  [[ $UR_AUTH_TOKEN && "$UR_NETWORK_PROXY_MODE" = true ]] && return 0
+  [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]] && return 0
+  return 1
+}
+
+# Check if tun container is required
+is_tun_required() {
+  [[ "$MYSTERIUM" = true ]] && return 0
+  [[ "$UPROCK" = true ]] && return 0
+  [[ "$CUSTOM_FIREFOX" = true ]] && return 0
+  [[ "$CUSTOM_CHROME" = true ]] && return 0
+  [[ $EBESUCHER_USERNAME ]] && return 0
+  [[ $ADNADE_USERNAME ]] && return 0
+  [[ $BITPING_EMAIL && $BITPING_PASSWORD ]] && return 0
+  [[ $REPOCKET_API ]] && return 0
+  [[ $TRAFFMONETIZER_TOKEN ]] && return 0
+  [[ $UR_AUTH_TOKEN && "$UR_NETWORK_PROXY_MODE" != true ]] && return 0
+  [[ $IDLEPAY_KEY && "$IDLEPAY_PROXY_MODE" != true ]] && return 0
+  [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] && return 0
+  [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]] && return 0
+  [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" != true ]] && return 0
+  [[ $PROXYRACK_API ]] && return 0
+  [[ $PROXYBASE_ACCOUNT_ID ]] && return 0
+  [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]] && return 0
+  [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]] && return 0
+  [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]] && return 0
+  [[ $TITAN_HASH ]] && return 0
+  [[ $ANTGAIN_API_KEY ]] && return 0
+  [[ $PEER2PROFIT_EMAIL ]] && return 0
+  [[ $NP_COOKIE ]] && return 0
+  [[ $PACKETSTREAM_CID ]] && return 0
+  [[ $PROXYLITE_USER_ID ]] && return 0
+  [[ "$EARNAPP" = true ]] && return 0
+  return 1
+}
+
 # Start all containers
 start_containers() {
 
@@ -2245,6 +2284,22 @@ if [[ "$1" == "--start" ]]; then
   # Check wget options
   check_wget_options
 
+  # Check if network containers are required
+  if [[ "$USE_PROXIES" = true || "$USE_VPNS" = true || "$USE_MULTI_IP" = true ]]; then
+    STATUS=1
+    if is_tun_required; then
+      TUN_CONTAINER_REQUIRED=true
+    else
+      TUN_CONTAINER_REQUIRED=false
+      if is_proxy_mode_enabled; then
+        USE_DIRECT_CONNECTION=true
+        echo -e "${YELLOW}Only proxy mode apps are enabled. Changing connection state to DIRECT CONNECTION. Proxy mode apps work with both USE_PROXIES and USE_DIRECT_CONNECTION..${NOCOLOUR}"
+      else
+        echo -e "${YELLOW}No enabled application needs a TUN, VPN or Multi-IP network. Skipping them..${NOCOLOUR}"
+      fi
+    fi
+  fi
+
   # Use direct Connection
   if [ "$USE_DIRECT_CONNECTION" = true ]; then
      echo "DIRECT_CONNECTION_ENABLED" >> $connection_state_file
@@ -2254,7 +2309,7 @@ if [[ "$1" == "--start" ]]; then
   fi
 
   # Use Vpns
-  if [ "$USE_VPNS" = true ]; then
+  if [ "$USE_VPNS" = true ] && [ "$TUN_CONTAINER_REQUIRED" = true ]; then
     echo "VPN_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}"
@@ -2279,7 +2334,7 @@ if [[ "$1" == "--start" ]]; then
   fi
 
   # Use Multi IPs
-  if [ "$USE_MULTI_IP" = true ]; then
+  if [ "$USE_MULTI_IP" = true ] && [ "$TUN_CONTAINER_REQUIRED" = true ]; then
     echo "MULTI_IP_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}"
@@ -2304,7 +2359,7 @@ if [[ "$1" == "--start" ]]; then
   fi
 
   # Use Proxies
-  if [ "$USE_PROXIES" = true ]; then
+  if [ "$USE_PROXIES" = true ] && [ "$TUN_CONTAINER_REQUIRED" = true ]; then
     echo "PROXY_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}"
