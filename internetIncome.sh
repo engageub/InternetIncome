@@ -2278,25 +2278,30 @@ if [[ "$1" == "--start" ]]; then
     DEVICE_NAME=ubuntu
   fi
 
-  # Write Unique ID to file
-  echo $UNIQUE_ID > $connection_state_file
-
   # Check wget options
   check_wget_options
 
-  # Check if network containers are required
+  # Check if any enabled application needs a network container or runs in proxy mode
+  if is_tun_required; then
+    TUN_CONTAINER_REQUIRED=true
+  else
+    TUN_CONTAINER_REQUIRED=false
+    if ! is_proxy_mode_enabled; then
+      echo -e "${RED}No applications are enabled. Exiting..${NOCOLOUR}"
+      rm -f $process_id_file
+      exit 1
+    fi
+  fi
+
+  # Write Unique ID to file
+  echo $UNIQUE_ID > $connection_state_file
+
+  # Proxy mode apps work with both USE_PROXIES and USE_DIRECT_CONNECTION
   if [[ "$USE_PROXIES" = true || "$USE_VPNS" = true || "$USE_MULTI_IP" = true ]]; then
     STATUS=1
-    if is_tun_required; then
-      TUN_CONTAINER_REQUIRED=true
-    else
-      TUN_CONTAINER_REQUIRED=false
-      if is_proxy_mode_enabled; then
-        USE_DIRECT_CONNECTION=true
-        echo -e "${YELLOW}Only proxy mode apps are enabled. Changing connection state to DIRECT CONNECTION. Proxy mode apps work with both USE_PROXIES and USE_DIRECT_CONNECTION..${NOCOLOUR}"
-      else
-        echo -e "${YELLOW}No enabled application needs a TUN, VPN or Multi-IP network. Skipping them..${NOCOLOUR}"
-      fi
+    if [ "$TUN_CONTAINER_REQUIRED" != true ]; then
+      USE_DIRECT_CONNECTION=true
+      echo -e "${YELLOW}Only proxy mode apps are enabled. Changing connection state to DIRECT CONNECTION. Proxy mode apps work with both USE_PROXIES and USE_DIRECT_CONNECTION..${NOCOLOUR}"
     fi
   fi
 
@@ -2391,6 +2396,8 @@ if [[ "$1" == "--start" ]]; then
   fi
 
   if [[ $STATUS == 0 ]]; then
+    # Remove connection state file
+    rm $connection_state_file
     echo -e "${RED}No Network configuration is specified. Script will not start unless specified in properties.conf ..Exiting..${NOCOLOUR}"
   fi
 
