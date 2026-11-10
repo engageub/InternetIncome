@@ -1617,19 +1617,6 @@ start_containers() {
     fi
   fi
 
-  # Starting PacketShare container
-  if [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull packetshare/packetshare:latest
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN packetshare/packetshare:latest -accept-tos -email=$PACKETSHARE_EMAIL -password=$PACKETSHARE_PASSWORD)
-    execute_docker_command "PacketShare" "packetshare$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
-    fi
-  fi
-
   # Starting Depin Chrome Extensions container
   if [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] || [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]]; then
     if [ "$container_pulled" = false ]; then
@@ -1929,19 +1916,6 @@ start_containers() {
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
-    fi
-  fi
-
-  # Starting WizardGain container
-  if [[ $WIZARD_GAIN_EMAIL ]]; then
-    if [ "$container_pulled" = false ]; then
-      sudo docker pull wizardgain/worker:latest
-    fi
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$WIZARD_GAIN_EMAIL wizardgain/worker:latest)
-    execute_docker_command "WizardGain" "wizardgain$UNIQUE_ID$i" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}WizardGain Email is not configured. Ignoring WizardGain..${NOCOLOUR}"
     fi
   fi
 
