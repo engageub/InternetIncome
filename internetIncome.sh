@@ -643,6 +643,7 @@ wait_for_process() {
   local process="$2"
   local started=0
   local attempt
+  sleep 1
   for attempt in $(seq 1 10); do
     if sudo docker exec "$container" pgrep -x "$process" > /dev/null 2>&1; then
       started=1
