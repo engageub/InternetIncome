@@ -907,7 +907,7 @@ start_containers() {
         if sudo iptables -t nat -I POSTROUTING -s $new_subnet -j SNAT --to-source $proxy; then
           echo "$new_subnet" "$proxy" | tee -a $subnets_file
         else
-          echo "${RED}The iptables command failed..Exiting..${NOCOLOUR}"
+          echo -e "${RED}The iptables command failed..Exiting..${NOCOLOUR}"
           exit 1
         fi
       else
@@ -2210,7 +2210,7 @@ if [[ "$1" == "--startOnly" ]]; then
     i=`expr $i + 1`
     start_containers "$i" "$container"
   done
-  exit 1
+  exit 0
 fi
 
 # Start the containers
@@ -2473,9 +2473,6 @@ if [[ "$1" == "--delete" ]]; then
     failed_networks=()
     networks_with_endpoints=()
     force_remove=0
-    if [ ! -f "$networks_file" ]; then
-      return 0
-    fi
     # First pass — attempt clean removal, collect networks with active endpoints
     while IFS= read -r network; do
       [ -z "$network" ] && continue
