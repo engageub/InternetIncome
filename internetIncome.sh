@@ -465,7 +465,7 @@ create_dnscrypt_config() {
   local cache_enabled="${USE_DNS_CACHE:-true}"
   cat > "$dnscrypt_config_file" <<-EOF
 listen_addresses = ['127.0.0.1:53']
-server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2', 'quad9']
+server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2']
 log_level = 6
 cache = ${cache_enabled}
 cache_size = 4096
@@ -483,8 +483,6 @@ blocked_query_response = ""
   stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
   [static.cloudflare2]
   stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
-  [static.quad9]
-  stamp = 'sdns://AgcAAAAAAAAABzkuOS45LjkABzkuOS45LjkKL2Rucy1xdWVyeQ'
 EOF
 }
 
