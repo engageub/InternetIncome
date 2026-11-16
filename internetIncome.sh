@@ -259,7 +259,7 @@ validate_proxies() {
         local port="${hostport##*:}"
         if (( port >= 1 && port <= 65535 )); then
           case "$protocol" in
-            http|https)
+            http)
               [[ -z "$credentials" ]] && valid=true
               if [[ -n "$credentials" ]]; then
                 local user="${credentials%%:*}"
@@ -292,7 +292,7 @@ validate_proxies() {
     fi
     if [[ "$valid" == false ]]; then
       echo -e "${RED}Error: Invalid proxy format on line ${lineno}: '${proxy}'${NOCOLOUR}"
-      echo -e "${RED}Expected: protocol://host:port or protocol://user:password@IP:PORT${NOCOLOUR}"
+      echo -e "${RED}Expected: protocol://host:port or protocol://user:password@IP:PORT (Valid protocols: http, socks4, socks4a, socks5, socks5h, ss)${NOCOLOUR}"
       exit 1
     fi
   done < "$proxies_file"
