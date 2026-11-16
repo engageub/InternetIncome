@@ -981,15 +981,13 @@ start_containers() {
         if [[ ! -f $iptables_apk_file && "$proxy" == socks5://* ]]; then
           download_iptables
         fi
-        if [[ "$proxy" == socks5://* ]]; then
-          TUN_DNS_VOLUME="$DNS_VOLUME"
-        fi
+        TUN_DNS_VOLUME="$DNS_VOLUME"
         if [ "$USE_DNSCRYPT" != false ]; then
           doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
-          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
+          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
         else
           doh_volume="--mount type=bind,source=$PWD/hickory-dns-config.toml,target=/proxy-dns/hickory-dns-config.toml --mount type=bind,source=$PWD/libgcc.apk,target=/iptables/libgcc.apk --mount type=bind,source=$PWD/hickory-dns.apk,target=/iptables/hickory-dns.apk"
-          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;echo "nameserver 127.0.0.1" > /etc/resolv.conf;apk add --allow-untrusted --no-network /iptables/libgcc.apk; apk add --allow-untrusted --no-network /iptables/hickory-dns.apk;RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &'
+          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;apk add --allow-untrusted --no-network /iptables/libgcc.apk; apk add --allow-untrusted --no-network /iptables/hickory-dns.apk;RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &'
         fi
       else
         TUN_DNS_VOLUME="$DNS_VOLUME"
