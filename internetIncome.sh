@@ -813,7 +813,7 @@ start_containers() {
   if [[ $i && $proxy && "$START_ONLY" != true ]]; then
     NETWORK_TUN="--network=container:tun$UNIQUE_ID$i"
 
-    if [ "$MYSTERIUM" = true ]; then
+    if [ "$MYSTERIUM" = true ] && [ "$CLOSE_ALL_PORTS" != true ]; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
@@ -823,7 +823,7 @@ start_containers() {
       mysterium_port="-p $mysterium_first_port:4449 "
     fi
 
-    if [[ $EBESUCHER_USERNAME ]]; then
+    if [[ $EBESUCHER_USERNAME ]] && [ "$CLOSE_ALL_PORTS" != true ]; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -837,7 +837,7 @@ start_containers() {
       fi
     fi
 
-    if [[ $ADNADE_USERNAME ]]; then
+    if [[ $ADNADE_USERNAME ]] && [ "$CLOSE_ALL_PORTS" != true ]; then
       adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -851,7 +851,7 @@ start_containers() {
       fi
     fi
 
-    if [ "$UPROCK" = true ]; then
+    if [ "$UPROCK" = true ] && [ "$CLOSE_ALL_PORTS" != true ]; then
       uprock_first_port=$(check_open_ports $uprock_first_port)
       if ! expr "$uprock_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $uprock_first_port ..${NOCOLOUR}"
@@ -861,7 +861,7 @@ start_containers() {
       uprock_port="-p $uprock_first_port:5111 "
     fi
 
-    if [ "$CUSTOM_FIREFOX" = true ];then
+    if [ "$CUSTOM_FIREFOX" = true ] && [ "$CLOSE_ALL_PORTS" != true ]; then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
@@ -871,7 +871,7 @@ start_containers() {
       custom_firefox_port="-p $custom_firefox_first_port:5911 "
     fi
 
-    if [ "$CUSTOM_CHROME" = true ];then
+    if [ "$CUSTOM_CHROME" = true ] && [ "$CLOSE_ALL_PORTS" != true ]; then
       custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
@@ -1094,7 +1094,7 @@ start_containers() {
       sudo docker pull mysteriumnetwork/myst:latest
     fi
     local myst_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       mysterium_first_port=$(check_open_ports $mysterium_first_port)
       if ! expr "$mysterium_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $mysterium_first_port ..${NOCOLOUR}"
@@ -1103,14 +1103,20 @@ start_containers() {
       fi
       myst_port="-p $local_IP_address:$mysterium_first_port:4449"
     fi
+    local myst_iptables=""
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      myst_iptables="iptables -t nat -A PREROUTING -p tcp --dport 4449 -j DNAT --to-destination 127.0.0.1:4449 && iptables -A FORWARD -p tcp -d 127.0.0.1 --dport 4449 -j ACCEPT && "
+    fi
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
-    docker_parameters=(--sysctl net.ipv4.conf.all.route_localnet=1 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN $NETWORK_TUN --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node $myst_port --entrypoint sh mysteriumnetwork/myst:latest -c "iptables -t nat -A PREROUTING -p tcp --dport 4449 -j DNAT --to-destination 127.0.0.1:4449 && iptables -A FORWARD -p tcp -d 127.0.0.1 --dport 4449 -j ACCEPT && /usr/local/bin/docker-entrypoint.sh service --agreed-terms-and-conditions")
+    docker_parameters=(--sysctl net.ipv4.conf.all.route_localnet=1 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN $NETWORK_TUN --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node $myst_port --entrypoint sh mysteriumnetwork/myst:latest -c "${myst_iptables}/usr/local/bin/docker-entrypoint.sh service --agreed-terms-and-conditions")
     execute_docker_command "Mysterium" "myst$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$mysterium_first_port" |tee -a $mysterium_file
-    mysterium_first_port=`expr $mysterium_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$mysterium_first_port" |tee -a $mysterium_file
+      mysterium_first_port=`expr $mysterium_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
@@ -1123,7 +1129,7 @@ start_containers() {
       sudo docker pull --platform=linux/amd64 ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9
     fi
     local uprock_container_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       uprock_first_port=$(check_open_ports $uprock_first_port)
       if ! expr "$uprock_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $uprock_first_port ..${NOCOLOUR}"
@@ -1157,8 +1163,10 @@ start_containers() {
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}Please wait at least one minute before accessing the URL to ensure the service is fully initialized.${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$uprock_first_port" |tee -a $uprock_file
-    uprock_first_port=`expr $uprock_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$uprock_first_port" |tee -a $uprock_file
+      uprock_first_port=`expr $uprock_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Uprock is not enabled. Ignoring Uprock..${NOCOLOUR}"
@@ -1171,7 +1179,7 @@ start_containers() {
       sudo docker pull jlesage/firefox:latest
     fi
     local cf_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       custom_firefox_first_port=$(check_open_ports $custom_firefox_first_port)
       if ! expr "$custom_firefox_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_firefox_first_port ..${NOCOLOUR}"
@@ -1196,8 +1204,10 @@ start_containers() {
     execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$custom_firefox_first_port" |tee -a $custom_firefox_file
-    custom_firefox_first_port=`expr $custom_firefox_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$custom_firefox_first_port" |tee -a $custom_firefox_file
+      custom_firefox_first_port=`expr $custom_firefox_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Custom firefox is not configured. Ignoring Custom Firefox..${NOCOLOUR}"
@@ -1210,7 +1220,7 @@ start_containers() {
       sudo docker pull lscr.io/linuxserver/chromium:latest
     fi
     local cc_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       custom_chrome_first_port=$(check_open_ports $custom_chrome_first_port)
       if ! expr "$custom_chrome_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $custom_chrome_first_port ..${NOCOLOUR}"
@@ -1226,8 +1236,10 @@ start_containers() {
     execute_docker_command "Custom Chrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_chrome_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$custom_chrome_first_port" |tee -a $custom_chrome_file
-    custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$custom_chrome_first_port" |tee -a $custom_chrome_file
+      custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
@@ -1274,7 +1286,7 @@ start_containers() {
     cp -r $PWD/$firefox_profile_data/* $PWD/$firefox_data_folder/data$i/
     sudo chmod -R 777 $PWD/$firefox_data_folder/data$i
     local eb_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -1297,9 +1309,11 @@ start_containers() {
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
     echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
-    ebesucher_first_port=`expr $ebesucher_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
+      ebesucher_first_port=`expr $ebesucher_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Ebesucher username for firefox is not configured. Ignoring Ebesucher..${NOCOLOUR}"
@@ -1346,7 +1360,7 @@ start_containers() {
     sudo cp -r $PWD/$chrome_profile_data $PWD/$chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$chrome_data_folder/data$i
     local eb_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       ebesucher_first_port=$(check_open_ports $ebesucher_first_port)
       if ! expr "$ebesucher_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $ebesucher_first_port ..${NOCOLOUR}"
@@ -1360,9 +1374,11 @@ start_containers() {
     execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
     echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
-    ebesucher_first_port=`expr $ebesucher_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
+      ebesucher_first_port=`expr $ebesucher_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
@@ -1409,7 +1425,7 @@ start_containers() {
     cp -r $PWD/$firefox_profile_data/* $PWD/$adnade_data_folder/data$i/
     sudo chmod -R 777 $PWD/$adnade_data_folder/data$i
     local ad_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -1423,9 +1439,11 @@ start_containers() {
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
-    adnade_first_port=`expr $adnade_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
+      adnade_first_port=`expr $adnade_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Adnade username for firefox is not configured. Ignoring Adnade..${NOCOLOUR}"
@@ -1473,7 +1491,7 @@ start_containers() {
     sudo cp -r $PWD/$chrome_profile_data $PWD/$adnade_data_folder/data$i
     sudo chown -R 911:911 $PWD/$adnade_data_folder/data$i
     local ad_port
-    if [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; then
+    if [ "$CLOSE_ALL_PORTS" != true ] && { [[ ! $proxy ]] || [ "$vpn_enabled" = false ]; }; then
       adnade_first_port=$(check_open_ports $adnade_first_port)
       if ! expr "$adnade_first_port" : '[[:digit:]]*$' >/dev/null; then
          echo -e "${RED}Problem assigning port $adnade_first_port ..${NOCOLOUR}"
@@ -1487,9 +1505,11 @@ start_containers() {
     execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
-    echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
-    adnade_first_port=`expr $adnade_first_port + 1`
+    if [ "$CLOSE_ALL_PORTS" != true ]; then
+      echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
+      adnade_first_port=`expr $adnade_first_port + 1`
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Adnade username for chrome is not configured. Ignoring Adnade..${NOCOLOUR}"
