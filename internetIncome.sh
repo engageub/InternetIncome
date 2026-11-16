@@ -516,11 +516,6 @@ ip = "8.8.4.4"
 [[zones.stores.name_servers.connections]]
 port = 53
 protocol = { type = "tcp" }
-[[zones.stores.name_servers]]
-ip = "9.9.9.9"
-[[zones.stores.name_servers.connections]]
-port = 53
-protocol = { type = "tcp" }
 EOF
 }
 
