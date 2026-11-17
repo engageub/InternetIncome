@@ -51,6 +51,8 @@ custom_chrome_file="custom_chrome.txt"
 custom_firefox_file="custom_firefox.txt"
 dns_resolver_file="resolv.conf"
 dnscrypt_config_file="dns-config.toml"
+dnscrypt_google_config_file="dns-config-google.toml"
+dnscrypt_cloudflare_config_file="dns-config-cloudflare.toml"
 dnscrypt_file="dnscrypt-proxy"
 dnscrypt_tar_file="dnscrypt-proxy.tar.gz"
 earn_fm_config_file="earnfm_config.json"
@@ -81,7 +83,7 @@ vpns_file="vpns.txt"
 
 # Arrays
 required_files=($banner_file $generate_device_ids_file $properties_file $restart_file)
-files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $chrome_profile_zipfile $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $firefox_profile_zipfile $hickory_dns_apk_file $hickory_dns_config_file $iptables_apk_file $libgcc_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
+files_to_be_removed=($adnade_containers_file $adnade_file $chrome_containers_file $chrome_profile_zipfile $connection_state_file $container_names_file $custom_chrome_file $custom_firefox_file $dns_resolver_file $dnscrypt_config_file $dnscrypt_google_config_file $dnscrypt_cloudflare_config_file $dnscrypt_file $dnscrypt_tar_file $earn_fm_config_file $ebesucher_file $firefox_containers_file $firefox_profile_zipfile $hickory_dns_apk_file $hickory_dns_config_file $iptables_apk_file $libgcc_apk_file $libmnl_apk_file $libnftnl_apk_file $mysterium_file $networks_file $process_id_file $subnets_file $uprock_file $ur_data_proxies_file $ur_proxies_file)
 folders_to_be_removed=($adnade_data_folder $chrome_data_folder $chrome_profile_data $earnapp_data_folder $firefox_data_folder $firefox_profile_data)
 back_up_folders=($bitping_data_folder $custom_chrome_data_folder $custom_firefox_data_folder $idlepay_data_folder $mysterium_data_folder $titan_data_folder $traffmonetizer_data_folder $urnetwork_data_folder)
 back_up_files=($antgain_file $earnapp_file $proxyrack_file)
@@ -479,6 +481,46 @@ blocked_query_response = ""
   stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
   [static.google2]
   stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
+  [static.cloudflare1]
+  stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
+  [static.cloudflare2]
+  stamp = 'sdns://AgcAAAAAAAAABzEuMC4wLjEABzEuMC4wLjEKL2Rucy1xdWVyeQ'
+EOF
+}
+
+# Create two DNScrypt configs: Google on 127.0.0.1:55 and Cloudflare on 127.0.0.1:56
+create_dnscrypt_separate_config() {
+  # Default to enabled if not already set
+  local cache_enabled="${USE_DNS_CACHE:-true}"
+  cat > "$dnscrypt_google_config_file" <<-EOF
+listen_addresses = ['127.0.0.1:55']
+server_names = ['google1', 'google2']
+log_level = 6
+cache = ${cache_enabled}
+cache_size = 4096
+cache_min_ttl = 2400
+cache_max_ttl = 86400
+max_clients = 500
+block_ipv6 = true
+blocked_query_response = ""
+[static]
+  [static.google1]
+  stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
+  [static.google2]
+  stamp = 'sdns://AgcAAAAAAAAABzguOC44LjgABzguOC44LjgKL2Rucy1xdWVyeQ'
+EOF
+  cat > "$dnscrypt_cloudflare_config_file" <<-EOF
+listen_addresses = ['127.0.0.1:56']
+server_names = ['cloudflare1', 'cloudflare2']
+log_level = 6
+cache = ${cache_enabled}
+cache_size = 4096
+cache_min_ttl = 2400
+cache_max_ttl = 86400
+max_clients = 500
+block_ipv6 = true
+blocked_query_response = ""
+[static]
   [static.cloudflare1]
   stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
   [static.cloudflare2]
@@ -960,7 +1002,12 @@ start_containers() {
           if [ ! -f $dnscrypt_file ]; then
             download_dnscrypt
           fi
-          if [ ! -f $dnscrypt_config_file ]; then
+          if [ "$USE_SEPARATE_DNS" = true ]; then
+            # Two instances: Google (127.0.0.1:55) and Cloudflare (127.0.0.1:56)
+            if [ ! -f $dnscrypt_google_config_file ] || [ ! -f $dnscrypt_cloudflare_config_file ]; then
+              create_dnscrypt_separate_config
+            fi
+          elif [ ! -f $dnscrypt_config_file ]; then
             create_dnscrypt_config
           fi
         else
@@ -976,8 +1023,19 @@ start_containers() {
         fi
         TUN_DNS_VOLUME="$DNS_VOLUME"
         if [ "$USE_DNSCRYPT" != false ]; then
-          doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
-          EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
+          if [ "$USE_SEPARATE_DNS" = true ]; then
+            # Redirect only the listed destination IPs; every other DNS destination is left untouched
+            DNSCRYPT_RULES="iptables -t nat -A OUTPUT -p udp -d 8.8.8.8,8.8.4.4 --dport 53 -j DNAT --to-destination 127.0.0.1:55 && iptables -t nat -A OUTPUT -p udp -d 1.1.1.1,1.0.0.1 --dport 53 -j DNAT --to-destination 127.0.0.1:56"
+            DNSCRYPT_START="chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config-google.toml &) && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config-cloudflare.toml &)"
+            doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/$dnscrypt_google_config_file,target=/proxy-dns/dns-config-google.toml --mount type=bind,source=$PWD/$dnscrypt_cloudflare_config_file,target=/proxy-dns/dns-config-cloudflare.toml"
+            # tun2socks entrypoint runs these as ';' separated commands
+            EXTRA_COMMANDS="${DNSCRYPT_RULES//&&/;};${DNSCRYPT_START//&&/;}"
+          else
+            DNSCRYPT_RULES='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53'
+            DNSCRYPT_START='chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &)'
+            doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
+            EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;chmod +x /proxy-dns/dnscrypt-proxy; /proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &'
+          fi
         else
           doh_volume="--mount type=bind,source=$PWD/hickory-dns-config.toml,target=/proxy-dns/hickory-dns-config.toml --mount type=bind,source=$PWD/libgcc.apk,target=/iptables/libgcc.apk --mount type=bind,source=$PWD/hickory-dns.apk,target=/iptables/hickory-dns.apk"
           EXTRA_COMMANDS='iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53;apk add --allow-untrusted --no-network /iptables/libgcc.apk; apk add --allow-untrusted --no-network /iptables/hickory-dns.apk;RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &'
@@ -1049,8 +1107,9 @@ start_containers() {
           TUN_LOG_PARAM="warn"
         fi
         if [ "$USE_DNSCRYPT" != false ]; then
-          doh_volume="--mount type=bind,source=$PWD/dnscrypt-proxy,target=/proxy-dns/dnscrypt-proxy --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml"
-          docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c 'need_install=0; for p in libmnl libnftnl iptables; do apk info -e "$p" >/dev/null 2>&1 || need_install=1; done; if [ "$need_install" = 1 ]; then saved_route="$(ip route show default)"; ip link set eth0 down; for p in libmnl libnftnl iptables; do apk info -e "$p" >/dev/null 2>&1 || apk add --allow-untrusted --no-network "/iptables/$p.apk" || exit 1; done; ip link set eth0 up; ip route replace $saved_route; fi && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && chmod +x /proxy-dns/dnscrypt-proxy && (/proxy-dns/dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /entrypoint.sh')
+          # doh_volume, DNSCRYPT_RULES and DNSCRYPT_START are prepared above (single or separate DNS instances)
+          HEV_CMD='need_install=0; for p in libmnl libnftnl iptables; do apk info -e "$p" >/dev/null 2>&1 || need_install=1; done; if [ "$need_install" = 1 ]; then saved_route="$(ip route show default)"; ip link set eth0 down; for p in libmnl libnftnl iptables; do apk info -e "$p" >/dev/null 2>&1 || apk add --allow-untrusted --no-network "/iptables/$p.apk" || exit 1; done; ip link set eth0 up; ip route replace $saved_route; fi && '"$DNSCRYPT_RULES"' && '"$DNSCRYPT_START"' && /entrypoint.sh'
+          docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c "$HEV_CMD")
         else
           doh_volume="--mount type=bind,source=$PWD/hickory-dns-config.toml,target=/proxy-dns/hickory-dns-config.toml"
           docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk --mount type=bind,source=$PWD/libgcc.apk,target=/iptables/libgcc.apk --mount type=bind,source=$PWD/hickory-dns.apk,target=/iptables/hickory-dns.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c 'need_install=0; for p in libmnl libnftnl iptables libgcc hickory-dns; do apk info -e "$p" >/dev/null 2>&1 || need_install=1; done; if [ "$need_install" = 1 ]; then saved_route="$(ip route show default)"; ip link set eth0 down; for p in libmnl libnftnl iptables libgcc hickory-dns; do apk info -e "$p" >/dev/null 2>&1 || apk add --allow-untrusted --no-network "/iptables/$p.apk" || exit 1; done; ip link set eth0 up; ip route replace $saved_route; fi && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &) && /entrypoint.sh')
