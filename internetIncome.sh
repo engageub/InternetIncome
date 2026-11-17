@@ -261,6 +261,41 @@ validate_proxies() {
   done < "$proxies_file"
 }
 
+# Check if proxy mode is enabled
+is_proxy_mode_enabled() {
+  [[ $UR_AUTH_TOKEN && "$UR_NETWORK_PROXY_MODE" = true ]] && return 0
+  [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]] && return 0
+  return 1
+}
+
+# Check if tun container is required
+is_tun_required() {
+  [[ "$MYSTERIUM" = true ]] && return 0
+  [[ $EBESUCHER_USERNAME ]] && return 0
+  [[ $ADNADE_USERNAME ]] && return 0
+  [[ $BITPING_EMAIL && $BITPING_PASSWORD ]] && return 0
+  [[ $REPOCKET_API ]] && return 0
+  [[ $TRAFFMONETIZER_TOKEN ]] && return 0
+  [[ $UR_AUTH_TOKEN && "$UR_NETWORK_PROXY_MODE" != true ]] && return 0
+  [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] && return 0
+  [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]] && return 0
+  [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" != true ]] && return 0
+  [[ $PROXYRACK_API ]] && return 0
+  [[ $PROXYBASE_ACCOUNT_ID ]] && return 0
+  [[ $IPROYALS_EMAIL && $IPROYALS_PASSWORD ]] && return 0
+  [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]] && return 0
+  [[ $HONEYGAIN_EMAIL && $HONEYGAIN_PASSWORD ]] && return 0
+  [[ $TITAN_HASH ]] && return 0
+  [[ $ANTGAIN_API_KEY ]] && return 0
+  [[ $PEER2PROFIT_EMAIL ]] && return 0
+  [[ $WIZARD_GAIN_EMAIL ]] && return 0
+  [[ $PACKETSHARE_EMAIL && $PACKETSHARE_PASSWORD ]] && return 0
+  [[ $PACKETSTREAM_CID ]] && return 0
+  [[ $PROXYLITE_USER_ID ]] && return 0
+  [[ "$EARNAPP" = true ]] && return 0
+  return 1
+}
+
 # Start all containers
 start_containers() {
 
@@ -1400,6 +1435,18 @@ if [[ "$1" == "--start" ]]; then
     BROWSER_PASSWORD=internetincome
   fi
 
+  # Check if any enabled application needs a network container or runs in proxy mode
+  if is_tun_required; then
+    TUN_CONTAINER_REQUIRED=true
+  else
+    TUN_CONTAINER_REQUIRED=false
+    if ! is_proxy_mode_enabled; then
+      echo -e "${RED}No applications are enabled. Exiting..${NOCOLOUR}"
+      rm -f $process_id_file
+      exit 1
+    fi
+  fi
+
   if [ "$USE_PROXIES" = true ]; then
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}"
     if [ ! -f "$proxies_file" ]; then
@@ -1411,13 +1458,19 @@ if [[ "$1" == "--start" ]]; then
     sed -i 's/\r//g' $proxies_file
     sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
     validate_proxies
-    i=0;
-    while IFS= read -r line || [ -n "$line" ]; do
-      if [[ "$line" =~ ^[^#].* ]]; then
-        i=`expr $i + 1`
-        start_containers "$i" "$line"
-      fi
-    done < $proxies_file
+
+    if [ "$TUN_CONTAINER_REQUIRED" = true ]; then
+      i=0;
+      while IFS= read -r line || [ -n "$line" ]; do
+        if [[ "$line" =~ ^[^#].* ]]; then
+          i=`expr $i + 1`
+          start_containers "$i" "$line"
+        fi
+      done < $proxies_file
+    else
+      echo -e "${YELLOW}Only proxy mode apps are enabled. No tun containers are needed, starting with direct connection. Proxy mode apps read the proxies file themselves..${NOCOLOUR}"
+      start_containers
+    fi
   else
     echo -e "${RED}USE_PROXIES is disabled, using direct internet connection..${NOCOLOUR}"
     start_containers
