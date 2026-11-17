@@ -1201,7 +1201,7 @@ start_containers() {
       fi
     fi
   fi
-  
+
   if [ "$START_ONLY" = true ]; then
     if [ "$vpn_enabled" = true ];then
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
@@ -1373,7 +1373,7 @@ start_containers() {
 
       # Download the firefox profile if not present
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
-        echo -e "${YELLOW}Downloading firefox profile data…${NOCOLOUR}"
+        echo -e "${YELLOW}Downloading firefox profile data..${NOCOLOUR}"
         wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/firefoxprofiledata.zip
       fi
 
@@ -1444,13 +1444,13 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        echo -e "${YELLOW}Downloading chrome profile data…${NOCOLOUR}"
+        echo -e "${YELLOW}Downloading chrome profile data..${NOCOLOUR}"
         wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/chromeprofiledata.zip
       fi
 
       # Exit, if chrome profile zip file is missing
       if [ $? -ne 0 ] || [ ! -s "$PWD/$chrome_profile_zipfile" ]; then
-        rm  "$PWD/$chrome_profile_zipfile"  
+        rm  "$PWD/$chrome_profile_zipfile"
         echo -e "${RED}Chrome profile file does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
@@ -1506,7 +1506,7 @@ start_containers() {
 
       # Download the firefox profile if not present
       if [ ! -f "$PWD/$firefox_profile_zipfile" ];then
-        echo -e "${YELLOW}Downloading firefox profile data…${NOCOLOUR}"
+        echo -e "${YELLOW}Downloading firefox profile data..${NOCOLOUR}"
         wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/firefoxprofiledata.zip
       fi
 
@@ -1568,7 +1568,7 @@ start_containers() {
 
       # Download the chrome profile if not present
       if [ ! -f "$PWD/$chrome_profile_zipfile" ];then
-        echo -e "${YELLOW}Downloading chrome profile data…${NOCOLOUR}"
+        echo -e "${YELLOW}Downloading chrome profile data..${NOCOLOUR}"
         wget "${WGET_OPTS[@]}" https://github.com/engageub/InternetIncome/releases/download/profiledata/chromeprofiledata.zip
       fi
 
@@ -1750,11 +1750,11 @@ start_containers() {
         fi
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
         execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
-      else 
+      else
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork --network none docker:cli /bin/sh -c 'cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
         execute_docker_command "URnetwork Restart" "dindurnetwork$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
       fi
-    fi 
+    fi
     if [ "$UR_NETWORK_PROXY_MODE" != true ]; then
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork bringyour/community-provider:latest provide)
       execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
@@ -1957,10 +1957,10 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       if ! command -v uuidgen &> /dev/null; then
         echo -e "${RED}uuidgen is not installed. Attempting to install it...${NOCOLOUR}"
-        sudo apt-get update && sudo apt-get -y install uuid-runtime          
+        sudo apt-get update && sudo apt-get -y install uuid-runtime
       fi
       sudo docker pull pinors/antgain-cli:latest
-    fi         
+    fi
     for loop_count in {1..500}; do
       if [ "$loop_count" -eq 500 ]; then
         echo -e "${RED}Unique UUID cannot be generated for Antgain. Exiting..${NOCOLOUR}"
@@ -1969,8 +1969,8 @@ start_containers() {
       RANDOM_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
       if [[ ! $RANDOM_ID ]]; then
         echo -e "${RED}Unable to install uuidgen automatically. Please install it manually and try again. Exiting...${NOCOLOUR}"
-        exit 1;                                                                   
-      fi 
+        exit 1;
+      fi
       if [ ${#RANDOM_ID} -ne 36 ]; then
         echo -e "${RED}Failed to generate a valid RANDOM_ID for AntGain (expected 36 characters, got ${#RANDOM_ID}). Exiting..${NOCOLOUR}"
         exit 1
@@ -1982,7 +1982,7 @@ start_containers() {
       else
         break;
       fi
-    done   
+    done
     sequence=$i
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
       sequence=$((1 + i))
@@ -2106,7 +2106,7 @@ start_containers() {
         execute_docker_command "Internet Income Watch Tower" "internetincomewatchtower$UNIQUE_ID" "ghcr.io/nicholas-fedor/watchtower:nightly" "${docker_parameters[@]}"
       fi
     fi
-  fi    
+  fi
 
   container_pulled=true
 }
@@ -2156,7 +2156,7 @@ if [[ "$1" == "--startOnly" ]]; then
       value="${value%"${value##*[![:space:]]}"}"
       # Ignore lines without a value after =
       if [[ -n $value ]]; then
-          # Replace variables with their values 
+          # Replace variables with their values
           value="$value"
           # Export the key-value pairs as variables
           export "$key"="$value"
@@ -2241,7 +2241,7 @@ fi
 if [[ "$1" == "--start" ]]; then
   echo -e "\n\nStarting.."
   STATUS=0;
-  
+
   if [ ! -c /dev/urandom ] || [ ! -r /dev/urandom ]; then
     echo -e "${RED}/dev/urandom is missing or not a readable character device. Exiting..${NOCOLOUR}"
     exit 1
