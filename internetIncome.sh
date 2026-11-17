@@ -92,6 +92,8 @@ restricted_ports=(1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 69 77 79 87 95
 # Flags
 container_pulled=false
 docker_in_docker_detected=false
+# Images already checked for existing direct-connection containers in this run (asked only once per image)
+declare -A checked_images
 
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
@@ -230,6 +232,75 @@ check_network_exists() {
     # Append to networks file
     echo "$network_name" | tee -a "$networks_file"
   fi
+}
+
+# Check if a container with name already exists
+# Usage: check_container_exists <container_name> [image]
+# If image is given, any running container on the default bridge network (direct connection)
+# using that image, whatever its name or whoever started it, is listed and deleted only after confirmation.
+# Containers started by the current run are ignored. Without image, only the name check is done.
+# Each image is checked and asked about only once per run, whatever the answer.
+check_container_exists() {
+  local container_name="$1"
+  local image="$2"
+
+  # Validate input
+  if [ -z "$container_name" ]; then
+    echo -e "${RED}Error: container_name is required. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  # Check if container exists
+  if sudo docker inspect --type container "$container_name" >/dev/null 2>&1; then
+    echo -e "${RED}A container with name $container_name already exists. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+  # Collect all existing direct-connection (bridge) containers of the image, list them together and ask once before deleting
+  if [ -n "$image" ] && [[ -z "${checked_images[$image]}" ]]; then
+    # Remember the image so the prompt is not shown again for the next containers of the same image
+    checked_images["$image"]=1
+    local matched_names=()
+    local matched_images=()
+    local cname container_image
+    while IFS='|' read -r cname container_image; do
+      [[ -z "$cname" ]] && continue
+      # Skip containers created by the current run
+      [[ "$cname" == *"$UNIQUE_ID"* ]] && continue
+      matched_names+=("$cname")
+      matched_images+=("$container_image")
+    done < <(sudo docker ps --filter "ancestor=$image" --filter "network=bridge" --format '{{.Names}}|{{.Image}}')
+
+    if [ ${#matched_names[@]} -gt 0 ]; then
+      echo -e "${YELLOW}The following existing direct-connection containers were found:${NOCOLOUR}"
+      local idx
+      for idx in "${!matched_names[@]}"; do
+        echo -e "${YELLOW}  Name:${NOCOLOUR} ${matched_names[$idx]} ${YELLOW}Image:${NOCOLOUR} ${matched_images[$idx]}"
+      done
+      echo -e "${YELLOW}Do you want to delete these containers? (yes/no)${NOCOLOUR}"
+      local choice=""
+      read -r -t 60 choice </dev/tty
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}No response within 60 seconds. Skipping container deletion.${NOCOLOUR}"
+      else
+        case "$choice" in
+          yes|y|Y)
+            for cname in "${matched_names[@]}"; do
+              echo -e "${YELLOW}Deleting container $cname..${NOCOLOUR}"
+              sudo docker rm -f "$cname"
+              echo -e "${GREEN}Deleted container $cname successfully.${NOCOLOUR}"
+            done
+            ;;
+          no|n|N)
+            echo -e "${YELLOW}Skipping container deletion.${NOCOLOUR}"
+            ;;
+          *)
+            echo -e "${RED}Invalid response. Skipping container deletion.${NOCOLOUR}"
+            ;;
+        esac
+      fi
+    fi
+  fi
+  # Append container name to tracking file
+  echo "$container_name" | tee -a "$container_names_file"
 }
 
 # Validate proxies format
@@ -694,45 +765,42 @@ wait_for_process() {
 }
 
 # Execute docker command
+# Usage: execute_docker_command <app_name> <container_name> <image> "${docker_parameters[@]}"
+# The image is used for the Watchtower label and to find existing direct-connection containers of the same image.
 execute_docker_command() {
   # Store parameters as an array
   local container_parameters=("$@")
   local app_name=${container_parameters[0]}
   local container_name=${container_parameters[1]}
+  local container_image=${container_parameters[2]}
   local CONTAINER_ID
   local DOCKER_INIT
   local WATCH_TOWER_LABEL
   if [[ "$USE_DOCKER_INIT" = true ]]; then
     DOCKER_INIT="--init"
   fi
-  
-  # Enable Watchtower auto-update for containers using the ':latest' tag,
-  # but skip Watchtower itself to avoid recursive self-updating.
-  if [[ "$AUTO_UPDATE_CONTAINERS" == true && "${container_parameters[@]:2}" == *":latest"* ]]; then
+
+  # Enable Watchtower auto-update for containers using the ':latest' tag (and the architecture
+  # specific arm64v8 / arm32v7 tags), but skip Watchtower itself to avoid recursive self-updating.
+  if [[ "$AUTO_UPDATE_CONTAINERS" == true && ( "$container_image" == *":latest"* || "$container_image" == *":arm64v8"* || "$container_image" == *":arm32v7"* ) ]]; then
     WATCH_TOWER_LABEL="--label=com.centurylinklabs.watchtower.scope=$UNIQUE_ID"
   fi
-  
+
   echo -e "${YELLOW}Starting $app_name container..${NOCOLOUR}"
   # Check if container exists
-  if sudo docker inspect --type container $container_name >/dev/null 2>&1; then
-    echo -e "${RED}A container with name $container_name already exists..${NOCOLOUR}"
-    echo -e "${RED}Failed to start container for $app_name..Exiting..${NOCOLOUR}"
-    exit 1
-  else
-    echo "$container_name" | tee -a "$container_names_file"
-  fi
+  check_container_exists "$container_name" "$container_image"
 
   if [[ "$app_name" == "VPN" ]]; then
-    CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:2}")
+    CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:3}")
   else
-    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d $WATCH_TOWER_LABEL --name $container_name --restart=always "${container_parameters[@]:2}")
+    CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d $WATCH_TOWER_LABEL --name $container_name --restart=always "${container_parameters[@]:3}")
   fi
 
-  if [[ "${container_parameters[@]:2}" == *"hev-socks5-tunnel"* ]]; then
+  if [[ "${container_parameters[@]:3}" == *"hev-socks5-tunnel"* ]]; then
     wait_for_process $container_name "hev-socks5-tunnel"
   fi
 
-  if [[ "${container_parameters[@]:2}" == *"tun2socks"* ]]; then
+  if [[ "${container_parameters[@]:3}" == *"tun2socks"* ]]; then
     wait_for_process $container_name "tun2socks"
   fi
 
@@ -934,7 +1002,7 @@ start_containers() {
       fi
       NETWORK_TUN="--network=container:gluetun$UNIQUE_ID$i"
       docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM  $proxy -e BLOCK_MALICIOUS=off $dns_option --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports --no-healthcheck qmcgaw/gluetun:$GLUETUN_VERSION)
-      execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "VPN" "gluetun$UNIQUE_ID$i" "qmcgaw/gluetun:$GLUETUN_VERSION" "${docker_parameters[@]}"
     elif [ "$vpn_enabled" = false ];then
       NETWORK_TUN="--network=multi$UNIQUE_ID$i"
       new_subnet=$(find_next_available_subnet)
@@ -981,7 +1049,7 @@ start_containers() {
         fi
       fi
       docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
-      execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION" "${docker_parameters[@]}"
     else
       # Starting tun2socks containers
       if [ "$container_pulled" = false ]; then
@@ -1076,7 +1144,7 @@ start_containers() {
           TUN_LOG_PARAM="warn"
         fi
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION)
-        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION" "${docker_parameters[@]}"
       elif [[ "$USE_SOCKS5_DNS" != "true" && "$USE_DNS_OVER_HTTPS" != "true" && "$proxy" =~ ^(http|https|socks4|socks5):// ]]; then
         if [[ "$ENABLE_LOGS" != true ]]; then
           TUN_LOG_PARAM="off"
@@ -1085,7 +1153,7 @@ start_containers() {
         fi
         dns_option="--dns virtual"
         docker_parameters=($HOST_NAME $LOGS_PARAM $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --device /dev/net/tun --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION $dns_option --proxy $proxy --verbosity $TUN_LOG_PARAM)
-        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "ghcr.io/tun2proxy/tun2proxy:$TUN2PROXY_VERSION" "${docker_parameters[@]}"
       elif [[ "$USE_DNS_OVER_HTTPS" == "true" && "$proxy" == socks5://* ]]; then
         SOCKS_PROXY=$proxy
         # Strip scheme
@@ -1114,10 +1182,10 @@ start_containers() {
           doh_volume="--mount type=bind,source=$PWD/hickory-dns-config.toml,target=/proxy-dns/hickory-dns-config.toml"
           docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --mount type=bind,source=$PWD/iptables.apk,target=/iptables/iptables.apk --mount type=bind,source=$PWD/libmnl.apk,target=/iptables/libmnl.apk --mount type=bind,source=$PWD/libnftnl.apk,target=/iptables/libnftnl.apk --mount type=bind,source=$PWD/libgcc.apk,target=/iptables/libgcc.apk --mount type=bind,source=$PWD/hickory-dns.apk,target=/iptables/hickory-dns.apk $doh_volume --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --no-healthcheck --entrypoint sh ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION -c 'need_install=0; for p in libmnl libnftnl iptables libgcc hickory-dns; do apk info -e "$p" >/dev/null 2>&1 || need_install=1; done; if [ "$need_install" = 1 ]; then saved_route="$(ip route show default)"; ip link set eth0 down; for p in libmnl libnftnl iptables libgcc hickory-dns; do apk info -e "$p" >/dev/null 2>&1 || apk add --allow-untrusted --no-network "/iptables/$p.apk" || exit 1; done; ip link set eth0 up; ip route replace $saved_route; fi && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (RUST_LOG=off hickory-dns --config /proxy-dns/hickory-dns-config.toml &) && /entrypoint.sh')
         fi
-        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "ghcr.io/heiher/hev-socks5-tunnel:$HEVSOCKS_VERSION" "${docker_parameters[@]}"
       else
         docker_parameters=($HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $CUSTOM_NETWORK -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy -e EXTRA_COMMANDS="$EXTRA_COMMANDS" --device /dev/net/tun $doh_volume --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports xjasonlyu/tun2socks:$TUN2SOCKS_VERSION)
-        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "Proxy" "tun$UNIQUE_ID$i" "xjasonlyu/tun2socks:$TUN2SOCKS_VERSION" "${docker_parameters[@]}"
       fi
     fi
   fi
@@ -1162,7 +1230,7 @@ start_containers() {
     mkdir -p $PWD/$mysterium_data_folder/node$i
     sudo chmod -R 777 $PWD/$mysterium_data_folder/node$i
     docker_parameters=(--sysctl net.ipv4.conf.all.route_localnet=1 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN $NETWORK_TUN --mount type=bind,source=$PWD/$mysterium_data_folder/node$i,target=/var/lib/mysterium-node $myst_port --entrypoint sh mysteriumnetwork/myst:latest -c "${myst_iptables}/usr/local/bin/docker-entrypoint.sh service --agreed-terms-and-conditions")
-    execute_docker_command "Mysterium" "myst$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Mysterium" "myst$UNIQUE_ID$i" "mysteriumnetwork/myst:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $mysterium_file in the same folder${NOCOLOUR}"
     if [ "$CLOSE_ALL_PORTS" != true ]; then
@@ -1211,7 +1279,7 @@ start_containers() {
     rm -rf /var/lib/apt/lists/* && \
     exec /usr/bin/tini -s /root/start.sh
   ")
-    execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Uprock" "uprock$UNIQUE_ID$i" "ghcr.io/adfly8470/uprock/uprock@sha256:8de7b724d87d47fc0d5f1c192853565e3d4e9bb2f12a0e03d7613b170985dcf9" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser${NOCOLOUR}"
     echo -e "${GREEN}Please wait at least one minute before accessing the URL to ensure the service is fully initialized.${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $uprock_file in the same folder${NOCOLOUR}"
@@ -1253,7 +1321,7 @@ start_containers() {
     mkdir -p $PWD/$custom_firefox_data_folder/data$i
     sudo chmod -R 777 $PWD/$custom_firefox_data_folder/data$i
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 $CUSTOM_FIREFOX_DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5911 -e VNC_PASSWORD="internetincome" $cf_port --mount type=bind,source=$PWD/$custom_firefox_data_folder/data$i,target=/config jlesage/firefox:latest)
-    execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Custom Firefox" "customfirefox$UNIQUE_ID$i" "jlesage/firefox:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_firefox_file in the same folder${NOCOLOUR}"
     if [ "$CLOSE_ALL_PORTS" != true ]; then
@@ -1285,7 +1353,7 @@ start_containers() {
     mkdir -p $PWD/$custom_chrome_data_folder/data$i
     sudo chown -R 911:911 $PWD/$custom_chrome_data_folder/data$i
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC   -e CUSTOM_HTTPS_PORT=3201 -e CUSTOM_PORT=3200 -e CUSTOM_USER="internetincome" -e PASSWORD="internetincome" --shm-size="1gb" $cc_port --mount type=bind,source=$PWD/$custom_chrome_data_folder/data$i,target=/config lscr.io/linuxserver/chromium:latest)
-    execute_docker_command "Custom Chrome" "customchrome$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Custom Chrome" "customchrome$UNIQUE_ID$i" "lscr.io/linuxserver/chromium:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $custom_chrome_file in the same folder${NOCOLOUR}"
     if [ "$CLOSE_ALL_PORTS" != true ]; then
@@ -1329,7 +1397,7 @@ start_containers() {
       fi
 
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:cli /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done')
-      execute_docker_command "Firefox Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "Firefox Restart" "dind$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
     fi
 
     # Create folder and copy files
@@ -1358,7 +1426,7 @@ start_containers() {
     fi
 
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e KEEP_APP_RUNNING=1 -e FF_OPEN_URL="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" $DISPLAY_PARAMETERS -e VNC_LISTENING_PORT=-1 -e VNC_PASSWORD="internetincome" --mount type=bind,source=$PWD/$firefox_data_folder/data$i,target=/config $eb_port jlesage/firefox:latest)
-    execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "jlesage/firefox:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     echo "ebesucher$UNIQUE_ID$i" | tee -a $firefox_containers_file
@@ -1403,7 +1471,7 @@ start_containers() {
       fi
 
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:cli /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 3600; /chrome/restart.sh --restartChrome; done')
-      execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "Chrome Restart" "dind$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
     fi
 
     # Create folder and copy files
@@ -1423,7 +1491,7 @@ start_containers() {
     fi
 
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CHROME_CLI="https://www.ebesucher.com/surfbar/$EBESUCHER_USERNAME" -e CUSTOM_USER="internetincome" -e PASSWORD="internetincome" --mount type=bind,source=$PWD/$chrome_data_folder/data$i/$chrome_profile_data,target=/config --shm-size="1gb" $eb_port lscr.io/linuxserver/chromium:latest)
-    execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Ebesucher" "ebesucher$UNIQUE_ID$i" "lscr.io/linuxserver/chromium:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $ebesucher_file in the same folder${NOCOLOUR}"
     echo "ebesucher$UNIQUE_ID$i" | tee -a $chrome_containers_file
@@ -1468,7 +1536,7 @@ start_containers() {
       fi
 
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:cli /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 7200; /firefox/restart.sh --restartAdnadeFirefox; done')
-      execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "Adnade Firefox Restart" "adnadedind$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
     fi
 
     # Create folder and copy files
@@ -1488,7 +1556,7 @@ start_containers() {
     fi
 
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e FF_CUSTOM_ARGS="--private-window" -e FF_OPEN_URL="https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e VNC_LISTENING_PORT=-1 -e WEB_LISTENING_PORT=5900 -e VNC_PASSWORD="internetincome" --mount type=bind,source=$PWD/$adnade_data_folder/data$i,target=/config $ad_port jlesage/firefox:latest)
-    execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "jlesage/firefox:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
@@ -1533,7 +1601,7 @@ start_containers() {
       fi
 
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/chrome --network none docker:cli /bin/sh -c 'cd /chrome && chmod +x /chrome/restart.sh && while true; do sleep 7200; /chrome/restart.sh --restartAdnade; done')
-      execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "Adnade Restart" "dindAdnade$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
 
     fi
 
@@ -1554,7 +1622,7 @@ start_containers() {
     fi
 
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --security-opt seccomp=unconfined -e TZ=Etc/UTC -e CUSTOM_HTTPS_PORT=3501 -e CUSTOM_PORT=3500 -e CHROME_CLI="--incognito https://adnade.net/view.php?user=$ADNADE_USERNAME&multi=4" -e CUSTOM_USER="internetincome" -e PASSWORD="internetincome" --mount type=bind,source=$PWD/$adnade_data_folder/data$i/$chrome_profile_data,target=/config --shm-size="1gb" $ad_port lscr.io/linuxserver/chromium:latest)
-    execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Adnade" "adnade$UNIQUE_ID$i" "lscr.io/linuxserver/chromium:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the following node url and paste in your browser if required..${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $adnade_file in the same folder${NOCOLOUR}"
     echo "adnade$UNIQUE_ID$i" | tee -a $adnade_containers_file
@@ -1577,7 +1645,7 @@ start_containers() {
     mkdir -p $PWD/$bitping_data_folder/data$i/.bitpingd
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWORD=$BITPING_PASSWORD bitping/bitpingd:latest)
-    execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "bitping/bitpingd:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
@@ -1590,7 +1658,7 @@ start_containers() {
       sudo docker pull repocket/repocket:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest)
-    execute_docker_command "Repocket" "repocket$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Repocket" "repocket$UNIQUE_ID$i" "repocket/repocket:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Repocket API is not configured. Ignoring Repocket..${NOCOLOUR}"
@@ -1606,6 +1674,8 @@ start_containers() {
     else
       traffmonetizer_image="--platform=linux/amd64 traffmonetizer/cli_v2:latest"
     fi
+    # Image name without the platform option, as recorded by docker
+    traffmonetizer_image_name="${traffmonetizer_image##* }"
     if [ "$container_pulled" = false ]; then
       sudo docker pull $traffmonetizer_image
     fi
@@ -1613,7 +1683,7 @@ start_containers() {
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
     traffmonetizer_volume="--mount type=bind,source=$PWD/$traffmonetizer_data_folder/data$i,target=/.config/traffmonetizer"
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN)
-    execute_docker_command "Traffmonetizer" "traffmon$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Traffmonetizer" "traffmon$UNIQUE_ID$i" "$traffmonetizer_image_name" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
@@ -1633,7 +1703,7 @@ start_containers() {
         mkdir -p $PWD/$idlepay_data_folder/data-proxy
         sudo chmod -R 777 $PWD/$idlepay_data_folder/data-proxy
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$idlepay_data_folder/data-proxy,target=/etc/idlepay --mount type=bind,source=$PWD/proxies.txt,target=/proxies.txt,readonly --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY -e IDLEPAY_DIRECT=off ghcr.io/idlepay/idlepay:latest)
-        execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "ghcr.io/idlepay/idlepay:latest" "${docker_parameters[@]}"
       fi
     fi
     if [ "$IDLEPAY_PROXY_MODE" != true ]; then
@@ -1641,7 +1711,7 @@ start_containers() {
       mkdir -p $PWD/$idlepay_data_folder/data$i
       sudo chmod -R 777 $PWD/$idlepay_data_folder/data$i
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$idlepay_data_folder/data$i,target=/etc/idlepay --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY ghcr.io/idlepay/idlepay:latest)
-      execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "ghcr.io/idlepay/idlepay:latest" "${docker_parameters[@]}"
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1711,15 +1781,15 @@ start_containers() {
           create_dnscrypt_config
         fi
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
-        execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
       else 
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork --network none docker:cli /bin/sh -c 'cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
-        execute_docker_command "URnetwork Restart" "dindurnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "URnetwork Restart" "dindurnetwork$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
       fi
     fi 
     if [ "$UR_NETWORK_PROXY_MODE" != true ]; then
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork bringyour/community-provider:latest provide)
-      execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1739,7 +1809,7 @@ start_containers() {
       gradient_env="-e GRADIENT_EMAIL=$GRADIENT_EMAIL -e GRADIENT_PASS=$GRADIENT_PASSWORD"
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb:latest)
-    execute_docker_command "Depin Extensions" "depinext$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Depin Extensions" "depinext$UNIQUE_ID$i" "carbon2029/dockweb:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Depin Extensions are not configured. Ignoring Depin Extensions..${NOCOLOUR}"
@@ -1752,7 +1822,7 @@ start_containers() {
       sudo docker pull earnfm/earnfm-client:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest)
-    execute_docker_command "EarnFM" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "EarnFM" "earnfm$UNIQUE_ID$i" "earnfm/earnfm-client:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}EarnFM Api is not configured. Ignoring EarnFM..${NOCOLOUR}"
@@ -1797,10 +1867,10 @@ start_containers() {
         fi
 
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/earnfm --network none docker:cli /bin/sh -c 'cd /earnfm && chmod +x /earnfm/restart.sh && while true; do sleep 86400; /earnfm/restart.sh --restartEarnFM; done')
-        execute_docker_command "EarnFM Restart" "dindearnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "EarnFM Restart" "dindearnfm$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
 
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$earn_fm_config_file,target=/app/config.json  --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --cap-add=NET_ADMIN --entrypoint /bin/sh earnfm/fleetshare:latest -c "apk add --no-cache iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) && /app/main")
-        execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "${docker_parameters[@]}"
+        execute_docker_command "EarnFM Fleetshare" "earnfm$UNIQUE_ID$i" "earnfm/fleetshare:latest" "${docker_parameters[@]}"
       else
         echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
         exit 1
@@ -1853,7 +1923,7 @@ start_containers() {
       printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid -e DEVICE_NAME=$DEVICE_NAME$i -e API_KEY=$PROXYRACK_API proxyrack/pop:latest)
-    execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "proxyrack/pop:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Device is automatically addded to your proxyrack dashboard after 5 minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
   else
@@ -1868,7 +1938,7 @@ start_containers() {
       sudo docker pull ghcr.io/proxybaseorg/peer-cli:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN ghcr.io/proxybaseorg/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i)
-    execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "ghcr.io/proxybaseorg/peer-cli:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}ProxyBase is not enabled. Ignoring ProxyBase..${NOCOLOUR}"
@@ -1881,7 +1951,7 @@ start_containers() {
       sudo docker pull iproyal/pawns-cli:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos)
-    execute_docker_command "IPRoyals" "pawns$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "IPRoyals" "pawns$UNIQUE_ID$i" "iproyal/pawns-cli:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
@@ -1897,7 +1967,7 @@ start_containers() {
       WIPTER_HOST_NAME="--hostname $DEVICE_NAME$i"
     fi
     docker_parameters=($WIPTER_HOST_NAME $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/techroy23/docker-wipter:latest)
-    execute_docker_command "Wipter" "wipter$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Wipter" "wipter$UNIQUE_ID$i" "ghcr.io/techroy23/docker-wipter:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Wipter Email or Password is not configured. Ignoring Wipter..${NOCOLOUR}"
@@ -1919,7 +1989,7 @@ start_containers() {
       sudo docker pull $honeygain_image
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i)
-    execute_docker_command "Honeygain" "honey$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Honeygain" "honey$UNIQUE_ID$i" "$honeygain_image" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
@@ -1931,7 +2001,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull xterna/honeygain-pot:latest
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$HONEYGAIN_EMAIL -e PASSWORD=$HONEYGAIN_PASSWORD xterna/honeygain-pot:latest)
-      execute_docker_command "HoneygainPot" "honeygainpot$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "HoneygainPot" "honeygainpot$UNIQUE_ID$i" "xterna/honeygain-pot:latest" "${docker_parameters[@]}"
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
@@ -1947,7 +2017,7 @@ start_containers() {
       sudo chmod -R 777 $PWD/$titan_data_folder/data$i
       titan_volume="--mount type=bind,source=$PWD/$titan_data_folder/data$i,target=/root/.titanedge"
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $titan_volume nezha123/titan-edge:latest)
-      execute_docker_command "TitanNetwork" "titan$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "TitanNetwork" "titan$UNIQUE_ID$i" "nezha123/titan-edge:latest" "${docker_parameters[@]}"
       sleep 5
       sudo docker run --rm -it $titan_volume nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
       echo -e "${GREEN}The current script is designed to support only a single device for the Titan Network. Please create a new folder, download the InternetIncome script, and add the appropriate hash for the new device.${NOCOLOUR}"
@@ -2007,7 +2077,7 @@ start_containers() {
       printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e ANTGAIN_DEVICE_ID=$antgain_uuid -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run)
-    execute_docker_command "AntGain" "antgain$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "AntGain" "antgain$UNIQUE_ID$i" "pinors/antgain-cli:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Device is automatically addded to your antgain dashboard after few minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $antgain_file in the same folder${NOCOLOUR}"
   else
@@ -2022,7 +2092,7 @@ start_containers() {
       sudo docker pull --platform=linux/amd64 enwaiax/peer2profit:latest
     fi
     docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit:latest)
-    execute_docker_command "Peer2Profit" "peer2profit$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Peer2Profit" "peer2profit$UNIQUE_ID$i" "enwaiax/peer2profit:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
@@ -2035,7 +2105,7 @@ start_containers() {
       sudo docker pull kellphy/nodepay:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e NP_COOKIE=$NP_COOKIE kellphy/nodepay:latest)
-    execute_docker_command "Nodepay" "nodepay$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Nodepay" "nodepay$UNIQUE_ID$i" "kellphy/nodepay:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Nodepay cookie is not configured. Ignoring Nodepay..${NOCOLOUR}"
@@ -2048,7 +2118,7 @@ start_containers() {
       sudo docker pull packetstream/psclient:latest
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest)
-    execute_docker_command "PacketStream" "packetstream$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "PacketStream" "packetstream$UNIQUE_ID$i" "packetstream/psclient:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
@@ -2060,10 +2130,10 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull proxylite/proxyservice:latest
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/proxylite --network none docker:cli /bin/sh -c 'cd /proxylite && chmod +x /proxylite/restart.sh && while true; do sleep 86400; /proxylite/restart.sh --restartProxylite; done')
-      execute_docker_command "Proxylite Restart" "dindproxylite$UNIQUE_ID$i" "${docker_parameters[@]}"
+      execute_docker_command "Proxylite Restart" "dindproxylite$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice:latest)
-    execute_docker_command "Proxylite" "proxylite$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Proxylite" "proxylite$UNIQUE_ID$i" "proxylite/proxyservice:latest" "${docker_parameters[@]}"
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
@@ -2118,7 +2188,7 @@ start_containers() {
       EARNAPP_PRIVILEGED="--privileged"
     fi
     docker_parameters=($EARNAPP_PRIVILEGED $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$earnapp_data_folder/data$i,target=/etc/earnapp -e EARNAPP_UUID=$uuid --no-healthcheck madereddy/earnapp:latest)
-    execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "${docker_parameters[@]}"
+    execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "madereddy/earnapp:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
   else
@@ -2133,7 +2203,7 @@ start_containers() {
       if ! sudo docker inspect internetincomewatchtower$UNIQUE_ID >/dev/null 2>&1; then
         sudo docker pull ghcr.io/nicholas-fedor/watchtower:nightly
         docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM -e WATCHTOWER_CLEANUP=true --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --no-healthcheck ghcr.io/nicholas-fedor/watchtower:nightly --scope $UNIQUE_ID --interval 86400)
-        execute_docker_command "Internet Income Watch Tower" "internetincomewatchtower$UNIQUE_ID" "${docker_parameters[@]}"
+        execute_docker_command "Internet Income Watch Tower" "internetincomewatchtower$UNIQUE_ID" "ghcr.io/nicholas-fedor/watchtower:nightly" "${docker_parameters[@]}"
       fi
     fi
   fi    
