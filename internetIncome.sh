@@ -1237,10 +1237,6 @@ start_containers() {
       echo "http://$localhost_address:$mysterium_first_port" |tee -a $mysterium_file
       mysterium_first_port=`expr $mysterium_first_port + 1`
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Uprock container
@@ -1287,10 +1283,6 @@ start_containers() {
       echo "http://$localhost_address:$uprock_first_port" |tee -a $uprock_file
       uprock_first_port=`expr $uprock_first_port + 1`
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Uprock is not enabled. Ignoring Uprock..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Custom Firefox container
@@ -1328,10 +1320,6 @@ start_containers() {
       echo "http://$localhost_address:$custom_firefox_first_port" |tee -a $custom_firefox_file
       custom_firefox_first_port=`expr $custom_firefox_first_port + 1`
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Custom firefox is not configured. Ignoring Custom Firefox..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Custom Chrome container
@@ -1359,10 +1347,6 @@ start_containers() {
     if [ "$CLOSE_ALL_PORTS" != true ]; then
       echo "http://$localhost_address:$custom_chrome_first_port" |tee -a $custom_chrome_file
       custom_chrome_first_port=`expr $custom_chrome_first_port + 1`
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Custom chrome is not configured. Ignoring Custom Chrome..${NOCOLOUR}"
     fi
   fi
 
@@ -1434,10 +1418,6 @@ start_containers() {
       echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
       ebesucher_first_port=`expr $ebesucher_first_port + 1`
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Ebesucher username for firefox is not configured. Ignoring Ebesucher..${NOCOLOUR}"
-    fi
   fi
 
 # Starting Ebesucher Chrome container
@@ -1499,10 +1479,6 @@ start_containers() {
       echo "http://$localhost_address:$ebesucher_first_port" |tee -a $ebesucher_file
       ebesucher_first_port=`expr $ebesucher_first_port + 1`
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Adnade Firefox container
@@ -1563,10 +1539,6 @@ start_containers() {
     if [ "$CLOSE_ALL_PORTS" != true ]; then
       echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
       adnade_first_port=`expr $adnade_first_port + 1`
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Adnade username for firefox is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
 
@@ -1630,10 +1602,6 @@ start_containers() {
       echo "http://$localhost_address:$adnade_first_port" |tee -a $adnade_file
       adnade_first_port=`expr $adnade_first_port + 1`
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Adnade username for chrome is not configured. Ignoring Adnade..${NOCOLOUR}"
-    fi
   fi
 
   # Starting BitPing container
@@ -1646,10 +1614,6 @@ start_containers() {
     sudo chmod -R 777 $PWD/$bitping_data_folder/data$i/.bitpingd
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$bitping_data_folder/data$i/.bitpingd,target=/root/.bitpingd -e BITPING_EMAIL=$BITPING_EMAIL -e BITPING_PASSWORD=$BITPING_PASSWORD bitping/bitpingd:latest)
     execute_docker_command "BitPing" "bitping$UNIQUE_ID$i" "bitping/bitpingd:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Repocket container
@@ -1659,10 +1623,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e RP_API_KEY=$REPOCKET_API repocket/repocket:latest)
     execute_docker_command "Repocket" "repocket$UNIQUE_ID$i" "repocket/repocket:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Repocket API is not configured. Ignoring Repocket..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Traffmonetizer container
@@ -1684,10 +1644,6 @@ start_containers() {
     traffmonetizer_volume="--mount type=bind,source=$PWD/$traffmonetizer_data_folder/data$i,target=/.config/traffmonetizer"
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN)
     execute_docker_command "Traffmonetizer" "traffmon$UNIQUE_ID$i" "$traffmonetizer_image_name" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
-    fi
   fi
 
   # Starting IdlePay container
@@ -1712,10 +1668,6 @@ start_containers() {
       sudo chmod -R 777 $PWD/$idlepay_data_folder/data$i
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$idlepay_data_folder/data$i,target=/etc/idlepay --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY ghcr.io/idlepay/idlepay:latest)
       execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "ghcr.io/idlepay/idlepay:latest" "${docker_parameters[@]}"
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}IdlePay is not enabled. Ignoring IdlePay..${NOCOLOUR}"
     fi
   fi
 
@@ -1791,10 +1743,6 @@ start_containers() {
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork bringyour/community-provider:latest provide)
       execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}URnetwork Node is not enabled. Ignoring URnetwork..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Depin Chrome Extensions container
@@ -1810,10 +1758,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $grass_env $gradient_env carbon2029/dockweb:latest)
     execute_docker_command "Depin Extensions" "depinext$UNIQUE_ID$i" "carbon2029/dockweb:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Depin Extensions are not configured. Ignoring Depin Extensions..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Earn FM container
@@ -1823,10 +1767,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EARNFM_TOKEN=$EARN_FM_API earnfm/earnfm-client:latest)
     execute_docker_command "EarnFM" "earnfm$UNIQUE_ID$i" "earnfm/earnfm-client:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFM Api is not configured. Ignoring EarnFM..${NOCOLOUR}"
-    fi
   fi
 
    # Starting Earn FM Fleetshare container
@@ -1876,10 +1816,6 @@ start_containers() {
         exit 1
       fi
     fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFM Fleetshare is not configured. Ignoring EarnFM Fleetshare..${NOCOLOUR}"
-    fi
   fi
 
   # Starting ProxyRack container
@@ -1926,10 +1862,6 @@ start_containers() {
     execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "proxyrack/pop:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Device is automatically addded to your proxyrack dashboard after 5 minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}ProxyRack Api is not configured. Ignoring ProxyRack..${NOCOLOUR}"
-    fi
   fi
 
   # Starting ProxyBase container
@@ -1939,10 +1871,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN ghcr.io/proxybaseorg/peer-cli:latest $PROXYBASE_ACCOUNT_ID $DEVICE_NAME$i)
     execute_docker_command "ProxyBase" "proxybase$UNIQUE_ID$i" "ghcr.io/proxybaseorg/peer-cli:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}ProxyBase is not enabled. Ignoring ProxyBase..${NOCOLOUR}"
-    fi
   fi
 
   # Starting IPRoyals pawns container
@@ -1952,10 +1880,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN iproyal/pawns-cli:latest -email=$IPROYALS_EMAIL -password=$IPROYALS_PASSWORD -device-name=$DEVICE_NAME$i -device-id=$DEVICE_NAME$i -accept-tos)
     execute_docker_command "IPRoyals" "pawns$UNIQUE_ID$i" "iproyal/pawns-cli:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Wipter container
@@ -1968,10 +1892,6 @@ start_containers() {
     fi
     docker_parameters=($WIPTER_HOST_NAME $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/techroy23/docker-wipter:latest)
     execute_docker_command "Wipter" "wipter$UNIQUE_ID$i" "ghcr.io/techroy23/docker-wipter:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Wipter Email or Password is not configured. Ignoring Wipter..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Honeygain container
@@ -1990,10 +1910,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $honeygain_image -tou-accept -email $HONEYGAIN_EMAIL -pass $HONEYGAIN_PASSWORD -device $DEVICE_NAME$i)
     execute_docker_command "Honeygain" "honey$UNIQUE_ID$i" "$honeygain_image" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Honeygain Pot container
@@ -2002,10 +1918,6 @@ start_containers() {
       sudo docker pull xterna/honeygain-pot:latest
       docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e EMAIL=$HONEYGAIN_EMAIL -e PASSWORD=$HONEYGAIN_PASSWORD xterna/honeygain-pot:latest)
       execute_docker_command "HoneygainPot" "honeygainpot$UNIQUE_ID$i" "xterna/honeygain-pot:latest" "${docker_parameters[@]}"
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Honeygain Pot is not enabled. Ignoring Honeygain Pot..${NOCOLOUR}"
     fi
   fi
 
@@ -2021,10 +1933,6 @@ start_containers() {
       sleep 5
       sudo docker run --rm -it $titan_volume nezha123/titan-edge bind --hash=$TITAN_HASH https://api-test1.container1.titannet.io/api/v2/device/binding
       echo -e "${GREEN}The current script is designed to support only a single device for the Titan Network. Please create a new folder, download the InternetIncome script, and add the appropriate hash for the new device.${NOCOLOUR}"
-    fi
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Titan Network Hash is not configured. Ignoring Titan Network..${NOCOLOUR}"
     fi
   fi
 
@@ -2080,10 +1988,6 @@ start_containers() {
     execute_docker_command "AntGain" "antgain$UNIQUE_ID$i" "pinors/antgain-cli:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Device is automatically addded to your antgain dashboard after few minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $antgain_file in the same folder${NOCOLOUR}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}AntGain API is not configured. Ignoring AntGain..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Peer2Profit container
@@ -2093,10 +1997,6 @@ start_containers() {
     fi
     docker_parameters=(--platform=linux/amd64 $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e email=$PEER2PROFIT_EMAIL enwaiax/peer2profit:latest)
     execute_docker_command "Peer2Profit" "peer2profit$UNIQUE_ID$i" "enwaiax/peer2profit:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Nodepay container
@@ -2106,10 +2006,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e NP_COOKIE=$NP_COOKIE kellphy/nodepay:latest)
     execute_docker_command "Nodepay" "nodepay$UNIQUE_ID$i" "kellphy/nodepay:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Nodepay cookie is not configured. Ignoring Nodepay..${NOCOLOUR}"
-    fi
   fi
 
   # Starting PacketStream container
@@ -2119,10 +2015,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e CID=$PACKETSTREAM_CID packetstream/psclient:latest)
     execute_docker_command "PacketStream" "packetstream$UNIQUE_ID$i" "packetstream/psclient:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Proxylite container
@@ -2134,10 +2026,6 @@ start_containers() {
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e USER_ID=$PROXYLITE_USER_ID proxylite/proxyservice:latest)
     execute_docker_command "Proxylite" "proxylite$UNIQUE_ID$i" "proxylite/proxyservice:latest" "${docker_parameters[@]}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
-    fi
   fi
 
   # Starting Earnapp container
@@ -2191,10 +2079,6 @@ start_containers() {
     execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "madereddy/earnapp:latest" "${docker_parameters[@]}"
     echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
-  else
-    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
-    fi
   fi
 
   if [ "$AUTO_UPDATE_CONTAINERS" = true ]; then
