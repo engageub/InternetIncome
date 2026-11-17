@@ -664,7 +664,7 @@ download_dnscrypt() {
       exit 1
       ;;
   esac
-  echo -e "${YELLOW}Downloading dnscrypt-proxy (${DNSCRYPT_VERSION}) for ${CPU_ARCH}…${NOCOLOUR}"
+  echo -e "${YELLOW}Downloading dnscrypt-proxy (${DNSCRYPT_VERSION}) for ${CPU_ARCH}..${NOCOLOUR}"
   wget "${WGET_OPTS[@]}" -O "$dnscrypt_tar_file" "$DNSCRYPT_URL"
   if [ $? -ne 0 ] || [ ! -s "$dnscrypt_tar_file" ]; then
     echo -e "${RED}There is a problem downloading dnscrypt. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
@@ -699,13 +699,13 @@ download_hickory_dns() {
   esac
   BASE_URL_MAIN="${ALPINE_MIRROR_MAIN}/${HICKORY_ARCH}"
   BASE_URL_COMMUNITY="${ALPINE_MIRROR_COMMUNITY}/${HICKORY_ARCH}"
-  echo -e "${YELLOW}Downloading libgcc apk for ${HICKORY_ARCH}…${NOCOLOUR}"
+  echo -e "${YELLOW}Downloading libgcc apk for ${HICKORY_ARCH}..${NOCOLOUR}"
   wget "${WGET_OPTS[@]}" -O "$libgcc_apk_file" "${BASE_URL_MAIN}/libgcc-15.2.0-r5.apk"
   if [ $? -ne 0 ] || [ ! -s "$libgcc_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libgcc. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  echo -e "${YELLOW}Downloading hickory-dns apk for ${HICKORY_ARCH}…${NOCOLOUR}"
+  echo -e "${YELLOW}Downloading hickory-dns apk for ${HICKORY_ARCH}..${NOCOLOUR}"
   wget "${WGET_OPTS[@]}" -O "$hickory_dns_apk_file" "${BASE_URL_COMMUNITY}/hickory-dns-0.26.1-r0.apk"
   if [ $? -ne 0 ] || [ ! -s "$hickory_dns_apk_file" ]; then
     echo -e "${RED}There is a problem downloading hickory-dns. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
@@ -735,19 +735,19 @@ download_iptables() {
       ;;
   esac
   BASE_URL="${ALPINE_MIRROR}/${IPTABLES_ARCH}"
-  echo -e "${YELLOW}Downloading libmnl apk for ${IPTABLES_ARCH}…${NOCOLOUR}"
+  echo -e "${YELLOW}Downloading libmnl apk for ${IPTABLES_ARCH}..${NOCOLOUR}"
   wget "${WGET_OPTS[@]}" -O "$libmnl_apk_file" "${BASE_URL}/libmnl-1.0.5-r2.apk"
   if [ $? -ne 0 ] || [ ! -s "$libmnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libmnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  echo -e "${YELLOW}Downloading libnftnl apk for ${IPTABLES_ARCH}…${NOCOLOUR}"
+  echo -e "${YELLOW}Downloading libnftnl apk for ${IPTABLES_ARCH}..${NOCOLOUR}"
   wget "${WGET_OPTS[@]}" -O "$libnftnl_apk_file" "${BASE_URL}/libnftnl-1.3.1-r0.apk"
   if [ $? -ne 0 ] || [ ! -s "$libnftnl_apk_file" ]; then
     echo -e "${RED}There is a problem downloading libnftnl. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
     exit 1
   fi
-  echo -e "${YELLOW}Downloading iptables apk for ${IPTABLES_ARCH}…${NOCOLOUR}"
+  echo -e "${YELLOW}Downloading iptables apk for ${IPTABLES_ARCH}..${NOCOLOUR}"
   wget "${WGET_OPTS[@]}" -O "$iptables_apk_file" "${BASE_URL}/iptables-1.8.13-r0.apk"
   if [ $? -ne 0 ] || [ ! -s "$iptables_apk_file" ]; then
     echo -e "${RED}There is a problem downloading iptables. Please disable DNS over HTTPS if the problem persists. Exiting..${NOCOLOUR}"
