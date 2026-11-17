@@ -65,6 +65,9 @@ back_up_files=($antgain_file $earnapp_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
 
+# Images already checked for existing direct-connection containers in this run (asked only once per image)
+declare -A checked_images
+
 # Mysterium and ebesucher first port
 mysterium_first_port=2000
 ebesucher_first_port=3000
@@ -142,7 +145,9 @@ check_container_exists() {
     exit 1
   fi
   # Collect all existing direct-connection (bridge) containers of the image, list them together and ask once before deleting
-  if [ -n "$image" ]; then
+   if [ -n "$image" ] && [[ -z "${checked_images[$image]}" ]]; then
+    # Remember the image so the prompt is not shown again for the next containers of the same image
+    checked_images["$image"]=1
     local matched_names=()
     local matched_images=()
     local cname container_image
