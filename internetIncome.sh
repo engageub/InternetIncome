@@ -835,6 +835,13 @@ execute_docker_command() {
   fi
 }
 
+# Check if hostname should be enabled
+is_hostname_enabled() {
+  [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]] && return 0
+  [[ $IDLEPAY_KEY ]] && return 0
+  return 1
+}
+
 # Check if proxy mode is enabled
 is_proxy_mode_enabled() {
   [[ $IDLEPAY_KEY && "$IDLEPAY_PROXY_MODE" = true ]] && return 0
@@ -1001,7 +1008,7 @@ start_containers() {
       custom_chrome_port="-p $custom_chrome_first_port:3200 "
     fi
 
-    if [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]]; then
+    if is_hostname_enabled; then
       HOST_NAME="--hostname $DEVICE_NAME$i"
     fi
 
@@ -1687,7 +1694,11 @@ start_containers() {
       # Create IdlePay folder
       mkdir -p $PWD/$idlepay_data_folder/data$i
       sudo chmod -R 777 $PWD/$idlepay_data_folder/data$i
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$idlepay_data_folder/data$i,target=/etc/idlepay --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY ghcr.io/idlepay/idlepay:latest)
+      local IDLEPAY_HOST_NAME
+      if [[ "$NETWORK_TUN" == --network=multi* || -z "$proxy" ]]; then
+        IDLEPAY_HOST_NAME="--hostname $DEVICE_NAME$i"
+      fi
+      docker_parameters=($IDLEPAY_HOST_NAME $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$idlepay_data_folder/data$i,target=/etc/idlepay -e IDLEPAY_KEY=$IDLEPAY_KEY ghcr.io/idlepay/idlepay:latest)
       execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "ghcr.io/idlepay/idlepay:latest" "${docker_parameters[@]}"
     fi
   fi
@@ -1908,6 +1919,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull ghcr.io/techroy23/docker-wipter:latest
     fi
+    local WIPTER_HOST_NAME
     if [[ "$NETWORK_TUN" == --network=multi* || -z "$proxy" ]]; then
       WIPTER_HOST_NAME="--hostname $DEVICE_NAME$i"
     fi
