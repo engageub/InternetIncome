@@ -799,9 +799,14 @@ execute_docker_command() {
   fi
 
   echo -e "${YELLOW}Starting $app_name container..${NOCOLOUR}"
-  # Check if container exists
-  check_container_exists "$container_name" "$container_image"
 
+  # Check if container exists
+  # Tunnel/VPN containers are never direct-connection containers, so only do the name check for them
+  if [[ "$app_name" == "Proxy" || "$app_name" == "VPN" ]]; then
+    check_container_exists "$container_name"
+  else
+    check_container_exists "$container_name" "$container_image"
+  fi
   if [[ "$app_name" == "VPN" ]]; then
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:3}")
   else
