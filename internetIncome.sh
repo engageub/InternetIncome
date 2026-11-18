@@ -214,7 +214,7 @@ find_next_available_subnet() {
 
     # Handle overflow for first octet
     if [ $first_octet -gt 255 ]; then
-      echo "Exceeded IP address range"
+      echo -e "${RED}Exceeded IP address range. Exiting..${NOCOLOUR}"
       exit 1
     fi
 
