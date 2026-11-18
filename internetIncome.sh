@@ -377,6 +377,7 @@ validate_proxies() {
     if [[ "$valid" == false ]]; then
       echo -e "${RED}Error: Invalid proxy format on line ${lineno}: '${proxy}'${NOCOLOUR}"
       echo -e "${RED}Expected: protocol://host:port or protocol://user:password@IP:PORT (Valid protocols: http, socks4, socks4a, socks5, socks5h, ss)${NOCOLOUR}"
+      rm -f $process_id_file
       exit 1
     fi
   done < "$proxies_file"
@@ -406,6 +407,7 @@ validate_multi_ips() {
     if [[ "$valid" == false ]]; then
       echo -e "${RED}Error: Invalid IP format on line ${lineno}: '${entry}'${NOCOLOUR}"
       echo -e "${RED}Expected: IPv4 (e.g. 192.168.1.1) or IPv6 (e.g. 2001:db8::1)${NOCOLOUR}"
+      rm -f $process_id_file
       exit 1
     fi
   done < "$multi_ip_file"
@@ -515,6 +517,7 @@ validate_vpns() {
     fi
     if [[ "$valid" == false ]]; then
       echo -e "${RED}Error: Invalid VPN config on line ${lineno}: '${entry}'${NOCOLOUR}"
+      rm -f $process_id_file
       echo -e "${RED}Reason: ${error_msg}${NOCOLOUR}"
       echo -e "${RED}Valid format examples:${NOCOLOUR}"
       echo -e "${RED}  -e VPN_TYPE=openvpn -e OPENVPN_USER=myuser -e OPENVPN_PASSWORD=mypass${NOCOLOUR}"
@@ -2380,6 +2383,52 @@ if [[ "$1" == "--start" ]]; then
     fi
   fi
 
+  # Perform all input validations up front, before any connection state is written.
+  # PERFORM_VALIDATIONS controls whether proxies, multi-IP and VPN files are validated.
+  # Defaults to true when unset; set PERFORM_VALIDATIONS=false in properties.conf to skip.
+  if [[ "$PERFORM_VALIDATIONS" != false ]]; then
+    # Validate proxies file when proxies are enabled
+    if [[ "$USE_PROXIES" = true ]]; then
+      if [ ! -f "$proxies_file" ]; then
+        echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+        rm -f $process_id_file
+        exit 1
+      fi
+      # Remove special character ^M and trim space from proxies file
+      sed -i 's/\r//g' $proxies_file
+      sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
+      validate_proxies
+    fi
+
+    # Validate multi IPs file when multi IP is enabled
+    if [[ "$USE_MULTI_IP" = true ]]; then
+      if [ ! -f "$multi_ip_file" ]; then
+        echo -e "${RED}Multi IP file $multi_ip_file does not exist. Exiting..${NOCOLOUR}"
+        rm -f $process_id_file
+        exit 1
+      fi
+      # Remove special character ^M and trim space from multi ip file
+      sed -i 's/\r//g' $multi_ip_file
+      sed -i 's/^[ \t]*//;s/[ \t]*$//' $multi_ip_file
+      validate_multi_ips
+    fi
+
+    # Validate VPNs file when VPNs are enabled
+    if [[ "$USE_VPNS" = true ]]; then
+      if [ ! -f "$vpns_file" ]; then
+        echo -e "${RED}Vpns file $vpns_file does not exist. Exiting..${NOCOLOUR}"
+        rm -f $process_id_file
+        exit 1
+      fi
+      # Remove special character ^M and trim space from vpn file
+      sed -i 's/\r//g' $vpns_file
+      sed -i 's/^[ \t]*//;s/[ \t]*$//' $vpns_file
+      validate_vpns
+    fi
+  else
+    echo -e "${YELLOW}PERFORM_VALIDATIONS is set to false. Skipping validation of proxies, multi IPs and VPNs.${NOCOLOUR}"
+  fi
+
   # Write Unique ID to file
   echo $UNIQUE_ID > $connection_state_file
 
@@ -2405,15 +2454,6 @@ if [[ "$1" == "--start" ]]; then
     echo "VPN_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_VPNS is enabled, using vpns..${NOCOLOUR}"
-    if [ ! -f "$vpns_file" ]; then
-      echo -e "${RED}Vpns file $vpns_file does not exist. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-
-    # Remove special character ^M and trim space from vpn file
-    sed -i 's/\r//g' $vpns_file
-    sed -i 's/^[ \t]*//;s/[ \t]*$//' $vpns_file
-    validate_vpns
     if [ -z "${i}" ]; then
       i=0;
     fi
@@ -2430,15 +2470,6 @@ if [[ "$1" == "--start" ]]; then
     echo "MULTI_IP_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_MULTI_IP is enabled, using multi ip..${NOCOLOUR}"
-    if [ ! -f "$multi_ip_file" ]; then
-      echo -e "${RED}Multi IP file $multi_ip_file does not exist. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-
-    # Remove special character ^M and trim space from multi ip file
-    sed -i 's/\r//g' $multi_ip_file
-    sed -i 's/^[ \t]*//;s/[ \t]*$//' $multi_ip_file
-    validate_multi_ips
     if [ -z "${i}" ]; then
       i=0;
     fi
@@ -2455,17 +2486,6 @@ if [[ "$1" == "--start" ]]; then
     echo "PROXY_ENABLED" >> $connection_state_file
     STATUS=1
     echo -e "${GREEN}USE_PROXIES is enabled, using proxies..${NOCOLOUR}"
-    if [ ! -f "$proxies_file" ]; then
-      echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
-      exit 1
-    fi
-
-    # Remove special character ^M and trim space from proxies file
-    sed -i 's/\r//g' $proxies_file
-    sed -i 's/^[ \t]*//;s/[ \t]*$//' $proxies_file
-    if [[ "$VALIDATE_PROXIES" != false ]]; then
-      validate_proxies
-    fi
     if [ -z "${i}" ]; then
       i=0;
     fi
