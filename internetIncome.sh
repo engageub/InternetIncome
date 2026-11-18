@@ -1891,25 +1891,29 @@ start_containers() {
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
       sequence=$((1 + i))
     fi
+    proxyrack_uuid_is_new=false
     if [ -f $proxyrack_file ] && proxyrack_uuid=$(sed "${sequence}q;d" $proxyrack_file);then
-      if [[ $proxyrack_uuid ]];then
-        echo $proxyrack_uuid
-      else
-        echo "Proxyrack UUID does not exist, creating UUID"
+      if [[ ! $proxyrack_uuid ]];then
         proxyrack_uuid=$RANDOM_ID
-        printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
+        proxyrack_uuid_is_new=true
       fi
     else
-      echo "Proxyrack UUID does not exist, creating UUID"
       proxyrack_uuid=$RANDOM_ID
-      printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
+      proxyrack_uuid_is_new=true
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --platform=linux/amd64 $NETWORK_TUN -e UUID=$proxyrack_uuid -e DEVICE_NAME=$DEVICE_NAME$i -e API_KEY=$PROXYRACK_API proxyrack/pop:latest)
     execute_docker_command "ProxyRack" "proxyrack$UNIQUE_ID$i" "proxyrack/pop:latest" "${docker_parameters[@]}"
+    # Save and print the UUID only after the container has started
+    if [ "$proxyrack_uuid_is_new" = true ]; then
+      printf "%s\n" "$proxyrack_uuid" | tee -a $proxyrack_file
+      echo "Proxyrack UUID is newly created and saved to $proxyrack_file"
+    else
+      echo $proxyrack_uuid
+      echo "Proxyrack UUID already exists, using the existing UUID from $proxyrack_file"
+    fi
     echo -e "${GREEN}Device is automatically addded to your proxyrack dashboard after 5 minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $proxyrack_file in the same folder${NOCOLOUR}"
   fi
-
   # Starting ProxyBase container
   if [[ "$PROXYBASE_ACCOUNT_ID" ]]; then
     if [ "$container_pulled" = false ]; then
@@ -2018,21 +2022,26 @@ start_containers() {
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
       sequence=$((1 + i))
     fi
+    antgain_uuid_is_new=false
     if [ -f $antgain_file ] && antgain_uuid=$(sed "${sequence}q;d" $antgain_file);then
-      if [[ $antgain_uuid ]];then
-        echo $antgain_uuid
-      else
-        echo "Antgain UUID does not exist, creating UUID"
+      if [[ ! $antgain_uuid ]];then
         antgain_uuid=$RANDOM_ID
-        printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+        antgain_uuid_is_new=true
       fi
     else
-      echo "Antgain UUID does not exist, creating UUID"
       antgain_uuid=$RANDOM_ID
-      printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+      antgain_uuid_is_new=true
     fi
     docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN -e ANTGAIN_DEVICE_ID=$antgain_uuid -e ANTGAIN_API_KEY=$ANTGAIN_API_KEY --no-healthcheck pinors/antgain-cli:latest run)
     execute_docker_command "AntGain" "antgain$UNIQUE_ID$i" "pinors/antgain-cli:latest" "${docker_parameters[@]}"
+    # Save and print the UUID only after the container has started
+    if [ "$antgain_uuid_is_new" = true ]; then
+      printf "%s\n" "$antgain_uuid" | tee -a $antgain_file
+      echo "Antgain UUID is newly created and saved to $antgain_file"
+    else
+      echo $antgain_uuid
+      echo "Antgain UUID already exists, using the existing UUID from $antgain_file"
+    fi
     echo -e "${GREEN}Device is automatically addded to your antgain dashboard after few minutes${NOCOLOUR}"
     echo -e "${GREEN}You will find the uuids in the file $antgain_file in the same folder${NOCOLOUR}"
   fi
@@ -2105,18 +2114,15 @@ start_containers() {
     if [ "$USE_DIRECT_CONNECTION" = true ]; then
       sequence=$((1 + i))
     fi
+    uuid_is_new=false
     if [ -f $earnapp_file ] && uuid=$(sed "${sequence}q;d" $earnapp_file | grep -o 'https[^[:space:]]*'| sed 's/https:\/\/earnapp.com\/r\///g');then
-      if [[ $uuid ]];then
-        echo $uuid
-      else
-        echo "UUID does not exist, creating UUID"
+      if [[ ! $uuid ]];then
         uuid=sdk-node-$RANDOM_ID
-        printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+        uuid_is_new=true
       fi
     else
-      echo "UUID does not exist, creating UUID"
       uuid=sdk-node-$RANDOM_ID
-      printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+      uuid_is_new=true
     fi
     local EARNAPP_PRIVILEGED
     if [[ "$USE_EARNAPP_PRIVILEGED" = true ]]; then
@@ -2124,6 +2130,14 @@ start_containers() {
     fi
     docker_parameters=($EARNAPP_PRIVILEGED $LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$earnapp_data_folder/data$i,target=/etc/earnapp -e EARNAPP_UUID=$uuid --no-healthcheck madereddy/earnapp:latest)
     execute_docker_command "Earnapp" "earnapp$UNIQUE_ID$i" "madereddy/earnapp:latest" "${docker_parameters[@]}"
+    # Save and print the node URL only after the container has started
+    if [ "$uuid_is_new" = true ]; then
+      printf "$date_time https://earnapp.com/r/%s\n" "$uuid" | tee -a $earnapp_file
+      echo "Earnapp UUID is newly created and saved to $earnapp_file"
+    else
+      echo "https://earnapp.com/r/$uuid"
+      echo "Earnapp UUID already exists, using the existing UUID from $earnapp_file"
+    fi
     echo -e "${GREEN}Copy the node url and paste in your earnapp dashboard${NOCOLOUR}"
     echo -e "${GREEN}You will also find the urls in the file $earnapp_file in the same folder${NOCOLOUR}"
   fi
