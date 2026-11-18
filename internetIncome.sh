@@ -286,10 +286,11 @@ check_container_exists() {
         echo -e "${YELLOW}  Name:${NOCOLOUR} ${matched_names[$idx]} ${YELLOW}Image:${NOCOLOUR} ${matched_images[$idx]}"
       done
       echo -e "${YELLOW}Do you want to delete these containers? (yes/no)${NOCOLOUR}"
+      echo -e "${YELLOW}You have 60 seconds to respond. If there is no response within 60 seconds, the script will continue and skip container deletion.${NOCOLOUR}"
       local choice=""
       read -r -t 60 choice </dev/tty
       if [ $? -ne 0 ]; then
-        echo -e "${RED}No response within 60 seconds. Skipping container deletion.${NOCOLOUR}"
+        echo -e "${RED}No response within 60 seconds. Continuing and skipping container deletion.${NOCOLOUR}"
       else
         case "$choice" in
           yes|y|Y)
@@ -2502,6 +2503,7 @@ if [[ "$1" == "--delete" ]]; then
     if [ "$PROC_DIR" = "$PWD" ]; then
       echo "There is already a running process (PID $PID)."
       echo "Do you want to stop it and continue? (yes/no)"
+      echo "You have 60 seconds to respond. The script will exit if there is no response within 60 seconds."
       # Prompt with 60-second timeout
       read -r -t 60 ANSWER
       if [ $? -ne 0 ]; then
@@ -2570,9 +2572,10 @@ if [[ "$1" == "--delete" ]]; then
         sudo docker network inspect "$network" --format '{{range .Containers}}    - {{.Name}}{{println}}{{end}}' 2>/dev/null
       done
       echo -e "${YELLOW}Do you want to force remove all attached containers and delete these networks? (yes/no)${NOCOLOUR}"
+      echo -e "${YELLOW}You have 60 seconds to respond. If there is no response within 60 seconds, the script will continue and skip these networks.${NOCOLOUR}"
       read -r -t 60 choice </dev/tty
       if [ $? -ne 0 ]; then
-        echo -e "${RED}No response within 60 seconds. Skipping all affected networks.${NOCOLOUR}"
+        echo -e "${RED}No response within 60 seconds. Continuing and skipping all affected networks.${NOCOLOUR}"
         failed_networks+=("${networks_with_endpoints[@]}")
       else
         case "$choice" in
@@ -2697,9 +2700,10 @@ if [[ "$1" == "--delete" ]]; then
       echo -e "${YELLOW}  Image:${NOCOLOUR} $image"
     done
     echo -e "${YELLOW}Do you want to delete these stale containers? (yes/no)${NOCOLOUR}"
+    echo -e "${YELLOW}You have 60 seconds to respond. If there is no response within 60 seconds, the script will continue and skip stale container deletion.${NOCOLOUR}"
     read -r -t 60 CHOICE </dev/tty
     if [ $? -ne 0 ]; then
-      echo -e "${RED}No response within 60 seconds. Skipping stale container deletion.${NOCOLOUR}"
+      echo -e "${RED}No response within 60 seconds. Continuing and skipping stale container deletion.${NOCOLOUR}"
     else
       case "$CHOICE" in
         yes|y|Y)
