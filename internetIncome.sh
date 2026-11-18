@@ -116,6 +116,16 @@ HEVSOCKS_VERSION="2.20.0"
 TUN2PROXY_VERSION="v0.8.7"
 TUN2SOCKS_VERSION="v2.7.0"
 
+# Images that never take part in the direct-connection check (name check only)
+skip_check_images=(
+  "ghcr.io/heiher/hev-socks5-tunnel:*"
+  "ghcr.io/tun2proxy/tun2proxy:*"
+  "xjasonlyu/tun2socks:*"
+  "qmcgaw/gluetun:*"
+  "docker:cli"
+  "ghcr.io/nicholas-fedor/watchtower:*"
+)
+
 # Use banner if exists
 if [ -f "$banner_file" ]; then
   for _ in {1..3}; do
@@ -801,14 +811,16 @@ execute_docker_command() {
   echo -e "${YELLOW}Starting $app_name container..${NOCOLOUR}"
 
   # Check if container exists
-  # Tunnel/VPN containers are never direct-connection containers, so only do the name check for them
-  case "$app_name" in Proxy|VPN|"Internet Income Watch Tower")
-    check_container_exists "$container_name"
-    ;;
-  *)
-    check_container_exists "$container_name" "$container_image"
-    ;;
-  esac
+  # Tunnel/VPN, restart helpers and Watchtower images get the name check only
+  local check_image="$container_image"
+  local skip_pattern
+  for skip_pattern in "${skip_check_images[@]}"; do
+    if [[ "$container_image" == $skip_pattern ]]; then
+      check_image=""
+      break
+    fi
+  done
+  check_container_exists "$container_name" "$check_image"
   if [[ "$app_name" == "VPN" ]]; then
     CONTAINER_ID=$(eval "sudo docker run $DOCKER_INIT -d --name $container_name --restart=always ${container_parameters[@]:3}")
   else
