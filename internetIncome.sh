@@ -1687,8 +1687,9 @@ start_containers() {
     fi
     mkdir -p $PWD/$traffmonetizer_data_folder/data$i
     sudo chmod -R 777 $PWD/$traffmonetizer_data_folder/data$i
-    traffmonetizer_volume="--mount type=bind,source=$PWD/$traffmonetizer_data_folder/data$i,target=/.config/traffmonetizer"
-    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $traffmonetizer_volume $traffmonetizer_image start accept --device-name $DEVICE_NAME$i --token $TRAFFMONETIZER_TOKEN)
+    traffmonetizer_volume="--mount type=bind,source=$PWD/$traffmonetizer_data_folder/data$i,target=/var/lib/tm"
+    traffmonetizer_env="-e HOME=/var/lib/tm"
+    docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN $traffmonetizer_env $traffmonetizer_volume $traffmonetizer_image --token $TRAFFMONETIZER_TOKEN --device-name $DEVICE_NAME$i start accept)
     execute_docker_command "Traffmonetizer" "traffmon$UNIQUE_ID$i" "$traffmonetizer_image_name" "${docker_parameters[@]}"
   fi
 
