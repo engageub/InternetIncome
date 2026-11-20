@@ -567,7 +567,6 @@ cache_min_ttl = 2400
 cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
-blocked_query_response = ""
 [static]
   [static.google1]
   stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
@@ -594,7 +593,6 @@ cache_min_ttl = 2400
 cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
-blocked_query_response = ""
 [static]
   [static.google1]
   stamp = 'sdns://AgcAAAAAAAAABzguOC40LjQABzguOC40LjQKL2Rucy1xdWVyeQ'
@@ -611,7 +609,6 @@ cache_min_ttl = 2400
 cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
-blocked_query_response = ""
 [static]
   [static.cloudflare1]
   stamp = 'sdns://AgcAAAAAAAAABzEuMS4xLjEABzEuMS4xLjEKL2Rucy1xdWVyeQ'
@@ -1753,7 +1750,7 @@ start_containers() {
       mkdir -p $PWD/$urnetwork_data_folder/data/.urnetwork
       sudo chmod -R 777 $PWD/$urnetwork_data_folder/data/.urnetwork
       if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
-        sudo docker run --rm $DNS_VOLUME $NETWORK_TUN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+        sudo docker run --rm $DNS_VOLUME --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
         sleep 1
         if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
           echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
