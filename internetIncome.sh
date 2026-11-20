@@ -852,7 +852,6 @@ start_containers() {
     fi
   fi
 
-
   # Starting IdlePay container
   if [[ $IDLEPAY_KEY ]]; then
     if [ "$container_pulled" = false ]; then
@@ -889,6 +888,7 @@ start_containers() {
       fi
     fi
     if [ "$IDLEPAY_PROXY_MODE" != true ]; then
+      echo -e "${YELLOW}Starting IdlePay container..${NOCOLOUR}"
       mkdir -p $PWD/$idlepay_data_folder/data$i
       sudo chmod -R 777 $PWD/$idlepay_data_folder/data$i
       local IDLEPAY_HOST_NAME=""
@@ -1133,7 +1133,7 @@ start_containers() {
     done
     if [[ ! $RANDOM_ID ]]; then
       echo -e "${RED}Unable to install uuidgen automatically. Please install it manually and try again. Exiting...${NOCOLOUR}"
-      exit 1;                                                                   
+      exit 1;
     fi
     if [ -f $antgain_file ] && antgain_uuid=$(sed "${i}q;d" $antgain_file);then
       if [[ $antgain_uuid ]];then
