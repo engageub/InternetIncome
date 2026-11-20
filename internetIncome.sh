@@ -557,10 +557,14 @@ check_wget_options() {
 create_dnscrypt_config() {
   # Default to enabled if not already set
   local cache_enabled="${USE_DNS_CACHE:-true}"
+  local log_level=0
+  if [[ "$ENABLE_LOGS" != true ]]; then
+    log_level=6
+  fi
   cat > "$dnscrypt_config_file" <<-EOF
 listen_addresses = ['127.0.0.1:53']
 server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2']
-log_level = 6
+log_level = ${log_level}
 cache = ${cache_enabled}
 cache_size = 4096
 cache_min_ttl = 2400
@@ -583,10 +587,14 @@ EOF
 create_dnscrypt_separate_config() {
   # Default to enabled if not already set
   local cache_enabled="${USE_DNS_CACHE:-true}"
+  local log_level=0
+  if [[ "$ENABLE_LOGS" != true ]]; then
+    log_level=6
+  fi
   cat > "$dnscrypt_google_config_file" <<-EOF
 listen_addresses = ['127.0.0.1:55']
 server_names = ['google1', 'google2']
-log_level = 6
+log_level = ${log_level}
 cache = ${cache_enabled}
 cache_size = 4096
 cache_min_ttl = 2400
@@ -602,7 +610,7 @@ EOF
   cat > "$dnscrypt_cloudflare_config_file" <<-EOF
 listen_addresses = ['127.0.0.1:56']
 server_names = ['cloudflare1', 'cloudflare2']
-log_level = 6
+log_level = ${log_level}
 cache = ${cache_enabled}
 cache_size = 4096
 cache_min_ttl = 2400
