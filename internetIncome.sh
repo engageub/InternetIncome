@@ -1720,10 +1720,15 @@ start_containers() {
           echo -e "${RED}No http or socks5 proxies found in $proxies_file for IdlePay. Exiting..${NOCOLOUR}"
           exit 1
         fi
+        # Use the direct connection along with the proxies only if both are enabled
+        local IDLEPAY_DIRECT_MODE="off"
+        if [[ "$USE_PROXIES" = true && "$USE_DIRECT_CONNECTION" = true ]]; then
+          IDLEPAY_DIRECT_MODE="on"
+        fi
         # Create IdlePay Proxy folder
         mkdir -p $PWD/$idlepay_data_folder/data-proxy
         sudo chmod -R 777 $PWD/$idlepay_data_folder/data-proxy
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$idlepay_data_folder/data-proxy,target=/etc/idlepay --mount type=bind,source=$PWD/$idlepay_proxies_file,target=/proxies.txt,readonly --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY -e IDLEPAY_DIRECT=off ghcr.io/idlepay/idlepay:latest)
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=$PWD/$idlepay_data_folder/data-proxy,target=/etc/idlepay --mount type=bind,source=$PWD/$idlepay_proxies_file,target=/proxies.txt,readonly --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY -e IDLEPAY_DIRECT=$IDLEPAY_DIRECT_MODE ghcr.io/idlepay/idlepay:latest)
         execute_docker_command "IdlePay" "idlepay$UNIQUE_ID$i" "ghcr.io/idlepay/idlepay:latest" "${docker_parameters[@]}"
       fi
     fi
