@@ -598,7 +598,7 @@ start_containers() {
         echo -e "${RED}Firefox Data folder does not exist. Exiting..${NOCOLOUR}"
         exit 1
       fi
-      
+
       check_container_exists dind$UNIQUE_ID$i
       if CONTAINER_ID=$(sudo docker run -d --name dind$UNIQUE_ID$i $LOGS_PARAM $DNS_VOLUME --restart=always --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/firefox --network none docker:cli /bin/sh -c 'cd /firefox && chmod +x /firefox/restart.sh && while true; do sleep 3600; /firefox/restart.sh --restartFirefox; done'); then
         echo -e "${GREEN}Container dind$UNIQUE_ID$i started successfully.${NOCOLOUR}"
@@ -1081,7 +1081,7 @@ start_containers() {
     else
       echo -e "${RED}Failed to start container for Honeygain. Exiting..${NOCOLOUR}"
       exit 1
-  fi
+    fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
       echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
@@ -1113,7 +1113,7 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       if ! command -v uuidgen &> /dev/null; then
         echo -e "${RED}uuidgen is not installed. Attempting to install it...${NOCOLOUR}"
-        sudo apt-get update && sudo apt-get -y install uuid-runtime          
+        sudo apt-get update && sudo apt-get -y install uuid-runtime
       fi
       sudo docker pull pinors/antgain-cli:latest
     fi
