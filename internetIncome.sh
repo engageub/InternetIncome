@@ -54,13 +54,16 @@ earn_fm_config_file="earnfm_config.json"
 traffmonetizer_data_folder="traffmonetizerdata"
 network3_data_folder="network3-data"
 titan_data_folder="titan-data"
+idlepay_data_folder="idlepay-data"
 ur_proxies_file="ur_proxies.txt"
 ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
+idlepay_proxies_file="idlepay_proxies.txt"
 process_id_file="process.pid"
 required_files=($banner_file $properties_file $firefox_profile_zipfile $restart_file $chrome_profile_zipfile)
-files_to_be_removed=($earn_fm_config_file $dns_resolver_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file $ur_proxies_file $ur_data_proxies_file $process_id_file)
+files_to_be_removed=($earn_fm_config_file $dns_resolver_file $container_names_file $networks_file $mysterium_file $ebesucher_file $adnade_file $adnade_containers_file $firefox_containers_file $chrome_containers_file $ur_proxies_file $ur_data_proxies_file $idlepay_proxies_file $process_id_file)
 folders_to_be_removed=($adnade_data_folder $firefox_data_folder $firefox_profile_data $earnapp_data_folder $chrome_data_folder $chrome_profile_data)
-back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder)
+back_up_folders=($titan_data_folder $network3_data_folder $bitping_data_folder $urnetwork_data_folder $traffmonetizer_data_folder $mysterium_data_folder $idlepay_data_folder)
+
 back_up_files=($antgain_file $earnapp_file $proxyrack_file)
 container_pulled=false
 docker_in_docker_detected=false
@@ -261,8 +264,16 @@ validate_proxies() {
   done < "$proxies_file"
 }
 
+# Check if hostname should be enabled
+is_hostname_enabled() {
+  [[ $WIPTER_EMAIL && $WIPTER_PASSWORD ]] && return 0
+  [[ $IDLEPAY_KEY ]] && return 0
+  return 1
+}
+
 # Check if proxy mode is enabled
 is_proxy_mode_enabled() {
+  [[ $IDLEPAY_KEY && "$IDLEPAY_PROXY_MODE" = true ]] && return 0
   [[ $UR_AUTH_TOKEN && "$UR_NETWORK_PROXY_MODE" = true ]] && return 0
   [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" = true ]] && return 0
   return 1
@@ -277,6 +288,7 @@ is_tun_required() {
   [[ $REPOCKET_API ]] && return 0
   [[ $TRAFFMONETIZER_TOKEN ]] && return 0
   [[ $UR_AUTH_TOKEN && "$UR_NETWORK_PROXY_MODE" != true ]] && return 0
+  [[ $IDLEPAY_KEY && "$IDLEPAY_PROXY_MODE" != true ]] && return 0
   [[ $GRASS_EMAIL && $GRASS_PASSWORD ]] && return 0
   [[ $GRADIENT_EMAIL && $GRADIENT_PASSWORD ]] && return 0
   [[ $EARN_FM_API && "$USE_EARN_FM_FLEETSHARE" != true ]] && return 0
@@ -366,6 +378,11 @@ start_containers() {
 
     combined_ports=$mysterium_port$ebesucher_port$adnade_port
     echo -e "${YELLOW}Starting Proxy container..${NOCOLOUR}"
+
+    if is_hostname_enabled; then
+      HOST_NAME="--hostname $DEVICE_NAME$i"
+    fi
+
     # Starting tun containers
     if [ "$container_pulled" = false ]; then
       if [ "$USE_SOCKS5_DNS" = true ]; then
@@ -407,7 +424,7 @@ start_containers() {
         TUN_LOG_PARAM="warn"
       fi
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' -d --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.20.0); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOG_LEVEL=$TUN_LOG_PARAM --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -e SOCKS5_ADDR="$SOCKS_ADDR" -e SOCKS5_PORT="$SOCKS_PORT" -e SOCKS5_USERNAME="$SOCKS_USER" -e SOCKS5_PASSWORD="$SOCKS_PASS" -e ICMP='reply' -d --no-healthcheck ghcr.io/heiher/hev-socks5-tunnel:2.20.0); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -420,7 +437,7 @@ start_containers() {
         TUN_LOG_PARAM="trace"
       fi
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.7 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $HOST_NAME $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.7 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -433,7 +450,7 @@ start_containers() {
         TUN_LOG_PARAM="trace"
       fi
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.7 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $HOST_NAME $LOGS_PARAM --restart=always --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -d ghcr.io/tun2proxy/tun2proxy:v0.8.7 $DNS_OPTION --proxy $proxy --verbosity $TUN_LOG_PARAM); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -441,7 +458,7 @@ start_containers() {
       fi
     else
       check_container_exists tun$UNIQUE_ID$i
-      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.7.0); then
+      if CONTAINER_ID=$(sudo docker run --name tun$UNIQUE_ID$i $HOST_NAME $LOGS_PARAM $TUN_DNS_VOLUME --restart=always -e LOGLEVEL=$TUN_LOG_PARAM -e PROXY=$proxy --mount type=bind,source=/dev/net/tun,target=/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=1 --sysctl net.ipv6.conf.default.disable_ipv6=1 --cap-add=NET_ADMIN $combined_ports -d xjasonlyu/tun2socks:v2.7.0); then
         echo -e "${GREEN}Container tun$UNIQUE_ID$i started successfully.${NOCOLOUR}"
       else
         echo -e "${RED}Failed to start container for proxy. Exiting..${NOCOLOUR}"
@@ -835,6 +852,63 @@ start_containers() {
     fi
   fi
 
+
+  # Starting IdlePay container
+  if [[ $IDLEPAY_KEY ]]; then
+    if [ "$container_pulled" = false ]; then
+      sudo docker pull ghcr.io/idlepay/idlepay:latest
+      if [ "$IDLEPAY_PROXY_MODE" = true ]; then
+        echo -e "${YELLOW}Starting IdlePay container..${NOCOLOUR}"
+        if [ ! -f "$proxies_file" ]; then
+          echo -e "${RED}Proxies file $proxies_file does not exist. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+        # IdlePay accepts only http and socks5 proxies, without the protocol prefix
+        while IFS= read -r line || [[ -n "$line" ]]; do
+          line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          [[ -z "$line" || "$line" == \#* ]] && continue
+          if [[ "$line" == http://* || "$line" == socks5://* ]]; then
+            echo "${line#*://}" >> "$idlepay_proxies_file"
+          else
+            echo -e "${YELLOW}Skipping proxy with unsupported protocol '${line%%://*}' for IdlePay (only http and socks5 are supported).${NOCOLOUR}"
+          fi
+        done < "$proxies_file"
+        if [ ! -s "$idlepay_proxies_file" ]; then
+          echo -e "${RED}No http or socks5 proxies found in $proxies_file for IdlePay. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+        mkdir -p $PWD/$idlepay_data_folder/data-proxy
+        sudo chmod -R 777 $PWD/$idlepay_data_folder/data-proxy
+        check_container_exists idlepay$UNIQUE_ID$i ghcr.io/idlepay/idlepay:latest
+        if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name idlepay$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME --mount type=bind,source=$PWD/$idlepay_data_folder/data-proxy,target=/etc/idlepay --mount type=bind,source=$PWD/$idlepay_proxies_file,target=/proxies.txt,readonly --hostname $DEVICE_NAME$i -e IDLEPAY_KEY=$IDLEPAY_KEY -e IDLEPAY_DIRECT=off ghcr.io/idlepay/idlepay:latest); then
+          echo -e "${GREEN}Container idlepay$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+        else
+          echo -e "${RED}Failed to start container for IdlePay. Exiting..${NOCOLOUR}"
+          exit 1
+        fi
+      fi
+    fi
+    if [ "$IDLEPAY_PROXY_MODE" != true ]; then
+      mkdir -p $PWD/$idlepay_data_folder/data$i
+      sudo chmod -R 777 $PWD/$idlepay_data_folder/data$i
+      local IDLEPAY_HOST_NAME=""
+      if [[ -z "$proxy" ]]; then
+        IDLEPAY_HOST_NAME="--hostname $DEVICE_NAME$i"
+      fi
+      check_container_exists idlepay$UNIQUE_ID$i ghcr.io/idlepay/idlepay:latest
+      if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name idlepay$UNIQUE_ID$i $IDLEPAY_HOST_NAME --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN --mount type=bind,source=$PWD/$idlepay_data_folder/data$i,target=/etc/idlepay -e IDLEPAY_KEY=$IDLEPAY_KEY ghcr.io/idlepay/idlepay:latest); then
+        echo -e "${GREEN}Container idlepay$UNIQUE_ID$i started successfully.${NOCOLOUR}"
+      else
+        echo -e "${RED}Failed to start container for IdlePay. Exiting..${NOCOLOUR}"
+        exit 1
+      fi
+    fi
+  else
+    if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
+      echo -e "${RED}IdlePay key is not configured. Ignoring IdlePay..${NOCOLOUR}"
+    fi
+  fi
+
   # Starting ProxyRack container
   if [[ $PROXYRACK_API ]]; then
     echo -e "${YELLOW}Starting Proxyrack container..${NOCOLOUR}"
@@ -926,8 +1000,12 @@ start_containers() {
     if [ "$container_pulled" = false ]; then
       sudo docker pull ghcr.io/techroy23/docker-wipter:latest
     fi
+    local WIPTER_HOST_NAME=""
+    if [[ -z "$proxy" ]]; then
+      WIPTER_HOST_NAME="--hostname $DEVICE_NAME$i"
+    fi
     check_container_exists wipter$UNIQUE_ID$i ghcr.io/techroy23/docker-wipter:latest
-    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name wipter$UNIQUE_ID$i --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/techroy23/docker-wipter:latest); then
+    if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name wipter$UNIQUE_ID$i $WIPTER_HOST_NAME --restart=always $LOGS_PARAM $DNS_VOLUME $NETWORK_TUN -e WIPTER_EMAIL=$WIPTER_EMAIL -e WIPTER_PASSWORD=$WIPTER_PASSWORD ghcr.io/techroy23/docker-wipter:latest); then
       echo -e "${GREEN}Container wipter$UNIQUE_ID$i started successfully.${NOCOLOUR}"
     else
       echo -e "${RED}Failed to start container for Wipter. Exiting..${NOCOLOUR}"
@@ -1150,14 +1228,13 @@ start_containers() {
 
   # Starting URnetwork container
   if [[ $UR_AUTH_TOKEN ]]; then
-    echo -e "${YELLOW}Starting URnetwork container..${NOCOLOUR}"
     if [ "$container_pulled" = false ]; then
       sudo docker pull bringyour/community-provider:latest
       # Create URnetwork folder
       mkdir -p $PWD/$urnetwork_data_folder/data/.urnetwork
       sudo chmod -R 777 $PWD/$urnetwork_data_folder/data/.urnetwork
       if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
-        sudo docker run --rm $DNS_VOLUME $NETWORK_TUN --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
+        sudo docker run --rm $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
         sleep 1
         if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
           echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
@@ -1165,6 +1242,7 @@ start_containers() {
         fi
       fi
       if [ "$UR_NETWORK_PROXY_MODE" = true ]; then
+        echo -e "${YELLOW}Starting URnetwork container..${NOCOLOUR}"
         if [ -f "$proxies_file" ]; then
           SOCKS_PROXIES=()
           while IFS= read -r line; do
@@ -1225,6 +1303,7 @@ start_containers() {
       fi
     fi
     if [ "$UR_NETWORK_PROXY_MODE" != true ]; then
+      echo -e "${YELLOW}Starting URnetwork container..${NOCOLOUR}"
       check_container_exists urnetwork$UNIQUE_ID$i bringyour/community-provider:latest
       if CONTAINER_ID=$(sudo docker run -d $WATCH_TOWER_LABEL --name urnetwork$UNIQUE_ID$i --restart=always $NETWORK_TUN $LOGS_PARAM $DNS_VOLUME --mount type=bind,source="$PWD/$urnetwork_data_folder/data/.urnetwork",target=/root/.urnetwork bringyour/community-provider:latest provide); then
         echo -e "${GREEN}Container urnetwork$UNIQUE_ID$i started successfully.${NOCOLOUR}"
