@@ -78,7 +78,7 @@ proxyrack_file="proxyrack.txt"
 restart_file="restart.sh"
 subnets_file="subnets.txt"
 uprock_file="uprock.txt"
-ur_data_proxies_file="$urnetwork_data_folder/data/.urnetwork/proxy"
+ur_data_proxies_file="$urnetwork_data_folder/data-proxy/.urnetwork/proxy"
 ur_proxies_file="ur_proxies.txt"
 vpns_file="vpns.txt"
 
