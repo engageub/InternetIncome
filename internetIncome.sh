@@ -1753,17 +1753,27 @@ start_containers() {
   # Starting URnetwork container
   if [[ $UR_AUTH_TOKEN ]]; then
     if [ "$container_pulled" = false ]; then
-      sudo docker pull bringyour/community-provider:latest
-      # Create URnetwork folder
+      sudo docker pull ghcr.io/urfoundation/meso-miner:latest
+      # Create the default URnetwork folder that holds the master JWT
       mkdir -p $PWD/$urnetwork_data_folder/data/.urnetwork
       sudo chmod -R 777 $PWD/$urnetwork_data_folder/data/.urnetwork
+      # Obtain the JWT once via the official URnetwork API and store it in the default folder
+      # Reference: https://ur.io/docs-md/api.md — "Get a JWT from an auth code"
       if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
-        sudo docker run --rm $DNS_VOLUME --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --entrypoint /usr/local/sbin/bringyour-provider bringyour/community-provider:latest auth $UR_AUTH_TOKEN
-        sleep 1
-        if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt" ]; then
+        echo -e "${YELLOW}Authenticating with URnetwork API..${NOCOLOUR}"
+        API_RESPONSE=$(sudo docker run --rm docker:cli sh -c "wget -qO- --header='Content-Type: application/json' --post-data='{\"auth_code\": \"$UR_AUTH_TOKEN\"}' https://api.bringyour.com/auth/code-login")
+        if command -v jq >/dev/null 2>&1; then
+          UR_JWT=$(echo "$API_RESPONSE" | jq -r '.by_jwt // empty')
+        else
+          UR_JWT=$(echo "$API_RESPONSE" | sed -n 's/.*"by_jwt"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+        fi
+        if [[ -z "$UR_JWT" || "$UR_JWT" == "null" ]]; then
+          echo -e "${RED}Failed to obtain JWT from URnetwork API. Response: $API_RESPONSE${NOCOLOUR}"
           echo -e "${RED}JWT file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
           exit 1
         fi
+        echo -n "$UR_JWT" > "$PWD/$urnetwork_data_folder/data/.urnetwork/jwt"
+        echo -e "${GREEN}JWT written to $PWD/$urnetwork_data_folder/data/.urnetwork/jwt${NOCOLOUR}"
       fi
       if [ "$UR_NETWORK_PROXY_MODE" = true ]; then
         if [ -f "$proxies_file" ]; then
@@ -1801,26 +1811,31 @@ start_containers() {
           echo -e "${RED}Proxies file $ur_proxies_file does not have socks5 proxies. Exiting..${NOCOLOUR}"
           exit 1
         fi
-        # Generate proxy file using urnetwork
-        sudo docker run --rm $DNS_VOLUME --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/$ur_proxies_file,target=/root/ur_proxy.txt bringyour/community-provider:latest proxy add --proxy_file=/root/ur_proxy.txt
-        sleep 1
-        if [ ! -f "$PWD/$urnetwork_data_folder/data/.urnetwork/proxy" ]; then
-          echo -e "${RED}Proxy file could not be generated for URnetwork. Exiting..${NOCOLOUR}"
-          exit 1
+        # Create the shared proxy data folder and copy the JWT only if it does not already exist
+        mkdir -p $PWD/$urnetwork_data_folder/data-proxy/.urnetwork
+        sudo chmod -R 777 $PWD/$urnetwork_data_folder/data-proxy/.urnetwork
+        if [ ! -f "$PWD/$urnetwork_data_folder/data-proxy/.urnetwork/jwt" ]; then
+          cp $PWD/$urnetwork_data_folder/data/.urnetwork/jwt $PWD/$urnetwork_data_folder/data-proxy/.urnetwork/jwt
+          echo -e "${GREEN}JWT copied to $PWD/$urnetwork_data_folder/data-proxy/.urnetwork/jwt${NOCOLOUR}"
+        else
+          echo -e "${YELLOW}JWT already exists in $PWD/$urnetwork_data_folder/data-proxy/.urnetwork. Skipping copy..${NOCOLOUR}"
         fi
-        if [ ! -f $dnscrypt_config_file ]; then
-          create_dnscrypt_config
-        fi
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/dns-config.toml,target=/proxy-dns/dns-config.toml --entrypoint /bin/bash bringyour/community-provider:latest -c "apt-get update -y && apt-get install -y iptables dnscrypt-proxy && iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 && (dnscrypt-proxy -config /proxy-dns/dns-config.toml &) &&  /usr/local/sbin/bringyour-provider provide")
-        execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
-      else
-        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount type=bind,source=$(which docker),target=/usr/bin/docker --mount type=bind,source=$PWD,target=/urnetwork --network none docker:cli /bin/sh -c 'cd /urnetwork && chmod +x /urnetwork/restart.sh && while true; do sleep 86400; /urnetwork/restart.sh --restartURnetwork; done')
-        execute_docker_command "URnetwork Restart" "dindurnetwork$UNIQUE_ID$i" "docker:cli" "${docker_parameters[@]}"
+        docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM --cap-add=NET_ADMIN --cap-add=NET_RAW --sysctl net.ipv4.ip_forward=1 -e AUTH=authcode -e URNETWORK_PROFILE=auto -e URNETWORK_RAMLOGS=1 -e HOST_HOSTNAME=$DEVICE_NAME$i --mount type=bind,source=$PWD/$urnetwork_data_folder/data-proxy/.urnetwork,target=/root/.urnetwork --mount type=bind,source=$PWD/$ur_proxies_file,target=/app/proxy.txt ghcr.io/urfoundation/meso-miner:latest)
+        execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "ghcr.io/urfoundation/meso-miner:latest" "${docker_parameters[@]}"
       fi
     fi
     if [ "$UR_NETWORK_PROXY_MODE" != true ]; then
-      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --mount type=bind,source=$PWD/$urnetwork_data_folder/data/.urnetwork,target=/root/.urnetwork bringyour/community-provider:latest provide)
-      execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "bringyour/community-provider:latest" "${docker_parameters[@]}"
+      # Create the per-instance data folder and copy the JWT only if it does not already exist
+      mkdir -p $PWD/$urnetwork_data_folder/data$i/.urnetwork
+      sudo chmod -R 777 $PWD/$urnetwork_data_folder/data$i/.urnetwork
+      if [ ! -f "$PWD/$urnetwork_data_folder/data$i/.urnetwork/jwt" ]; then
+        cp $PWD/$urnetwork_data_folder/data/.urnetwork/jwt $PWD/$urnetwork_data_folder/data$i/.urnetwork/jwt
+        echo -e "${GREEN}JWT copied to $PWD/$urnetwork_data_folder/data$i/.urnetwork/jwt${NOCOLOUR}"
+      else
+        echo -e "${YELLOW}JWT already exists in $PWD/$urnetwork_data_folder/data$i/.urnetwork. Skipping copy..${NOCOLOUR}"
+      fi
+      docker_parameters=($LOGS_PARAM $DNS_VOLUME $MAX_MEMORY_PARAM $MEMORY_RESERVATION_PARAM $MEMORY_SWAP_PARAM $CPU_PARAM $NETWORK_TUN --cap-add=NET_ADMIN --cap-add=NET_RAW --sysctl net.ipv4.ip_forward=1 -e AUTH=authcode -e URNETWORK_PROFILE=auto -e URNETWORK_RAMLOGS=1 -e HOST_HOSTNAME=$DEVICE_NAME$i --mount type=bind,source=$PWD/$urnetwork_data_folder/data$i/.urnetwork,target=/root/.urnetwork ghcr.io/urfoundation/meso-miner:latest)
+      execute_docker_command "URnetwork" "urnetwork$UNIQUE_ID$i" "ghcr.io/urfoundation/meso-miner:latest" "${docker_parameters[@]}"
     fi
   fi
 
