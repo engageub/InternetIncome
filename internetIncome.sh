@@ -20,6 +20,7 @@
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
+ORANGE="\033[38;5;130m"
 NOCOLOUR="\033[0m"
 
 # File names
@@ -503,7 +504,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
+      echo -e "${ORANGE}Mysterium Node is not enabled. Ignoring Mysterium..${NOCOLOUR}"
     fi
   fi
 
@@ -568,7 +569,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+      echo -e "${ORANGE}Ebesucher username for chrome is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
 
@@ -636,7 +637,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
+      echo -e "${ORANGE}Ebesucher username is not configured. Ignoring Ebesucher..${NOCOLOUR}"
     fi
   fi
 
@@ -703,7 +704,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
+      echo -e "${ORANGE}Adnade username is not configured. Ignoring Adnade..${NOCOLOUR}"
     fi
   fi
 
@@ -725,7 +726,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
+      echo -e "${ORANGE}BitPing Node is not enabled. Ignoring BitPing..${NOCOLOUR}"
     fi
   fi
 
@@ -745,7 +746,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Repocket API is not configured. Ignoring Repocket..${NOCOLOUR}"
+      echo -e "${ORANGE}Repocket API is not configured. Ignoring Repocket..${NOCOLOUR}"
     fi
   fi
 
@@ -764,7 +765,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFM Api is not configured. Ignoring EarnFM..${NOCOLOUR}"
+      echo -e "${ORANGE}EarnFM Api is not configured. Ignoring EarnFM..${NOCOLOUR}"
     fi
   fi
 
@@ -816,7 +817,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}EarnFM Fleetshare is not configured. Ignoring EarnFM Fleetshare..${NOCOLOUR}"
+      echo -e "${ORANGE}EarnFM Fleetshare is not configured. Ignoring EarnFM Fleetshare..${NOCOLOUR}"
     fi
   fi
 
@@ -848,7 +849,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
+      echo -e "${ORANGE}Traffmonetizer Token is not configured. Ignoring Traffmonetizer..${NOCOLOUR}"
     fi
   fi
 
@@ -905,7 +906,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}IdlePay key is not configured. Ignoring IdlePay..${NOCOLOUR}"
+      echo -e "${ORANGE}IdlePay key is not configured. Ignoring IdlePay..${NOCOLOUR}"
     fi
   fi
 
@@ -952,7 +953,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Proxyrack is not enabled. Ignoring Proxyrack..${NOCOLOUR}"
+      echo -e "${ORANGE}Proxyrack is not enabled. Ignoring Proxyrack..${NOCOLOUR}"
     fi
   fi
 
@@ -971,7 +972,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Proxybase is not enabled. Ignoring Proxybase..${NOCOLOUR}"
+      echo -e "${ORANGE}Proxybase is not enabled. Ignoring Proxybase..${NOCOLOUR}"
     fi
   fi
 
@@ -990,7 +991,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
+      echo -e "${ORANGE}IPRoyals Email or Password is not configured. Ignoring IPRoyals..${NOCOLOUR}"
     fi
   fi
 
@@ -1013,7 +1014,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Wipter Email or Password is not configured. Ignoring Wipter..${NOCOLOUR}"
+      echo -e "${ORANGE}Wipter Email or Password is not configured. Ignoring Wipter..${NOCOLOUR}"
     fi
   fi
 
@@ -1032,7 +1033,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
+      echo -e "${ORANGE}PacketShare Email or Password is not configured. Ignoring PacketShare..${NOCOLOUR}"
     fi
   fi
 
@@ -1056,7 +1057,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Depin Extensions are not configured. Ignoring Depin Extensions..${NOCOLOUR}"
+      echo -e "${ORANGE}Depin Extensions are not configured. Ignoring Depin Extensions..${NOCOLOUR}"
     fi
   fi
 
@@ -1084,7 +1085,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
+      echo -e "${ORANGE}Honeygain Email or Password is not configured. Ignoring Honeygain..${NOCOLOUR}"
     fi
   fi
 
@@ -1103,7 +1104,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
+      echo -e "${ORANGE}Peer2Profit Email is not configured. Ignoring Peer2Profit..${NOCOLOUR}"
     fi
   fi
 
@@ -1158,7 +1159,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}AntGain API is not configured. Ignoring AntGain..${NOCOLOUR}"
+      echo -e "${ORANGE}AntGain API is not configured. Ignoring AntGain..${NOCOLOUR}"
     fi
   fi
 
@@ -1177,7 +1178,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}WizardGain Email is not configured. Ignoring WizardGain..${NOCOLOUR}"
+      echo -e "${ORANGE}WizardGain Email is not configured. Ignoring WizardGain..${NOCOLOUR}"
     fi
   fi
 
@@ -1196,7 +1197,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
+      echo -e "${ORANGE}PacketStream CID is not configured. Ignoring PacketStream..${NOCOLOUR}"
     fi
   fi
 
@@ -1222,7 +1223,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
+      echo -e "${ORANGE}Proxylite is not configured. Ignoring Proxylite..${NOCOLOUR}"
     fi
   fi
 
@@ -1327,7 +1328,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}URnetwork Node is not enabled. Ignoring URnetwork..${NOCOLOUR}"
+      echo -e "${ORANGE}URnetwork Node is not enabled. Ignoring URnetwork..${NOCOLOUR}"
     fi
   fi
 
@@ -1351,7 +1352,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Titan Network Hash is not configured. Ignoring Titan Network..${NOCOLOUR}"
+      echo -e "${ORANGE}Titan Network Hash is not configured. Ignoring Titan Network..${NOCOLOUR}"
     fi
   fi
 
@@ -1403,7 +1404,7 @@ start_containers() {
     fi
   else
     if [[ "$container_pulled" == false && "$ENABLE_LOGS" == true ]]; then
-      echo -e "${RED}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
+      echo -e "${ORANGE}Earnapp is not enabled. Ignoring Earnapp..${NOCOLOUR}"
     fi
   fi
 
