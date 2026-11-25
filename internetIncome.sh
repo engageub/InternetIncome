@@ -2546,14 +2546,16 @@ if [[ "$1" == "--start" ]]; then
     generate_device_ids
   fi
 
+  # Remove Process file
+  rm -f $process_id_file
+
   if [[ $STATUS == 0 ]]; then
     # Remove connection state file
     rm $connection_state_file
     echo -e "${RED}No Network configuration is specified. Script will not start unless specified in properties.conf ..Exiting..${NOCOLOUR}"
+    exit 1
   fi
 
-  # Remove Process file
-  rm $process_id_file
   exit 0
 fi
 
