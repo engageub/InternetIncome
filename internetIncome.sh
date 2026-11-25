@@ -837,12 +837,12 @@ execute_docker_command() {
     CONTAINER_ID=$(sudo docker run $DOCKER_INIT -d $WATCH_TOWER_LABEL --name $container_name --restart=always "${container_parameters[@]:3}")
   fi
 
-  if [[ "${container_parameters[@]:3}" == *"hev-socks5-tunnel"* ]]; then
-    wait_for_process $container_name "hev-socks5-tunnel"
+  if [[ "$container_image" == *"hev-socks5-tunnel"* ]]; then
+    wait_for_process "$container_name" "hev-socks5-tunnel"
   fi
 
-  if [[ "${container_parameters[@]:3}" == *"tun2socks"* ]]; then
-    wait_for_process $container_name "tun2socks"
+  if [[ "$container_image" == *"tun2socks"* ]]; then
+    wait_for_process "$container_name" "tun2socks"
   fi
 
   # Check if the container started successfully
