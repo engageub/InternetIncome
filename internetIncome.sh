@@ -2204,6 +2204,393 @@ start_containers() {
   container_pulled=true
 }
 
+# Create IP to Proxy router
+#
+# Sets up a router container (tm-router) that owns one exit IP per proxy.
+# Each proxy gets a tunN device inside the router namespace; applications
+# can then bind to a specific exit IP with `curl --interface <ip>` etc.
+#
+#   Router ns : owns the exit IPs. tunN gets EXIT/32 here. The TM joins this ns.
+#   Dialer ns : child namespace with a macvlan NIC on eth0. The tunnel engines
+#               run here and dial the proxies, so the exit IPs never capture the dial.
+#   Engines   : socks5/socks5h/socks:// proxies -> hev-socks5-tunnel
+#               every other scheme (http, https, ss, ...) -> tun2socks
+#   Default   : unbound traffic (no --interface) goes through tun$DEFAULT_TUN.
+#
+# NOTE: This function is defined but not wired to any CLI subcommand yet.
+#       It can be invoked by sourcing the script and calling it directly, e.g.
+#         source ./internetIncome.sh
+#         create_IP_to_Proxy_router proxies.txt
+#       or by adding a dispatch case later.
+#
+# Env   : DNS_MODE=dnscrypt|host|none   DEFAULT_TUN=1
+#         ENABLE_LOGS=false (true = dnscrypt query logs)
+#         USE_DNS_CACHE=true
+#         ROUTER_NAME=tm-router  ROUTER_IMAGE=alpine:latest
+#         TM_NAME=tm  TM_IMAGE=<image>  TM_ARGS="..."
+create_IP_to_Proxy_router() {
+  local PROXIES_FILE="${1:-proxies.txt}"
+  local ROUTER_NAME="${ROUTER_NAME:-tm-router}"
+  local ROUTER_IMAGE="${ROUTER_IMAGE:-alpine:latest}"
+  local TM_NAME="${TM_NAME:-tm}"
+  local TM_IMAGE="${TM_IMAGE:-}"
+  local TM_ARGS="${TM_ARGS:-}"
+  local DEFAULT_TUN="${DEFAULT_TUN:-1}"
+  local DNS_MODE="${DNS_MODE:-dnscrypt}"
+  local DNSCRYPT_UID=5353
+  local ok=false
+
+  [[ $EUID -eq 0 ]] || { echo -e "${RED}Run as root. Exiting..${NOCOLOUR}"; exit 1; }
+  [[ -f "$PROXIES_FILE" ]] || { echo -e "${RED}$PROXIES_FILE not found. Exiting..${NOCOLOUR}"; exit 1; }
+  case "$DNS_MODE" in none|host|dnscrypt) ;; *) echo -e "${RED}DNS_MODE must be none, host or dnscrypt. Exiting..${NOCOLOUR}"; exit 1 ;; esac
+  docker info >/dev/null 2>&1 || { echo -e "${RED}Docker daemon not reachable. Exiting..${NOCOLOUR}"; exit 1; }
+
+  # ----------------------------- recreate router -------------------------------
+  echo -e "${YELLOW}Recreating $ROUTER_NAME (and $TM_NAME if present) ..${NOCOLOUR}"
+  docker rm -f "$TM_NAME" >/dev/null 2>&1 || true
+  docker rm -f "$ROUTER_NAME" >/dev/null 2>&1 || true
+
+  # Resolver file, same as the other internetIncome containers.
+  printf 'nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\nnameserver 1.0.0.1\n' > "$dns_resolver_file"
+  if [ ! -f "$dns_resolver_file" ]; then
+    echo -e "${RED}There is a problem creating resolver file. Exiting..${NOCOLOUR}"
+    exit 1
+  fi
+
+  # dnscrypt config, same as the other internetIncome containers.
+  if [ ! -f "$dnscrypt_config_file" ]; then
+    create_dnscrypt_config
+  fi
+
+  docker run -d --name "$ROUTER_NAME" --restart=always --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --device /dev/net/tun --sysctl net.ipv4.conf.all.rp_filter=0 --sysctl net.ipv4.conf.default.rp_filter=0 --mount type=bind,source=$PWD/$dns_resolver_file,target=/etc/resolv.conf,readonly --mount type=bind,source=$PWD/$dnscrypt_config_file,target=/etc/dnscrypt/dnscrypt-proxy.toml,readonly "$ROUTER_IMAGE" sh -c 'sed -i "/community/s/^#//" /etc/apk/repositories; apk add --no-cache --quiet iptables iproute2 curl unzip util-linux bind-tools dnscrypt-proxy >/tmp/apk.log 2>&1 || { cat /tmp/apk.log; exit 1; }; exec sleep infinity' >/dev/null
+
+  echo -e "${YELLOW}Waiting for router tools ..${NOCOLOUR}"
+  ok=false
+  for _ in $(seq 1 120); do
+    if docker exec "$ROUTER_NAME" sh -c 'command -v ip && command -v iptables && command -v curl && command -v unzip && command -v nsenter && command -v unshare && command -v setpriv && command -v dig && command -v dnscrypt-proxy' >/dev/null 2>&1; then
+      ok=true; break
+    fi
+    sleep 1
+  done
+  [[ "$ok" == true ]] || { echo -e "${RED}Router tools not installed. Exiting..${NOCOLOUR}"; docker logs "$ROUTER_NAME" | tail -20; exit 1; }
+
+  echo -e "${YELLOW}Checking router direct connectivity ..${NOCOLOUR}"
+  if ! docker exec "$ROUTER_NAME" sh -c 'curl -s --max-time 10 -o /dev/null -w "%{http_code}" https://ifconfig.me | grep -q 200'; then
+    echo -e "${RED}Router cannot reach the internet directly. Exiting..${NOCOLOUR}"
+    docker exec "$ROUTER_NAME" cat /etc/resolv.conf || true
+    docker exec "$ROUTER_NAME" ip route || true
+    exit 1
+  fi
+  echo -e "${GREEN}Router direct connectivity OK.${NOCOLOUR}"
+
+  docker exec -i "$ROUTER_NAME" sh -c 'cat > /root/proxies.txt' < "$PROXIES_FILE"
+
+  # ----------------------------- fleet setup (inside router) -------------------
+  docker exec -i "$ROUTER_NAME" sh -s "$DNSCRYPT_UID" "$DEFAULT_TUN" "$DNS_MODE" "$ENABLE_LOGS" "$USE_DNS_CACHE" <<'ROUTER_EOF'
+set -eu
+
+DNSCRYPT_UID=$1
+DEFAULT_TUN=$2
+DNS_MODE=$3
+ENABLE_LOGS=$4
+USE_DNS_CACHE=$5
+PROXIES_FILE=/root/proxies.txt
+T2S=/usr/local/bin/tun2socks
+T2S_VER=v2.7.0
+HEV=/usr/local/bin/hev-socks5-tunnel
+HEV_VER=2.20.0
+DNSCRYPT=/usr/bin/dnscrypt-proxy
+DNSCRYPT_CFG=/etc/dnscrypt/dnscrypt-proxy.toml
+IPS_FILE=/etc/fleet/ips.txt
+
+# Colors (busybox ash supports echo -e)
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+NOCOLOUR="\033[0m"
+
+say()     { echo -e "${YELLOW}[fleet] $*${NOCOLOUR}"; }
+say_ok()  { echo -e "${GREEN}[fleet] $*${NOCOLOUR}"; }
+say_err() { echo -e "${RED}[fleet] $*${NOCOLOUR}"; }
+
+# Scheme test: socks5 family goes to hev, everything else to tun2socks.
+is_socks5() {
+  case "$1" in
+    socks5://*|socks5h://*|socks://*) return 0 ;;
+  esac
+  return 1
+}
+
+# Split socks5://[user:pass@]host:port into S_USER, S_PASS, S_HOST, S_PORT.
+parse_socks() {
+  rest=${1#*://}
+  rest=${rest%%/*}
+  case "$rest" in
+    *@*) cred=${rest%@*}; hostport=${rest##*@} ;;
+    *)   cred=""; hostport=$rest ;;
+  esac
+  S_HOST=${hostport%:*}
+  S_PORT=${hostport##*:}
+  if [ -n "$cred" ]; then
+    S_USER=${cred%%:*}
+    S_PASS=${cred#*:}
+  else
+    S_USER=""
+    S_PASS=""
+  fi
+}
+
+mkdir -p /var/log /etc/fleet /etc/dnscrypt
+: > "$IPS_FILE"
+
+# --- proxy list ---
+sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$PROXIES_FILE" | grep -v '^$' | grep -v '^#' > /tmp/proxies.list || true
+N=$(wc -l < /tmp/proxies.list | tr -d ' ')
+[ "$N" -gt 0 ] || { say_err "No proxies in $PROXIES_FILE. Exiting.."; exit 1; }
+
+HAS_SOCKS=false
+HAS_OTHER=false
+while read -r p; do
+  if is_socks5 "$p"; then HAS_SOCKS=true; else HAS_OTHER=true; fi
+done < /tmp/proxies.list
+say "Engines needed: hev-socks5-tunnel=$HAS_SOCKS tun2socks=$HAS_OTHER .."
+
+# --- tun2socks binary (only if a non-socks5 proxy is present) ---
+if [ "$HAS_OTHER" = true ] && [ ! -x "$T2S" ]; then
+  case "$(uname -m)" in
+    x86_64|amd64)  A=linux-amd64 ;;
+    aarch64|arm64) A=linux-arm64 ;;
+    armv7l)        A=linux-armv7 ;;
+    *) say_err "Unsupported architecture. Exiting.."; exit 1 ;;
+  esac
+  say "Downloading tun2socks $T2S_VER ($A) .."
+  curl -fsSL -o /tmp/t2s.zip "https://github.com/xjasonlyu/tun2socks/releases/download/${T2S_VER}/tun2socks-${A}.zip"
+  unzip -o /tmp/t2s.zip -d /tmp >/dev/null
+  mv "/tmp/tun2socks-${A}" "$T2S"
+  chmod +x "$T2S"
+  rm -f /tmp/t2s.zip
+fi
+
+# --- hev-socks5-tunnel binary (only if a socks5 proxy is present) ---
+if [ "$HAS_SOCKS" = true ] && [ ! -x "$HEV" ]; then
+  case "$(uname -m)" in
+    x86_64|amd64)  A=linux-x86_64 ;;
+    aarch64|arm64) A=linux-arm64 ;;
+    armv7l|armv7)  A=linux-arm32 ;;
+    *) say_err "Unsupported architecture. Exiting.."; exit 1 ;;
+  esac
+  say "Downloading hev-socks5-tunnel $HEV_VER ($A) .."
+  curl -fsSL -o "$HEV" "https://github.com/heiher/hev-socks5-tunnel/releases/download/${HEV_VER}/hev-socks5-tunnel-${A}"
+  chmod +x "$HEV"
+fi
+
+# --- dnscrypt user ---
+if [ "$DNS_MODE" = dnscrypt ]; then
+  id -u dnscrypt >/dev/null 2>&1 || adduser -D -H -u "$DNSCRYPT_UID" dnscrypt
+fi
+
+# --- clean up a previous run ---
+pkill -f "$DNSCRYPT" 2>/dev/null || true
+pkill -f "$T2S" 2>/dev/null || true
+pkill -f "$HEV" 2>/dev/null || true
+pkill -f "unshare -n sleep infinity" 2>/dev/null || true
+rm -f /etc/fleet/hev-*.yml
+sleep 1
+for d in $(ip -o link show | awk -F': ' '{print $2}' | cut -d@ -f1 | grep '^tun[0-9]' || true); do
+  ip link del "$d" 2>/dev/null || true
+done
+ip link del mvd0 2>/dev/null || true
+for p in $(ip rule show | awk -F: '$1>=100 && $1<400 {print $1}' | sort -un); do
+  while ip rule del pref "$p" 2>/dev/null; do :; done
+done
+for t in $(seq 100 199); do ip route flush table "$t" 2>/dev/null || true; done
+while iptables -t nat -D OUTPUT -m owner --uid-owner "$DNSCRYPT_UID" -j RETURN 2>/dev/null; do :; done
+while iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53 2>/dev/null; do :; done
+while iptables -t nat -D OUTPUT -p tcp --dport 53 -j DNAT --to-destination 127.0.0.1:53 2>/dev/null; do :; done
+iptables -t nat -S POSTROUTING 2>/dev/null | grep -- "-s " | grep -- "! -o tun+" | while read -r rule; do eval "iptables -t nat ${rule/-A /-D }" 2>/dev/null || true; done
+
+sysctl -qw net.ipv6.conf.all.disable_ipv6=1 2>/dev/null || true
+
+# --- network parameters from the router's eth0 ---
+ETH_CIDR=$(ip -o -4 addr show dev eth0 | awk '{print $4}')
+ETH_IP=${ETH_CIDR%/*}
+PFX=${ETH_CIDR#*/}
+BASE=$(echo "$ETH_IP" | cut -d. -f1-3)
+GW=$(ip route show default | awk '{print $3; exit}')
+DIAL_IP="$BASE.250"
+say "eth0=$ETH_CIDR gw=$GW dialer=$DIAL_IP/$PFX dns_mode=$DNS_MODE"
+
+# --- dialer namespace ---
+unshare -n sleep infinity > /var/log/dialer.log 2>&1 < /dev/null &
+DPID=$!
+sleep 1
+if ! kill -0 "$DPID" 2>/dev/null; then
+  say_err "Dialer namespace failed. Exiting.."
+  cat /var/log/dialer.log
+  exit 1
+fi
+
+ip link add mvd0 link eth0 type macvlan mode bridge
+ip link set mvd0 netns "$DPID"
+nsenter -t "$DPID" -n sh -c "ip link set lo up; ip link set mvd0 up; ip addr add $DIAL_IP/$PFX dev mvd0; ip route add default via $GW dev mvd0"
+
+if ! nsenter -t "$DPID" -n sh -c 'curl -s --max-time 10 -o /dev/null -w "%{http_code}" https://ifconfig.me' | grep -q 200; then
+  say_err "Dialer namespace cannot reach the internet via macvlan. Exiting.."
+  nsenter -t "$DPID" -n ip addr || true
+  nsenter -t "$DPID" -n ip route || true
+  exit 1
+fi
+say_ok "Dialer connectivity OK."
+
+sysctl -qw net.ipv4.ip_nonlocal_bind=1 2>/dev/null || true
+
+# --- one tunnel per proxy ---
+i=0
+while read -r proxy; do
+  i=$((i+1))
+  dev="tun$i"
+  exit_ip=$(echo "$proxy" | sed -E 's#^[a-z0-9]+://([^@]*@)?([^:/]+).*#\2#')
+  table=$((99 + i))
+
+  if is_socks5 "$proxy"; then
+    engine=hev-socks5-tunnel
+    parse_socks "$proxy"
+    # Each device gets its own /24 so the TUN addresses never collide.
+    TUN_ADDR="198.18.$i.1"
+    HEV_CFG="/etc/fleet/$dev.yml"
+    {
+      echo "tunnel:"
+      echo "  name: $dev"
+      echo "  mtu: 1500"
+      echo "  multi-queue: false"
+      echo "  ipv4: $TUN_ADDR"
+      echo "socks5:"
+      echo "  address: '$S_HOST'"
+      echo "  port: $S_PORT"
+      echo "  udp: 'udp'"
+      if [ -n "$S_USER" ]; then
+        echo "  username: '$S_USER'"
+        echo "  password: '$S_PASS'"
+      fi
+    } > "$HEV_CFG"
+
+    say "Starting $dev  engine=$engine  exit=$exit_ip  proxy=${proxy##*@} .."
+    setsid nsenter -t "$DPID" -n "$HEV" "$HEV_CFG" > "/var/log/$dev.log" 2>&1 < /dev/null &
+  else
+    engine=tun2socks
+    say "Starting $dev  engine=$engine  exit=$exit_ip  proxy=${proxy##*@} .."
+    setsid nsenter -t "$DPID" -n "$T2S" --device "$dev" --proxy "$proxy" --mtu 1500 > "/var/log/$dev.log" 2>&1 < /dev/null &
+  fi
+
+  up=false
+  for _ in $(seq 1 40); do
+    if nsenter -t "$DPID" -n ip link show "$dev" >/dev/null 2>&1; then up=true; break; fi
+    sleep 0.25
+  done
+  if [ "$up" != true ]; then
+    say_err "$dev did not appear ($engine). Exiting.."
+    tail -20 "/var/log/$dev.log" || true
+    exit 1
+  fi
+
+  nsenter -t "$DPID" -n ip link set "$dev" netns 1
+
+  ip link set "$dev" up
+  ip addr replace "$exit_ip/32" dev "$dev"
+  ip route replace default dev "$dev" table "$table"
+  ip rule add pref $((200 + i)) from "$exit_ip" lookup "$table"
+
+  iptables -t nat -C POSTROUTING -s "$exit_ip" ! -o tun+ -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s "$exit_ip" ! -o tun+ -j MASQUERADE
+
+  echo "$exit_ip" >> "$IPS_FILE"
+done < /tmp/proxies.list
+
+# --- default exit: unbound traffic goes through tun$DEFAULT_TUN ---
+DEFAULT_TABLE=$((99 + DEFAULT_TUN))
+ip rule add pref 300 lookup "$DEFAULT_TABLE"
+say "Unbound traffic -> tun$DEFAULT_TUN (table $DEFAULT_TABLE)"
+
+# --- DNS mode ---
+case "$DNS_MODE" in
+  none)
+    say "DNS: no bypass (follows tun$DEFAULT_TUN)"
+    ;;
+
+  host)
+    ip rule add pref 100 ipproto udp dport 53 lookup main
+    ip rule add pref 100 ipproto tcp dport 53 lookup main
+    say "DNS: host resolver via eth0"
+    ;;
+
+  dnscrypt)
+    touch /var/log/dnscrypt.log && chown dnscrypt /var/log/dnscrypt.log
+
+    # Port 53 is privileged. Dropping to uid 5353 also drops the capability
+    # to bind it, so pass net_bind_service explicitly.
+    setsid setpriv --reuid="$DNSCRYPT_UID" --regid="$DNSCRYPT_UID" --clear-groups --inh-caps=+net_bind_service --ambient-caps=+net_bind_service "$DNSCRYPT" -config "$DNSCRYPT_CFG" > /var/log/dnscrypt.log 2>&1 < /dev/null &
+    sleep 3
+    if ! pgrep -f "$DNSCRYPT" >/dev/null 2>&1; then
+      say_err "dnscrypt-proxy exited. Exiting.."
+      tail -20 /var/log/dnscrypt.log
+      exit 1
+    fi
+
+    # dnscrypt's own upstream queries are exempt by uid, so they reach tun$DEFAULT_TUN
+    iptables -t nat -A OUTPUT -m owner --uid-owner "$DNSCRYPT_UID" -j RETURN
+    iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:53
+    iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 127.0.0.1:53
+    say "DNS: dnscrypt-proxy (uid $DNSCRYPT_UID) via tun$DEFAULT_TUN"
+    ;;
+esac
+
+# --- verify ---
+say "Verifying .."
+fail=0
+if dig +time=5 +tries=1 ifconfig.me +short | grep -q .; then
+  echo -e "  ${GREEN}DNS OK${NOCOLOUR}"
+else
+  echo -e "  ${RED}DNS FAILED (mode=$DNS_MODE)${NOCOLOUR}"; fail=1
+fi
+got=$(curl -s --max-time 20 https://ifconfig.me 2>/dev/null || true)
+if [ -n "$got" ]; then
+  echo -e "  ${GREEN}unbound -> $got (expect tun$DEFAULT_TUN exit)${NOCOLOUR}"
+else
+  echo -e "  ${RED}unbound request FAILED${NOCOLOUR}"; fail=1
+fi
+while read -r exit_ip; do
+  got=$(curl -s --max-time 20 --interface "$exit_ip" https://ifconfig.me 2>/dev/null || true)
+  if [ "$got" = "$exit_ip" ]; then
+    echo -e "  ${GREEN}$exit_ip OK${NOCOLOUR}"
+  else
+    echo -e "  ${RED}$exit_ip got '${got:-nothing}'${NOCOLOUR}"; fail=1
+  fi
+done < "$IPS_FILE"
+
+if [ "$fail" -ne 0 ]; then
+  say_err "Some checks failed. Diagnostics:"
+  echo "--- dnscrypt.log"; tail -20 /var/log/dnscrypt.log 2>/dev/null || true
+  echo "--- routes";       ip route
+  echo "--- rules";        ip rule
+  echo "--- nat OUTPUT";   iptables -t nat -S OUTPUT
+  echo "--- tun1.log";     tail -10 /var/log/tun1.log 2>/dev/null || true
+fi
+say_ok "Ready: $N tunnel(s). Bind addresses in $IPS_FILE"
+ROUTER_EOF
+
+  # ----------------------------- TM container ----------------------------------
+  if [[ -n "$TM_IMAGE" ]]; then
+    echo -e "${YELLOW}Starting $TM_NAME container..${NOCOLOUR}"
+    # shellcheck disable=SC2086
+    docker run -d --name "$TM_NAME" --network container:"$ROUTER_NAME" $TM_ARGS "$TM_IMAGE" >/dev/null
+    echo -e "${GREEN}Container $TM_NAME started successfully.${NOCOLOUR}"
+  else
+    echo -e "${YELLOW}TM_IMAGE not set. Start the TM with:${NOCOLOUR}"
+    echo "  docker run -d --name $TM_NAME --network container:$ROUTER_NAME <tm-image>"
+  fi
+
+  echo -e "${GREEN}Bind addresses: docker exec $ROUTER_NAME cat /etc/fleet/ips.txt${NOCOLOUR}"
+}
+
 # Update and Install Docker
 if [[ "$1" == "--install" ]]; then
   sudo apt-get update
