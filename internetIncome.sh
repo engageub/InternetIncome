@@ -567,8 +567,6 @@ server_names = ['google1', 'google2', 'cloudflare1', 'cloudflare2']
 log_level = ${log_level}
 cache = ${cache_enabled}
 cache_size = 4096
-cache_min_ttl = 2400
-cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
 [static]
@@ -597,8 +595,6 @@ server_names = ['google1', 'google2']
 log_level = ${log_level}
 cache = ${cache_enabled}
 cache_size = 4096
-cache_min_ttl = 2400
-cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
 [static]
@@ -613,8 +609,6 @@ server_names = ['cloudflare1', 'cloudflare2']
 log_level = ${log_level}
 cache = ${cache_enabled}
 cache_size = 4096
-cache_min_ttl = 2400
-cache_max_ttl = 86400
 max_clients = 500
 block_ipv6 = true
 [static]
